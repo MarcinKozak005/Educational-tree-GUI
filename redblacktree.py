@@ -1,7 +1,5 @@
-# check 0-999
-
 import tkinter as tk
-from tkinter import font
+from tkinter import Label, font
 from tkinter.constants import X
 import root as r
 import menu as m
@@ -55,18 +53,27 @@ def rb_subtree_add(val, tree):
     return newNode
 
 def rb_root_tree_add(text,canvas):
-    global rb_root_tree
-    if rb_root_tree is None:
-        rb_root_tree = rb_node(width//2,y_space,int(text),0,width,None)
-        rb_root_tree.color = 'black'
-        rb_root_tree.left = rb_leaf()
-        rb_root_tree.right = rb_leaf()
-    else:
-        val = int(text) 
-        newNode = rb_subtree_add(val,rb_root_tree)
-        fix_rb_tree(newNode)
-    canvas.delete("all")
-    draw_rb_tree(rb_root_tree,canvas)
+    try:
+        val = int(text)
+        if 0 <= val and val <= 999:
+            global rb_root_tree
+            if rb_root_tree is None:
+                rb_root_tree = rb_node(width//2,y_space,int(text),0,width,None)
+                rb_root_tree.color = 'black'
+                rb_root_tree.left = rb_leaf()
+                rb_root_tree.right = rb_leaf()
+            else:
+                val = int(text) 
+                newNode = rb_subtree_add(val,rb_root_tree)
+                fix_rb_tree(newNode)
+            label_input.config(text='')
+            canvas.delete("all")
+            draw_rb_tree(rb_root_tree,canvas)
+        else:
+            raise ValueError
+    except ValueError:
+        label_input.config(text="Now a valid input (int in range 0-999)")
+
     # Terminal visualization
     # print_tree(rb_root_tree)
     # print('-------')
@@ -182,13 +189,17 @@ def update_positions(node):
 
 # Canvas visualization
 def draw_rb_tree(tree, canvas):
-    draw_rb_node(tree,canvas)
-    if type(tree) != rb_leaf:
+    if type(tree) is not rb_leaf:
+        draw_rb_node(tree,canvas)
         draw_rb_tree(tree.left,canvas)
         draw_rb_tree(tree.right, canvas)
 
 def draw_rb_node(node, canvas):
-    if type(node) != rb_leaf:
+    if type(node) is not rb_leaf:
+        if type(node.right) is not rb_leaf:
+            canvas.create_line(node.x,node.y,node.right.x,node.right.y,fill='black')
+        if type(node.left) is not rb_leaf:
+            canvas.create_line(node.x,node.y,node.left.x,node.left.y,fill='black')
         canvas.create_oval(node.x-half_node_size, node.y-half_node_size, node.x+half_node_size, node.y+half_node_size, fill=node.color)
         canvas.create_text(node.x,node.y,fill="white",text=node.val)
 
@@ -205,7 +216,7 @@ def print_tree(tree,i=0):
 # GUI alignment
 frame = tk.Frame(r.frame)
 tk.Label(frame,text="RedBlack Tree",bg='red', height=2).pack(fill='x')
-label1 = tk.Label(frame,pady=5)
+label_input = tk.Label(frame,pady=5)
 entry_field = tk.Entry(frame)
 canvas = tk.Canvas(frame,width=width, height=width//2, bg="white")
 button_add = tk.Button(frame,text="Draw text", command=lambda: rb_root_tree_add(entry_field.get(),canvas),pady=5)
@@ -214,7 +225,7 @@ button_clear = tk.Button(frame,text="Clear", command=lambda:clear())
 entry_field.pack()
 button_add.pack()
 button_clear.pack()
-label1.pack()
+label_input.pack()
 canvas.pack()
 tk.Button(frame,text='Back',command=lambda: r.show_frame(m.frame)).pack()
     
