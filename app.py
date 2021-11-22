@@ -1,4 +1,3 @@
-import tkinter as tk
 import root as r
 import menu as m
 
