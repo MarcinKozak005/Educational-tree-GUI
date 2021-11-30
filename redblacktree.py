@@ -4,6 +4,7 @@ from tkinter.constants import CURRENT, X
 from typing import Collection
 import root as r
 import menu as m
+import time as t
 
 
 class RBNode:
@@ -30,6 +31,7 @@ class RBLeaf:
 rb_tree_root = None
 y_space = 30
 width = 800
+height = 300
 node_size = 26
 half_node_size = node_size / 2
 
@@ -305,14 +307,25 @@ def rb_tree_root_find(text, show_to_gui=True):
     val = int(text)
     curr = rb_tree_root
     while type(curr) is not RBLeaf and curr.val != val:
+        # path = draw_target_node(curr)
         if curr.val >= val:
             curr = curr.left
         elif curr.val < val:
             curr = curr.right
     if show_to_gui:
+        # path = draw_target_node(curr)
         label.config(text=f'Elem \'{text}\' found' if type(curr) is not RBLeaf else f'Elem \'{text}\' not found')
     else:
         return curr
+
+# def my_move(target, start, stop):
+#     target.after(150, my_move(target,start,stop))
+#
+#
+# def draw_target_node(node):
+#     return canvas.create_rectangle(node.x - half_node_size, node.y - half_node_size, \
+#                                    node.x + half_node_size, node.y + half_node_size, \
+#                                    outline='red', width=3, )
 
 
 # Canvas visualization
@@ -346,24 +359,44 @@ def print_tree(tree, i=0):
 
 # GUI alignment
 frame = tk.Frame(r.frame)
-tk.Label(frame, text="RedBlack Tree", bg='red', height=2).pack(fill='x')
-canvas = tk.Canvas(frame, width=width, height=width // 2, bg="white")
-add_field = tk.Entry(frame)
-add_button = tk.Button(frame, text="Draw text", command=lambda: rb_tree_root_add(add_field.get(), canvas), pady=5)
-delete_field = tk.Entry(frame)
-delete_button = tk.Button(frame, text="Delete", command=lambda: rb_tree_root_delete(delete_field.get()), pady=5)
-find_field = tk.Entry(frame)
-find_button = tk.Button(frame, text="Find", command=lambda: rb_tree_root_find(find_field.get(), canvas), pady=5)
-clear_button = tk.Button(frame, text="Clear", command=lambda: clear())
-label = tk.Label(frame, pady=5)
 
-add_field.pack()
-add_button.pack()
-delete_field.pack()
-delete_button.pack()
-find_field.pack()
-find_button.pack()
-clear_button.pack()
-label.pack()
+frame1 = tk.LabelFrame(frame, text='1')
+tk.Label(frame1, text="RedBlack Tree", bg='red', height=2).pack(fill='x')
+frame1.pack(fill='x')
+
+frame2 = tk.LabelFrame(frame, text='2')
+add_field = tk.Entry(frame2)
+add_button = tk.Button(frame2, text="Add node", command=lambda: rb_tree_root_add(add_field.get(), canvas))
+delete_field = tk.Entry(frame2)
+delete_button = tk.Button(frame2, text="Delete node", command=lambda: rb_tree_root_delete(delete_field.get()))
+find_field = tk.Entry(frame2)
+find_button = tk.Button(frame2, text="Find node", command=lambda: rb_tree_root_find(find_field.get(), canvas))
+clear_button = tk.Button(frame2, text="Clear tree", command=lambda: clear())
+back_button = tk.Button(frame2, text='Back to menu', command=lambda: r.show_frame(m.frame))
+label = tk.Label(frame2)
+add_field.grid(row=0,column=0)
+add_button.grid(row=0,column=1,padx=(0,20))
+delete_field.grid(row=0,column=2)
+delete_button.grid(row=0,column=3,padx=(0,20))
+find_field.grid(row=0,column=4)
+find_button.grid(row=0,column=5,padx=(0,20))
+clear_button.grid(row=0,column=6)
+back_button.grid(row=0,column=7,padx=(40,0))
+label.grid(row=1,columnspan=6,sticky='WE')
+frame2.pack()
+
+frame3 = tk.LabelFrame(frame,text='3')
+frame31 = tk.LabelFrame(frame3,text='31')
+step_label = tk.Label(frame31)
+step_label.config(text='',justify=tk.LEFT, width=70)
+step_label.pack()
+frame32 = tk.LabelFrame(frame3,text='32')
+canvas = tk.Canvas(frame32, width=width, height=height, bg="white")
+canvas2 = tk.Canvas(frame32, width=width, height=height, bg="white")
 canvas.pack()
-tk.Button(frame, text='Back', command=lambda: r.show_frame(m.frame)).pack()
+canvas2.pack()
+frame31.grid(row=0,column=0, sticky='NS')
+frame32.grid(row=0,column=1)
+frame3.pack()
+
+
