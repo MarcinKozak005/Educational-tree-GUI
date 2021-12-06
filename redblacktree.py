@@ -49,6 +49,8 @@ width = 800
 height = 300
 node_size = 26
 half_node_size = node_size / 2
+animation_time = 2000
+animation_unit = 100
 
 
 def clear():
@@ -125,7 +127,7 @@ def fix_rb_tree(node):
             if y.color == 'red':
                 explanation.append(
                     f'uncle({node.val}) == {y.val}, color({y.val}) == red, recoloring {y.parent.val} and it\'s children'
-                    + f'{node.parent.val} and {y.val}')
+                    + f' {node.parent.val} and {y.val}')
                 node.parent.color = 'black'
                 y.color = 'black'
                 node.parent.parent.color = 'red'
@@ -150,7 +152,7 @@ def fix_rb_tree(node):
             if y.color == 'red':
                 explanation.append(
                     f'uncle({node.val}) == {y.val}, color({y.val}) == red, recoloring {y.parent.val} and it\'s children'
-                    + f'{node.parent.val} and {y.val}')
+                    + f' {node.parent.val} and {y.val}')
                 node.parent.color = 'black'
                 y.color = 'black'
                 node.parent.parent.color = 'red'
@@ -388,10 +390,28 @@ def draw_RBNode(node, canvas):
             canvas.create_line(node.x, node.y, node.right.x, node.right.y, fill='black')
         if type(node.left) is not RBLeaf:
             canvas.create_line(node.x, node.y, node.left.x, node.left.y, fill='black')
-        canvas.create_oval(node.x - half_node_size, node.y - half_node_size, node.x + half_node_size,
-                           node.y + half_node_size, fill=node.color)
-        canvas.create_text(node.x, node.y, fill="white", text=node.val)
 
+        # canvas.create_oval(node.x - half_node_size, node.y - half_node_size, node.x + half_node_size,
+        #                    node.y + half_node_size, fill=node.color,tags='a')
+        # canvas.create_text(node.x, node.y, fill="white", text=node.val,tags='a')
+        a = canvas.create_oval(0, 0, node_size,node_size, fill=node.color, tags=f'{node.__hash__()}')
+        b = canvas.create_text(half_node_size, half_node_size, fill="white", text=node.val, tags=f'{node.__hash__()}')
+        move_object(a, 0, 0, node.x, node.y)
+        move_object(b, 0, 0, node.x, node.y)
+
+
+def move_object(obj,x1,y1,x2,y2):
+    x_diff = abs(x1-x2)
+    y_diff = abs(y1-y2)
+    x_unit = x_diff/(animation_time/animation_unit)
+    y_unit = y_diff/(animation_time/animation_unit)
+    move_tick(obj,x_unit,y_unit,animation_time/animation_unit)
+
+def move_tick(obj,x_unit,y_unit,counter):
+    if counter <= 0:
+        return
+    canvas_now.move(obj,x_unit,y_unit)
+    frame.after(animation_unit,move_tick,obj,x_unit,y_unit,counter-1)
 
 # Terminal visualization
 def print_tree(tree, i=0):
