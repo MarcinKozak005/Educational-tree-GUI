@@ -1,6 +1,6 @@
 import tkinter as tk
-import root as r
-import menu as m
+import core.root as r
+import core.menu as m
 import copy
 
 
@@ -32,7 +32,7 @@ class Explanation:
     def __init__(self):
         pass
 
-    def append(self,text,newline=True):
+    def append(self, text, newline=True):
         self.string += (f'[{self.line}] ' if newline else '') + f'{text}' + ('\n' if newline else '')
         self.line += 1
 
@@ -102,8 +102,8 @@ def rb_tree_root_add(text):
             canvas_now.delete("all")
             canvas_prev.delete("all")
             draw_rb_tree(rb_tree_root, canvas_now)
-            draw_rb_tree(rb_tree_root_copy,canvas_prev)
-            explanation_label.config(text=explanation.string,wraplength=400)
+            draw_rb_tree(rb_tree_root_copy, canvas_prev)
+            explanation_label.config(text=explanation.string, wraplength=400)
             explanation.reset()
         else:
             raise ValueError
@@ -118,12 +118,14 @@ def rb_tree_root_add(text):
 # Based on Thomas Cormen's Intro. to Algorithms
 def fix_rb_tree(node):
     while node is not rb_tree_root and node.parent.color == 'red':
-        explanation.append(f'{node.val} is not root and color({node.val}) == red, ')
+        explanation.append(f'{node.val} is not root and color({node.val}) == red, ', False)
         if node.parent == node.parent.parent.left:
-            explanation.append(f'{node.parent.val} is left child of {node.parent.parent.val}, ')
+            explanation.append(f'{node.parent.val} is left child of {node.parent.parent.val}, ', False)
             y = node.parent.parent.right
             if y.color == 'red':
-                explanation.append(f'uncle({node.val}) == {y.val}, color({y.val}) == red, recoloring {y.parent.val} and it\'s childred {node.parent.val} and {y.val}')
+                explanation.append(
+                    f'uncle({node.val}) == {y.val}, color({y.val}) == red, recoloring {y.parent.val} and it\'s children'
+                    + f'{node.parent.val} and {y.val}')
                 node.parent.color = 'black'
                 y.color = 'black'
                 node.parent.parent.color = 'red'
@@ -135,17 +137,20 @@ def fix_rb_tree(node):
                 left_rotate(node)
                 # print(f'fix-2 {node.val}')
             elif node is not rb_tree_root and node.parent is not rb_tree_root:
-                explanation.append(f'Recolor {node.parent.val}, {node.parent.parent.val} and right-rotate on {node.parent.parent.val}')
+                explanation.append(
+                    f'Recolor {node.parent.val}, {node.parent.parent.val} and right-rotate on {node.parent.parent.val}')
                 # print(f'{node.val}-{node.parent.val}-{node.parent.parent.val}')
                 node.parent.color = 'black'
                 node.parent.parent.color = 'red'
                 right_rotate(node.parent.parent)
                 # print(f'fix-3 {node.val}')
         else:
-            explanation.append(f'{node.parent.val} is right child of {node.parent.parent.val}, ',False)
+            explanation.append(f'{node.parent.val} is right child of {node.parent.parent.val}, ', False)
             y = node.parent.parent.left
             if y.color == 'red':
-                explanation.append(f'uncle({node}) == {y.val}, color({y.val}) == red, recoloring {y.parent.val} and it\'s childred {node.parent.val} and {y.val}')
+                explanation.append(
+                    f'uncle({node.val}) == {y.val}, color({y.val}) == red, recoloring {y.parent.val} and it\'s children'
+                    + f'{node.parent.val} and {y.val}')
                 node.parent.color = 'black'
                 y.color = 'black'
                 node.parent.parent.color = 'red'
@@ -157,7 +162,8 @@ def fix_rb_tree(node):
                 right_rotate(node)
                 # print(f'fix-5 {node.val}')
             elif node is not rb_tree_root and node.parent is not rb_tree_root:
-                explanation.append(f'Recolor {node.parent.val}, {node.parent.parent.val} and left-rotate on {node.parent.parent.val}')
+                explanation.append(
+                    f'Recolor {node.parent.val}, {node.parent.parent.val} and left-rotate on {node.parent.parent.val}')
                 # print(f'{node.val}-{node.parent.val}-{node.parent.parent.val}')
                 node.parent.color = 'black'
                 node.parent.parent.color = 'red'
@@ -331,7 +337,7 @@ def fix_rb_tree_delete(node):
 
 
 def tree_successor(node):
-    explanation.append(f'Successor of {node.val} is ',False)
+    explanation.append(f'Successor of {node.val} is ', False)
     if type(node.right) is not RBLeaf:
         return tree_minimum(node.right)
     y = node.parent
@@ -343,7 +349,7 @@ def tree_successor(node):
 
 
 def tree_minimum(tree):
-    explanation.append(f'Tree minimum of {tree.val} is ',False)
+    explanation.append(f'Tree minimum of {tree.val} is ', False)
     while type(tree.left) is not RBLeaf:
         tree = tree.left
     explanation.append(f'{tree.val}')
@@ -414,37 +420,35 @@ find_button = tk.Button(frame2, text="Find node", command=lambda: rb_tree_root_f
 clear_button = tk.Button(frame2, text="Clear tree", command=lambda: clear())
 back_button = tk.Button(frame2, text='Back to menu', command=lambda: r.show_frame(m.frame))
 label = tk.Label(frame2)
-add_field.grid(row=0,column=0)
-add_button.grid(row=0,column=1,padx=(0,20))
-delete_field.grid(row=0,column=2)
-delete_button.grid(row=0,column=3,padx=(0,20))
-find_field.grid(row=0,column=4)
-find_button.grid(row=0,column=5,padx=(0,20))
-clear_button.grid(row=0,column=6)
-back_button.grid(row=0,column=7,padx=(40,0))
-label.grid(row=1,columnspan=6,sticky='WE')
+add_field.grid(row=0, column=0)
+add_button.grid(row=0, column=1, padx=(0, 20))
+delete_field.grid(row=0, column=2)
+delete_button.grid(row=0, column=3, padx=(0, 20))
+find_field.grid(row=0, column=4)
+find_button.grid(row=0, column=5, padx=(0, 20))
+clear_button.grid(row=0, column=6)
+back_button.grid(row=0, column=7, padx=(40, 0))
+label.grid(row=1, columnspan=6, sticky='WE')
 frame2.pack()
 
-frame3 = tk.LabelFrame(frame,text='3')
+frame3 = tk.LabelFrame(frame, text='3')
 frame31 = tk.Frame(frame3)
 explanation_title_lab = tk.Label(frame31)
 explanation_label = tk.Label(frame31)
-explanation_label.config(text='',justify=tk.LEFT,width=70)
-explanation_title_lab.config(text='Explanation',font=15)
+explanation_label.config(text='', justify=tk.LEFT, width=70, anchor=tk.W)
+explanation_title_lab.config(text='Explanation', font=15)
 explanation_title_lab.pack()
 explanation_label.pack()
-frame31.grid(row=0,column=0, sticky='NS')
+frame31.grid(row=0, column=0, sticky='NS')
 
 frame32 = tk.Frame(frame3)
-prev_label = tk.Label(frame32,text='Previous state of the tree:')
+prev_label = tk.Label(frame32, text='Previous state of the tree:')
 canvas_prev = tk.Canvas(frame32, width=width, height=height, bg="white")
-now_label = tk.Label(frame32,text='Current state of the tree')
+now_label = tk.Label(frame32, text='Current state of the tree')
 canvas_now = tk.Canvas(frame32, width=width, height=height, bg="white")
-prev_label.pack(pady=(5,0))
+prev_label.pack(pady=(5, 0))
 canvas_prev.pack()
-now_label.pack(pady=(5,0))
+now_label.pack(pady=(5, 0))
 canvas_now.pack()
-frame32.grid(row=0,column=1)
+frame32.grid(row=0, column=1)
 frame3.pack()
-
-

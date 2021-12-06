@@ -1,7 +1,6 @@
 import tkinter as tk
-from tkinter import font
-import root as r
-import menu as m
+import core.root as r
+import core.menu as m
 
 
 class tnode():
