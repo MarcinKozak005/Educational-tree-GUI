@@ -16,6 +16,17 @@ class RBNode:
         self.l_edge = l_edge  # edges for nice tree visualization
         self.r_edge = r_edge  # edges for nice tree visualization
         self.color = "red"
+        # Animation connected
+        self.x_prev = 0
+        self.y_prev = 0
+        self.id_after = None
+
+    def store_position(self, x, y):
+        self.x_prev = self.x
+        self.y_prev = self.y
+        self.x = x
+        self.y = y
+        # print(f'New pos for {self.val} prev:{self.x_prev},{self.y_prev} | act {self.x},{self.y}')
 
 
 class RBLeaf:
@@ -51,6 +62,7 @@ node_size = 26
 half_node_size = node_size / 2
 animation_time = 2000
 animation_unit = 100
+pointer = None
 
 
 def clear():
@@ -62,27 +74,33 @@ def clear():
 
 
 def rb_subtree_add(val, tree):
+    global pointer
     unit = (tree.r_edge - tree.l_edge) / 4
     if val >= tree.val and type(tree.right) != RBLeaf:
         explanation.append(f'{val} >= {tree.val}. Choosing right subtree')
+        move_object(pointer, tree.x, tree.y, tree.right.x, tree.right.y)
         newNode = rb_subtree_add(val, tree.right)
     elif val >= tree.val:
         explanation.append(f'{val} >= {tree.val} and right({tree.val}) == null. Inserting {val} as right of {tree.val}')
         newNode = RBNode(tree.x + unit, tree.y + y_space, val, tree.x, tree.r_edge, tree)
         tree.right = newNode
+        move_object(pointer, tree.x, tree.y, tree.right.x, tree.right.y)
     elif val < tree.val and type(tree.left) != RBLeaf:
         explanation.append(f'{val} < {tree.val}. Choosing left subtree')
+        move_object(pointer, tree.x, tree.y, tree.left.x, tree.left.y)
         newNode = rb_subtree_add(val, tree.left)
     else:
         explanation.append(f'{val} < {tree.val} and left({tree.val}) == null. Inserting {val} as left of {tree.val}')
         newNode = RBNode(tree.x - unit, tree.y + y_space, val, tree.l_edge, tree.x, tree)
         tree.left = newNode
+        move_object(pointer, tree.x, tree.y, tree.left.x, tree.left.y)
     return newNode
 
 
 def rb_tree_root_add(text):
     global rb_tree_root_copy
     global rb_tree_root
+    global pointer
     rb_tree_root_copy = copy.deepcopy(rb_tree_root)
     try:
         val = int(text)
@@ -95,6 +113,9 @@ def rb_tree_root_add(text):
                 rb_tree_root.right = RBLeaf()
                 explanation.append(f'Added node {val}[black]')
             else:
+                pointer = canvas_now.create_rectangle(rb_tree_root.x - half_node_size, rb_tree_root.y - half_node_size,
+                                                      rb_tree_root.x + half_node_size, rb_tree_root.y + half_node_size,
+                                                      outline='red')
                 val = int(text)
                 explanation.append(f'Tree not empty, looking for insert place for {val}[red]')
                 newNode = rb_subtree_add(val, rb_tree_root)
@@ -113,8 +134,8 @@ def rb_tree_root_add(text):
         label.config(text="Now a valid input (int in range 0-999)")
 
     # Terminal visualization
-    # print_tree(rb_tree_root)
-    # print('-------')
+    print_tree(rb_tree_root)
+    print('-------')
 
 
 # Based on Thomas Cormen's Intro. to Algorithms
@@ -359,15 +380,25 @@ def tree_minimum(tree):
 
 
 def rb_tree_root_find(text, show_to_gui=True):
+    global pointer
     explanation.append(f'Looking for a node {text}')
     val = int(text)
     curr = rb_tree_root
+    pointer = canvas_now.create_rectangle(rb_tree_root.x - half_node_size, rb_tree_root.y - half_node_size,
+                                          rb_tree_root.x + half_node_size, rb_tree_root.y + half_node_size,
+                                          outline='red')
     while type(curr) is not RBLeaf and curr.val != val:
-        # path = draw_target_node(curr)
         if curr.val > val:
+            # canvas_now.create_line(curr.x - half_node_size, curr.y, curr.left.x + half_node_size, curr.left.y,
+            #                        fill='red')
+            move_object2(pointer,curr.x,curr.y,curr.left.x,curr.left.y)
             curr = curr.left
             explanation.append(f'{val} < {curr.val}. Choosing left subtree')
+
         elif curr.val <= val:
+            # canvas_now.create_line(curr.x + half_node_size, curr.y, curr.right.x - half_node_size, curr.right.y,
+            #                        fill='red')
+            move_object2(pointer,curr.x,curr.y,curr.right.x,curr.right.y)
             curr = curr.right
             explanation.append(f'{val} >= {curr.val}. Choosing right subtree')
     if show_to_gui:
@@ -391,32 +422,63 @@ def draw_RBNode(node, canvas):
         if type(node.left) is not RBLeaf:
             canvas.create_line(node.x, node.y, node.left.x, node.left.y, fill='black')
 
-        # canvas.create_oval(node.x - half_node_size, node.y - half_node_size, node.x + half_node_size,
-        #                    node.y + half_node_size, fill=node.color,tags='a')
-        # canvas.create_text(node.x, node.y, fill="white", text=node.val,tags='a')
-        a = canvas.create_oval(0, 0, node_size,node_size, fill=node.color, tags=f'{node.__hash__()}')
-        b = canvas.create_text(half_node_size, half_node_size, fill="white", text=node.val, tags=f'{node.__hash__()}')
-        move_object(a, 0, 0, node.x, node.y)
-        move_object(b, 0, 0, node.x, node.y)
+        if node.x != node.x_prev and node.y != node.y_prev:
+            canvas.create_oval(node.x_prev, node.y_prev, node_size, node_size, fill=node.color,
+                               tags=f'Node{node.__hash__()}')
+            canvas.create_text(half_node_size, half_node_size, fill="white", text=node.val,
+                               tags=f'Node{node.__hash__()}')
+            node.store_position(node.x, node.y)
+            move_object(f'Node{node.__hash__()}', 0, 0, node.x - half_node_size, node.y - half_node_size, node)
+        else:
+            frame.after_cancel(node.id_after)
+            canvas.create_oval(node.x - half_node_size, node.y - half_node_size, node.x + half_node_size,
+                               node.y + half_node_size, fill=node.color, tags=f'a{node.__hash__()}')
+            canvas.create_text(node.x, node.y, fill="white", text=node.val, tags=f'a{node.__hash__()}')
 
 
-def move_object(obj,x1,y1,x2,y2):
-    x_diff = abs(x1-x2)
-    y_diff = abs(y1-y2)
-    x_unit = x_diff/(animation_time/animation_unit)
-    y_unit = y_diff/(animation_time/animation_unit)
-    move_tick(obj,x_unit,y_unit,animation_time/animation_unit)
+def move_object2(obj, x1, y1, x2, y2, node=None):
+    global add_button
+    x_diff = x2 - x1
+    y_diff = y2 - y1
+    x_unit = x_diff / (animation_time / animation_unit)
+    y_unit = y_diff / (animation_time / animation_unit)
+    move_tick2(obj, x_unit, y_unit, animation_time / animation_unit, node)
 
-def move_tick(obj,x_unit,y_unit,counter):
+
+def move_tick2(obj, x_unit, y_unit, counter, node):
+    while counter > 0:
+        canvas_now.move(obj, x_unit, y_unit)
+        r.frame.update()
+        if node is None:
+            canvas_now.after(animation_unit)
+        else:
+            node.id_after = canvas_now.after(animation_unit)
+        counter -= 1
+
+
+def move_object(obj, x1, y1, x2, y2, node=None):
+    global add_button
+    x_diff = x2 - x1
+    y_diff = y2 - y1
+    x_unit = x_diff / (animation_time / animation_unit)
+    y_unit = y_diff / (animation_time / animation_unit)
+    move_tick(obj, x_unit, y_unit, animation_time / animation_unit, node)
+
+
+def move_tick(obj, x_unit, y_unit, counter, node):
     if counter <= 0:
         return
-    canvas_now.move(obj,x_unit,y_unit)
-    frame.after(animation_unit,move_tick,obj,x_unit,y_unit,counter-1)
+    canvas_now.move(obj, x_unit, y_unit)
+    if node is None:
+        frame.after(animation_unit, move_tick, obj, x_unit, y_unit, counter - 1, node)
+    else:
+        node.id_after = frame.after(animation_unit, move_tick, obj, x_unit, y_unit, counter - 1, node)
+
 
 # Terminal visualization
 def print_tree(tree, i=0):
     if type(tree) is not RBLeaf:
-        print(' ' * i + f'{tree.val}')
+        print(' ' * i + f'{tree.val} - {tree.x}/{tree.y}')
         i += 1
         print_tree(tree.left, i)
         print_tree(tree.right, i)
