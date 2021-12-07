@@ -20,6 +20,7 @@ class RBNode:
         self.x_prev = 0
         self.y_prev = 0
         self.id_after = None
+        self.animate = True
 
     def store_position(self, x, y):
         self.x_prev = self.x
@@ -78,22 +79,22 @@ def rb_subtree_add(val, tree):
     unit = (tree.r_edge - tree.l_edge) / 4
     if val >= tree.val and type(tree.right) != RBLeaf:
         explanation.append(f'{val} >= {tree.val}. Choosing right subtree')
-        move_object(pointer, tree.x, tree.y, tree.right.x, tree.right.y)
+        move_object2(pointer, tree.x, tree.y, tree.right.x, tree.right.y)
         newNode = rb_subtree_add(val, tree.right)
     elif val >= tree.val:
         explanation.append(f'{val} >= {tree.val} and right({tree.val}) == null. Inserting {val} as right of {tree.val}')
         newNode = RBNode(tree.x + unit, tree.y + y_space, val, tree.x, tree.r_edge, tree)
         tree.right = newNode
-        move_object(pointer, tree.x, tree.y, tree.right.x, tree.right.y)
+        move_object2(pointer, tree.x, tree.y, tree.right.x, tree.right.y)
     elif val < tree.val and type(tree.left) != RBLeaf:
         explanation.append(f'{val} < {tree.val}. Choosing left subtree')
-        move_object(pointer, tree.x, tree.y, tree.left.x, tree.left.y)
+        move_object2(pointer, tree.x, tree.y, tree.left.x, tree.left.y)
         newNode = rb_subtree_add(val, tree.left)
     else:
         explanation.append(f'{val} < {tree.val} and left({tree.val}) == null. Inserting {val} as left of {tree.val}')
         newNode = RBNode(tree.x - unit, tree.y + y_space, val, tree.l_edge, tree.x, tree)
         tree.left = newNode
-        move_object(pointer, tree.x, tree.y, tree.left.x, tree.left.y)
+        move_object2(pointer, tree.x, tree.y, tree.left.x, tree.left.y)
     return newNode
 
 
@@ -120,6 +121,10 @@ def rb_tree_root_add(text):
                 explanation.append(f'Tree not empty, looking for insert place for {val}[red]')
                 newNode = rb_subtree_add(val, rb_tree_root)
                 explanation.append(f'{val}[black] inserted. Starting fixing')
+                # if newNode is not rb_tree_root and newNode.parent.color == 'red':
+                #     draw_rb_tree(rb_tree_root, canvas_now)
+                draw_RBNode(newNode,canvas_now)
+                fhelper()
                 fix_rb_tree(newNode)
             label.config(text='')
             canvas_now.delete("all")
@@ -136,6 +141,12 @@ def rb_tree_root_add(text):
     # Terminal visualization
     print_tree(rb_tree_root)
     print('-------')
+
+
+def fhelper():
+    for i in range(100):
+        r.frame.update()
+        r.frame.after(30)
 
 
 # Based on Thomas Cormen's Intro. to Algorithms
@@ -389,15 +400,10 @@ def rb_tree_root_find(text, show_to_gui=True):
                                           outline='red')
     while type(curr) is not RBLeaf and curr.val != val:
         if curr.val > val:
-            # canvas_now.create_line(curr.x - half_node_size, curr.y, curr.left.x + half_node_size, curr.left.y,
-            #                        fill='red')
             move_object2(pointer,curr.x,curr.y,curr.left.x,curr.left.y)
             curr = curr.left
             explanation.append(f'{val} < {curr.val}. Choosing left subtree')
-
         elif curr.val <= val:
-            # canvas_now.create_line(curr.x + half_node_size, curr.y, curr.right.x - half_node_size, curr.right.y,
-            #                        fill='red')
             move_object2(pointer,curr.x,curr.y,curr.right.x,curr.right.y)
             curr = curr.right
             explanation.append(f'{val} >= {curr.val}. Choosing right subtree')
@@ -422,13 +428,21 @@ def draw_RBNode(node, canvas):
         if type(node.left) is not RBLeaf:
             canvas.create_line(node.x, node.y, node.left.x, node.left.y, fill='black')
 
-        if node.x != node.x_prev and node.y != node.y_prev:
+        # if node.x != node.x_prev and node.y != node.y_prev:
+        #     canvas.create_oval(node.x_prev, node.y_prev, node_size, node_size, fill=node.color,
+        #                        tags=f'Node{node.__hash__()}')
+        #     canvas.create_text(half_node_size, half_node_size, fill="white", text=node.val,
+        #                        tags=f'Node{node.__hash__()}')
+        #     node.store_position(node.x, node.y)
+        #     move_object(f'Node{node.__hash__()}', 0, 0, node.x - half_node_size, node.y - half_node_size, node)
+        if node.animate:
             canvas.create_oval(node.x_prev, node.y_prev, node_size, node_size, fill=node.color,
-                               tags=f'Node{node.__hash__()}')
+                                   tags=f'Node{node.__hash__()}')
             canvas.create_text(half_node_size, half_node_size, fill="white", text=node.val,
-                               tags=f'Node{node.__hash__()}')
+                                   tags=f'Node{node.__hash__()}')
             node.store_position(node.x, node.y)
             move_object(f'Node{node.__hash__()}', 0, 0, node.x - half_node_size, node.y - half_node_size, node)
+            node.animate = False
         else:
             frame.after_cancel(node.id_after)
             canvas.create_oval(node.x - half_node_size, node.y - half_node_size, node.x + half_node_size,
