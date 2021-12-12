@@ -1,8 +1,8 @@
 import tkinter as tk
 
 
-def show_frame(frame):
-    frame.tkraise()
+def show_frame(f):
+    f.tkraise()
 
 
 frame = tk.Tk()
