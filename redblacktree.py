@@ -17,17 +17,9 @@ class RBNode:
         self.r_edge = r_edge  # edges for nice tree visualization
         self.color = 'red'
         # Animation connected
-        self.x_prev = 0
-        self.y_prev = 0
-        self.id_after = None
+        self.x_next = 0
+        self.y_next = 0
         self.animate = True
-
-    def store_position(self, x, y):
-        self.x_prev = self.x
-        self.y_prev = self.y
-        self.x = x
-        self.y = y
-        # print(f'New pos for {self.val} prev:{self.x_prev},{self.y_prev} | act {self.x},{self.y}')
 
 
 class RBLeaf:
@@ -72,7 +64,6 @@ def clear():
     canvas_prev.delete('all')
     canvas_now.delete('all')
     explanation_label.config(text='')
-    # print('########') # terminal visualization
 
 
 def rb_subtree_insert(val, tree):
@@ -104,6 +95,7 @@ def rb_tree_root_insert(text):
     global hint_frame
     insert_button.config(state='disabled')
     rb_tree_root_copy = copy.deepcopy(rb_tree_root)
+
     if text.isdigit() and 0 <= int(text) <= 999:
         val = int(text)
         if rb_tree_root is None:
@@ -211,6 +203,42 @@ def left_rotate(node):
     y.left = node
     node.parent = y
     update_positions(y)
+    animate_rotations(y)
+
+
+def animate_rotations(node):
+    tmp = animation_time / animation_unit
+    x_unit = (node.x_next - node.x) / tmp
+    y_unit = (node.y_next - node.y) / tmp
+    if type(node.left) is not RBLeaf:
+        x_l_unit = (node.left.x_next - node.left.x) / tmp
+        y_l_unit = (node.left.y_next - node.left.y) / tmp
+    if type(node.right) is not RBLeaf:
+        x_r_unit = (node.right.x_next - node.right.x) / tmp
+        y_r_unit = (node.right.y_next - node.right.y) / tmp
+    while tmp > 0:
+        rotation_tick(node, x_unit, y_unit)
+        if type(node.left) is not RBLeaf:
+            rotation_tick(node.left, x_l_unit, y_l_unit)
+        if type(node.right) is not RBLeaf:
+            rotation_tick(node.right, x_r_unit, y_r_unit)
+        r.frame.after(animation_unit)
+        r.frame.update()
+        tmp -= 1
+
+
+def rotation_tick(node, x_unit, y_unit):
+    canvas_now.delete(f'Line{node.__hash__()}')
+    canvas_now.delete(f'Line{node.parent.__hash__()}')
+    canvas_now.move(f'Node{node.__hash__()}', x_unit, y_unit)
+    node.x += x_unit
+    node.y += y_unit
+    draw_line(canvas_now, node, node.right, tags=[f'Line{node.__hash__()}', 'Line'])
+    draw_line(canvas_now, node, node.left, tags=[f'Line{node.__hash__()}', 'Line'])
+    if node.parent is not None:
+        draw_line(canvas_now, node.parent, node.parent.right, tags=[f'Line{node.parent.__hash__()}', 'Line'])
+        draw_line(canvas_now, node.parent, node.parent.left, tags=[f'Line{node.parent.__hash__()}', 'Line'])
+    canvas_now.tag_lower('Line')
 
 
 # Based on Thomas Cormen's Intro. to Algorithms
@@ -234,6 +262,7 @@ def right_rotate(node):
     y.right = node
     node.parent = y
     update_positions(y)
+    animate_rotations(y)
 
 
 # Cavas vizualisation - place nodes in correct spots
@@ -241,18 +270,18 @@ def update_positions(node):
     if type(node) != RBLeaf and node is not rb_tree_root:
         unit = (node.parent.r_edge - node.parent.l_edge) / 4
         if node is node.parent.right:
-            node.x = node.parent.x + unit
-            node.y = node.parent.y + y_space
-            node.l_edge = node.parent.x
+            node.x_next = node.parent.x_next + unit
+            node.y_next = node.parent.y_next + y_space
+            node.l_edge = node.parent.x_next
             node.r_edge = node.parent.r_edge
         elif node is node.parent.left:
-            node.x = node.parent.x - unit
-            node.y = node.parent.y + y_space
+            node.x_next = node.parent.x_next - unit
+            node.y_next = node.parent.y_next + y_space
             node.l_edge = node.parent.l_edge
-            node.r_edge = node.parent.x
+            node.r_edge = node.parent.x_next
     elif node is rb_tree_root:
-        node.x = width // 2
-        node.y = y_space
+        node.x_next = width // 2
+        node.y_next = y_space
         node.l_edge = 0
         node.r_edge = width
     if type(node) != RBLeaf:
@@ -420,15 +449,15 @@ def draw_rb_tree(tree, canvas):
 def draw_RBNode(node, canvas):
     if type(node) is not RBLeaf:
         if type(node.right) is not RBLeaf:
-            canvas.create_line(node.x, node.y, node.right.x, node.right.y, fill='black')
+            draw_line(canvas, node, node.right, tags=[f'Line{node.__hash__()}', 'Line'])
         if type(node.left) is not RBLeaf:
-            canvas.create_line(node.x, node.y, node.left.x, node.left.y, fill='black')
+            draw_line(canvas, node, node.left, tags=[f'Line{node.__hash__()}', 'Line'])
         if node.animate:
-            canvas.create_oval(node.x_prev, node.y_prev, node_size, node_size, fill=node.color,
+            canvas.create_oval(0, 0, node_size, node_size, fill=node.color,
                                tags=f'Node{node.__hash__()}')
             canvas.create_text(half_node_size, half_node_size, fill='white', text=node.val,
                                tags=f'Node{node.__hash__()}')
-            node.store_position(node.x, node.y)
+            # node.store_position(node.x, node.y)
             move_object(f'Node{node.__hash__()}', 0, 0, node.x - half_node_size, node.y - half_node_size)
             node.animate = False
         else:
@@ -436,6 +465,11 @@ def draw_RBNode(node, canvas):
             canvas.create_oval(node.x - half_node_size, node.y - half_node_size, node.x + half_node_size,
                                node.y + half_node_size, fill=node.color, tags=f'Node{node.__hash__()}')
             canvas.create_text(node.x, node.y, fill='white', text=node.val, tags=f'Node{node.__hash__()}')
+
+
+def draw_line(canvas, node1, node2, tags=None):
+    if node1 is not None and node2 is not None and type(node1) is not RBLeaf and type(node2) is not RBLeaf:
+        canvas.create_line(node1.x, node1.y, node2.x, node2.y, fill='black', tags=tags)
 
 
 def move_object(obj, x1, y1, x2, y2):
