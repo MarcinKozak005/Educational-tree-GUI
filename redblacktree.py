@@ -17,9 +17,18 @@ class RBNode:
         self.r_edge = r_edge  # edges for nice tree visualization
         self.color = 'red'
         # Animation connected
-        self.x_next = 0
-        self.y_next = 0
+        self.x_next = x
+        self.y_next = y
         self.animate = True
+
+    def successors(self):
+        result = []
+        if type(self.left) is RBNode:
+            result += self.left.successors()
+        if type(self.right) is RBNode:
+            result += self.right.successors()
+        result.append(self)
+        return result
 
 
 class RBLeaf:
@@ -53,8 +62,8 @@ width = 800
 height = 300
 node_size = 26
 half_node_size = node_size / 2
-animation_time = 2000
-animation_unit = 100
+animation_time = 200
+animation_unit = 10
 hint_frame = None
 
 
@@ -72,7 +81,7 @@ def rb_subtree_insert(val, tree):
         exp_str = f'{val} >= {tree.val}. Choosing right subtree'
         canvas_now.create_text(tree.x, tree.y - node_size, fill='black', text=exp_str, tags='str')
         r.frame.update()
-        r.frame.after(2000)
+        r.frame.after(animation_time)
         canvas_now.delete('str')
         explanation.append(exp_str)
         move_object(hint_frame, tree.x, tree.y, tree.right.x, tree.right.y)
@@ -81,7 +90,7 @@ def rb_subtree_insert(val, tree):
         exp_str = f'{val} >= {tree.val} and right({tree.val}) == null. Inserting {val} as right of {tree.val}'
         canvas_now.create_text(tree.x, tree.y - node_size, fill='black', text=exp_str, tags='str')
         r.frame.update()
-        r.frame.after(2000)
+        r.frame.after(animation_time)
         canvas_now.delete('str')
         explanation.append(exp_str)
         newNode = RBNode(tree.x + unit, tree.y + y_space, val, tree.x, tree.r_edge, tree)
@@ -91,7 +100,7 @@ def rb_subtree_insert(val, tree):
         exp_str = f'{val} < {tree.val}. Choosing left subtree'
         canvas_now.create_text(tree.x, tree.y - node_size, fill='black', text=exp_str, tags='str')
         r.frame.update()
-        r.frame.after(2000)
+        r.frame.after(animation_time)
         canvas_now.delete('str')
         explanation.append(exp_str)
         move_object(hint_frame, tree.x, tree.y, tree.left.x, tree.left.y)
@@ -100,7 +109,7 @@ def rb_subtree_insert(val, tree):
         exp_str = f'{val} < {tree.val} and left({tree.val}) == null. Inserting {val} as left of {tree.val}'
         canvas_now.create_text(tree.x, tree.y - node_size, fill='black', text=exp_str, tags='str')
         r.frame.update()
-        r.frame.after(2000)
+        r.frame.after(animation_time)
         canvas_now.delete('str')
         explanation.append(exp_str)
         newNode = RBNode(tree.x - unit, tree.y + y_space, val, tree.l_edge, tree.x, tree)
@@ -108,7 +117,7 @@ def rb_subtree_insert(val, tree):
         move_object(hint_frame, tree.x, tree.y, tree.left.x, tree.left.y)
     canvas_now.create_text(newNode.x, newNode.y - node_size, fill='black', text='Inserting', tags='str')
     r.frame.update()
-    r.frame.after(2000)
+    r.frame.after(animation_time)
     canvas_now.delete('str')
     return newNode
 
@@ -146,6 +155,7 @@ def rb_tree_root_insert(text):
     else:
         label.config(text='INSERT: Not a valid input (integer in range 0-999)')
     insert_button.config(state='normal')
+    print('----')
 
 
 # Based on Thomas Cormen's Intro. to Algorithms
@@ -211,7 +221,7 @@ def left_rotate(node):
     exp_str = f'Left-rotate on {node.val}'
     canvas_now.create_text(node.x, node.y - node_size, fill='black', text=exp_str, tags='str')
     r.frame.update()
-    r.frame.after(2000)
+    r.frame.after(animation_time)
     canvas_now.delete('str')
     global rb_tree_root
     y = node.right
@@ -231,26 +241,21 @@ def left_rotate(node):
         # print(f'lr-4 {node.val}')
     y.left = node
     node.parent = y
-    update_positions(y)
+    update_positions(rb_tree_root)
     animate_rotations(y)
 
 
 def animate_rotations(node):
+    successors = node.successors()
+    units = {}
     tmp = animation_time / animation_unit
-    x_unit = (node.x_next - node.x) / tmp
-    y_unit = (node.y_next - node.y) / tmp
-    if type(node.left) is not RBLeaf:
-        x_l_unit = (node.left.x_next - node.left.x) / tmp
-        y_l_unit = (node.left.y_next - node.left.y) / tmp
-    if type(node.right) is not RBLeaf:
-        x_r_unit = (node.right.x_next - node.right.x) / tmp
-        y_r_unit = (node.right.y_next - node.right.y) / tmp
+    for s in successors:
+        x_unit = (s.x_next - s.x) / tmp
+        y_unit = (s.y_next - s.y) / tmp
+        units[s] = (x_unit, y_unit)
     while tmp > 0:
-        rotation_tick(node, x_unit, y_unit)
-        if type(node.left) is not RBLeaf:
-            rotation_tick(node.left, x_l_unit, y_l_unit)
-        if type(node.right) is not RBLeaf:
-            rotation_tick(node.right, x_r_unit, y_r_unit)
+        for s in successors:
+            rotation_tick(s, units[s][0], units[s][1])
         r.frame.after(animation_unit)
         r.frame.update()
         tmp -= 1
@@ -275,7 +280,7 @@ def right_rotate(node):
     exp_str = f'Right-rotate on {node.val}'
     canvas_now.create_text(node.x, node.y - node_size, fill='black', text=exp_str, tags='str')
     r.frame.update()
-    r.frame.after(2000)
+    r.frame.after(animation_time)
     canvas_now.delete('str')
     global rb_tree_root
     y = node.left
@@ -295,13 +300,15 @@ def right_rotate(node):
         # print(f'rr-4 {node.val}')
     y.right = node
     node.parent = y
-    update_positions(y)
+    update_positions(rb_tree_root)
     animate_rotations(y)
 
 
 # Cavas vizualisation - place nodes in correct spots
 def update_positions(node):
-    if type(node) != RBLeaf and node is not rb_tree_root:
+    # if type(node) is RBNode:
+        # print(f'Pre: {node.val} -- [{node.x},{node.y}] {node.l_edge}|{node.r_edge}')
+    if type(node) is RBNode and node is not rb_tree_root:
         unit = (node.parent.r_edge - node.parent.l_edge) / 4
         if node is node.parent.right:
             node.x_next = node.parent.x_next + unit
@@ -318,7 +325,8 @@ def update_positions(node):
         node.y_next = y_space
         node.l_edge = 0
         node.r_edge = width
-    if type(node) != RBLeaf:
+    if type(node) is RBNode:
+        # print(f'Post: {node.val} -- [{node.x},{node.y}] {node.l_edge}|{node.r_edge}')
         update_positions(node.left)
         update_positions(node.right)
 
