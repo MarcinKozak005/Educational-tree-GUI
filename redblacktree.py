@@ -62,8 +62,8 @@ width = 800
 height = 300
 node_size = 26
 half_node_size = node_size / 2
-animation_time = 2000
-animation_unit = 100
+animation_time = 200
+animation_unit = 10
 hint_frame = None
 grey_node = None
 y_above = 30
@@ -535,7 +535,7 @@ def rb_tree_root_find(text, show_to_gui=True):
                                                  rb_tree_root.x + half_node_size, rb_tree_root.y + half_node_size,
                                                  outline='red')
         while type(curr) is not RBLeaf and curr.val != val:
-            if curr.val > val:
+            if curr.val > val and type(curr.left) is RBNode:
                 exp_string = f'{val} < {curr.val}. Choosing left subtree'
                 canvas_now.create_text(curr.x, curr.y - node_size, fill='black', text=exp_string, tags='str')
                 r.frame.update()
@@ -544,7 +544,23 @@ def rb_tree_root_find(text, show_to_gui=True):
                 move_object(hint_frame, curr.x, curr.y, curr.left.x, curr.left.y)
                 curr = curr.left
                 explanation.append(exp_string)
-            elif curr.val <= val:
+            elif curr.val > val:
+                exp_string = f'{val} < {curr.val}. Choosing left subtree'
+                canvas_now.create_text(curr.x, curr.y - node_size, fill='black', text=exp_string, tags='str')
+                r.frame.update()
+                r.frame.after(1000)
+                canvas_now.delete('str')
+                unit = (curr.r_edge - curr.l_edge) / 4
+                move_object(hint_frame, curr.x, curr.y, curr.x - unit, curr.y + y_space)
+                explanation.append(exp_string)
+                canvas_now.create_text(curr.x - unit, curr.y + y_space - half_node_size*1.75, fill='black', text='Element not found', tags='str')
+                r.frame.update()
+                r.frame.after(1000)
+                find_button.config(state='normal')
+                canvas_now.delete(hint_frame)
+                canvas_now.delete('str')
+                return None
+            elif curr.val <= val and type(curr.right) is RBNode:
                 exp_string = f'{val} >= {curr.val}. Choosing right subtree'
                 canvas_now.create_text(curr.x, curr.y - node_size, fill='black', text=exp_string, tags='str')
                 r.frame.update()
@@ -553,6 +569,22 @@ def rb_tree_root_find(text, show_to_gui=True):
                 move_object(hint_frame, curr.x, curr.y, curr.right.x, curr.right.y)
                 curr = curr.right
                 explanation.append(exp_string)
+            elif curr.val <= val:
+                exp_string = f'{val} >= {curr.val}. Choosing right subtree'
+                canvas_now.create_text(curr.x, curr.y - node_size, fill='black', text=exp_string, tags='str')
+                r.frame.update()
+                r.frame.after(1000)
+                canvas_now.delete('str')
+                unit = (curr.r_edge - curr.l_edge) / 4
+                move_object(hint_frame, curr.x, curr.y, curr.x + unit, curr.y + y_space)
+                explanation.append(exp_string)
+                canvas_now.create_text(curr.x + unit, curr.y + y_space - half_node_size*1.75, fill='black', text='Element not found',tags='str')
+                r.frame.update()
+                r.frame.after(1000)
+                find_button.config(state='normal')
+                canvas_now.delete(hint_frame)
+                canvas_now.delete('str')
+                return None
         exp_string = f'Found'
         canvas_now.create_text(curr.x, curr.y - node_size, fill='black', text=exp_string, tags='str')
         r.frame.update()
