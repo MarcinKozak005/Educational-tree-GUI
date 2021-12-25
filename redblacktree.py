@@ -62,8 +62,8 @@ width = 800
 height = 300
 node_size = 26
 half_node_size = node_size / 2
-animation_time = 200
-animation_unit = 10
+animation_time = 2000
+animation_unit = 100
 hint_frame = None
 
 
@@ -172,6 +172,16 @@ def fix_rb_tree_insert(node):
                 node.parent.color = 'black'
                 y.color = 'black'
                 node.parent.parent.color = 'red'
+                if node.parent is not None:
+                    canvas_now.create_text(node.parent.x, node.parent.y - node_size, fill='black', text="Recolor", tags='str')
+                if y is not None:
+                    canvas_now.create_text(y.x, y.y - node_size, fill='black', text="Recolor",tags='str')
+                if node.parent.parent is not None:
+                    canvas_now.create_text(node.parent.parent.x, node.parent.parent.y - node_size, fill='black', text="Recolor",
+                                       tags='str')
+                r.frame.update()
+                r.frame.after(animation_time)
+                canvas_now.delete('str')
                 node = node.parent.parent
                 # print(f'fix-1 {node.val}')
             elif node == node.parent.right:
@@ -186,6 +196,16 @@ def fix_rb_tree_insert(node):
                 node.parent.color = 'black'
                 node.parent.parent.color = 'red'
                 right_rotate(node.parent.parent)
+                if node.parent is not None:
+                    canvas_now.create_text(node.parent.x, node.parent.y - node_size, fill='black', text="Recolor",
+                                       tags='str')
+                if node.parent.parent is not None:
+                    canvas_now.create_text(node.parent.parent.x, node.parent.parent.y - node_size, fill='black',
+                                       text="Recolor",
+                                       tags='str')
+                r.frame.update()
+                r.frame.after(animation_time)
+                canvas_now.delete('str')
                 # print(f'fix-3 {node.val}')
         else:
             explanation.append(f'{node.parent.val} is right child of {node.parent.parent.val}, ', False)
@@ -197,6 +217,18 @@ def fix_rb_tree_insert(node):
                 node.parent.color = 'black'
                 y.color = 'black'
                 node.parent.parent.color = 'red'
+                if node.parent is not None:
+                    canvas_now.create_text(node.parent.x, node.parent.y - node_size, fill='black', text="Recolor",
+                                       tags='str')
+                if y is not None:
+                    canvas_now.create_text(y.x, y.y - node_size, fill='black', text="Recolor", tags='str')
+                if node.parent.parent is not None:
+                    canvas_now.create_text(node.parent.parent.x, node.parent.parent.y - node_size, fill='black',
+                                       text="Recolor",
+                                       tags='str')
+                r.frame.update()
+                r.frame.after(animation_time)
+                canvas_now.delete('str')
                 node = node.parent.parent
                 # print(f'fix-4 {node.val}')
             elif node == node.parent.left:
@@ -211,6 +243,16 @@ def fix_rb_tree_insert(node):
                 node.parent.color = 'black'
                 node.parent.parent.color = 'red'
                 left_rotate(node.parent.parent)
+                if node.parent is not None:
+                    canvas_now.create_text(node.parent.x, node.parent.y - node_size, fill='black', text="Recolor",
+                                       tags='str')
+                if node.parent.parent is not None:
+                    canvas_now.create_text(node.parent.parent.x, node.parent.parent.y - node_size, fill='black',
+                                       text="Recolor",
+                                       tags='str')
+                r.frame.update()
+                r.frame.after(animation_time)
+                canvas_now.delete('str')
                 # print(f'fix-6 {node.val}')
     explanation.append(f'Set color({rb_tree_root.val}) = black')
     rb_tree_root.color = 'black'
