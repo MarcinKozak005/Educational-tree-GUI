@@ -85,6 +85,13 @@ def draw_exp_text(node, exp_str, above=True):
     explanation.append(exp_str)
 
 
+def draw_recolor_text(node,to_color):
+    if type(node) is RBNode:
+        txt = canvas_now.create_text(node.x, node.y - node_size, fill='white', text=f'Change color to {to_color}', tags='recolor_txt')
+        txt_bg = canvas_now.create_rectangle(canvas_now.bbox(txt), fill="grey", tags='recolor_txt')
+        canvas_now.tag_lower(txt_bg)
+
+
 def rb_subtree_insert(val, tree):
     unit = (tree.r_edge - tree.l_edge) / 4
     if val >= tree.val and type(tree.right) == RBNode:
@@ -137,7 +144,7 @@ def rb_tree_root_insert(text):
             canvas_now.create_text(rb_tree_root.x, rb_tree_root.y - y_above, fill='white', text=val, tags=f'grey_node')
             newNode = rb_subtree_insert(val, rb_tree_root)
             explanation.append(f'{val}[black] inserted. Starting fixing')
-            draw_RBNode(newNode, canvas_now)
+            draw_subtree(newNode, canvas_now)
             canvas_now.delete('grey_node')
             draw_line(canvas_now, newNode, newNode.parent, tags=[f'Line{newNode.__hash__()}', 'Line'])
             canvas_now.tag_lower(f'Line{newNode.__hash__()}')
@@ -168,22 +175,15 @@ def fix_rb_tree_insert(node):
                 node.parent.color = 'black'
                 y.color = 'black'
                 node.parent.parent.color = 'red'
-                if node.parent is not None:
-                    canvas_now.create_text(node.parent.x, node.parent.y - node_size, fill='black', text="Recolor",
-                                           tags='str')
-                canvas_now.create_text(y.x, y.y - node_size, fill='black', text="Recolor", tags='str')
-                if node.parent.parent is not None:
-                    canvas_now.create_text(node.parent.parent.x, node.parent.parent.y - node_size, fill='black',
-                                           text="Recolor",
-                                           tags='str')
+                draw_recolor_text(node.parent, 'black')
+                draw_recolor_text(y, 'black')
+                draw_recolor_text(node.parent.parent, 'red')
                 r.frame.update()
                 r.frame.after(animation_time)
-                if node.parent is not None:
-                    tmp_draw(node.parent, canvas_now)
-                tmp_draw(y, canvas_now)
-                if node.parent.parent is not None:
-                    tmp_draw(node.parent.parent, canvas_now)
-                canvas_now.delete('str')
+                draw_node(node.parent, canvas_now)
+                draw_node(y, canvas_now)
+                draw_node(node.parent.parent, canvas_now)
+                canvas_now.delete('recolor_txt')
                 node = node.parent.parent
                 # print(f'fix-1 {node.val}')
             elif node == node.parent.right:
@@ -196,24 +196,16 @@ def fix_rb_tree_insert(node):
                     f'Recolor {node.parent.val}, {node.parent.parent.val} and right-rotate on {node.parent.parent.val}')
                 # print(f'{node.val}-{node.parent.val}-{node.parent.parent.val}')
                 node.parent.color = 'black'
-                tmp_node1 = node.parent
                 node.parent.parent.color = 'red'
-                tmp_node2 = node.parent.parent
+                tmp_node1, tmp_node2 = node.parent, node.parent.parent
                 right_rotate(node.parent.parent)
-                if tmp_node1 is not None:
-                    canvas_now.create_text(tmp_node1.x, tmp_node1.y - node_size, fill='black', text="Recolor",
-                                           tags='str')
-                if tmp_node2 is not None:
-                    canvas_now.create_text(tmp_node2.x, tmp_node2.y - node_size, fill='black',
-                                           text="Recolor",
-                                           tags='str')
+                draw_recolor_text(tmp_node1,'black')
+                draw_recolor_text(tmp_node2, 'red')
                 r.frame.update()
                 r.frame.after(animation_time)
-                if tmp_node1 is not None:
-                    tmp_draw(tmp_node1, canvas_now)
-                if tmp_node2 is not None:
-                    tmp_draw(tmp_node2, canvas_now)
-                canvas_now.delete('str')
+                draw_node(tmp_node1, canvas_now)
+                draw_node(tmp_node2, canvas_now)
+                canvas_now.delete('recolor_txt')
                 # print(f'fix-3 {node.val}')
         else:
             explanation.append(f'{node.parent.val} is right child of {node.parent.parent.val}, ', False)
@@ -225,22 +217,15 @@ def fix_rb_tree_insert(node):
                 node.parent.color = 'black'
                 y.color = 'black'
                 node.parent.parent.color = 'red'
-                if node.parent is not None:
-                    canvas_now.create_text(node.parent.x, node.parent.y - node_size, fill='black', text="Recolor",
-                                           tags='str')
-                canvas_now.create_text(y.x, y.y - node_size, fill='black', text="Recolor", tags='str')
-                if node.parent.parent is not None:
-                    canvas_now.create_text(node.parent.parent.x, node.parent.parent.y - node_size, fill='black',
-                                           text="Recolor",
-                                           tags='str')
+                draw_recolor_text(node.parent, 'black')
+                draw_recolor_text(y, 'black')
+                draw_recolor_text(node.parent.parent, 'red')
                 r.frame.update()
                 r.frame.after(animation_time)
-                if node.parent is not None:
-                    tmp_draw(node.parent, canvas_now)
-                tmp_draw(y, canvas_now)
-                if node.parent.parent is not None:
-                    tmp_draw(node.parent.parent, canvas_now)
-                canvas_now.delete('str')
+                draw_node(node.parent, canvas_now)
+                draw_node(y, canvas_now)
+                draw_node(node.parent.parent, canvas_now)
+                canvas_now.delete('recolor_txt')
                 node = node.parent.parent
                 # print(f'fix-4 {node.val}')
             elif node == node.parent.left:
@@ -253,34 +238,22 @@ def fix_rb_tree_insert(node):
                     f'Recolor {node.parent.val}, {node.parent.parent.val} and left-rotate on {node.parent.parent.val}')
                 # print(f'{node.val}-{node.parent.val}-{node.parent.parent.val}')
                 node.parent.color = 'black'
-                tmp_node1 = node.parent
                 node.parent.parent.color = 'red'
-                tmp_node2 = node.parent.parent
+                tmp_node1, tmp_node2 = node.parent, node.parent.parent
                 left_rotate(node.parent.parent)
-                if tmp_node1 is not None:
-                    canvas_now.create_text(tmp_node1.x, tmp_node1.y - node_size, fill='black', text="Recolor",
-                                           tags='str')
-                if tmp_node2 is not None:
-                    canvas_now.create_text(tmp_node2.x, tmp_node2.y - node_size, fill='black',
-                                           text="Recolor",
-                                           tags='str')
+                draw_recolor_text(tmp_node1,'black')
+                draw_recolor_text(tmp_node2,'red')
                 r.frame.update()
                 r.frame.after(animation_time)
-                if tmp_node1 is not None:
-                    tmp_draw(tmp_node1, canvas_now)
-                if tmp_node2 is not None:
-                    tmp_draw(tmp_node2, canvas_now)
-                canvas_now.delete('str')
-
+                draw_node(tmp_node1, canvas_now)
+                draw_node(tmp_node2, canvas_now)
+                canvas_now.delete('recolor_txt')
                 # print(f'fix-6 {node.val}')
     explanation.append(f'Set color({rb_tree_root.val}) = black')
     if rb_tree_root.color != 'black':
-        canvas_now.create_text(rb_tree_root.x, rb_tree_root.y - node_size, fill='black',
-                               text="Recolor",
-                               tags='str')
+        draw_recolor_text(rb_tree_root,'black')
         r.frame.update()
         r.frame.after(animation_time)
-        canvas_now.delete('str')
     rb_tree_root.color = 'black'
 
 
@@ -392,7 +365,6 @@ def update_positions(node):
 def rb_tree_root_delete(text):
     global rb_tree_root
     global rb_tree_root_copy
-    fix_happened = False
     delete_button.config(state='disabled')
     rb_tree_root_copy = copy.deepcopy(rb_tree_root)
     node = rb_tree_root_find(text, False)
@@ -418,13 +390,11 @@ def rb_tree_root_delete(text):
             else:
                 draw_exp_text(node, f'We are looking for the successor of {node.val}')
                 y = tree_successor(node)
-            # ----
             if type(y.left) is not RBLeaf:
                 x = y.left
             else:
                 x = y.right
             x.parent = y.parent
-            # ---
             if y.parent is None:
                 explanation.append(f'Change of the root {x.val if type(x) is RBNode else ""}')
                 rb_tree_root = x
@@ -432,42 +402,31 @@ def rb_tree_root_delete(text):
                 y.parent.left = x
             else:
                 y.parent.right = x
-            # --- ########################################################
-            canvas_now.delete(f'Line{y.__hash__()}') # Potrzebne?
+            canvas_now.delete(f'Line{y.__hash__()}')
             update_positions(rb_tree_root)
-            # animate_rotations(rb_tree_root) # Potrzebne?
-            # ---
             if y is not node:
                 explanation.append(f'Swap of {node.val} and {y.val}')
                 canvas_now.create_oval(node.x - half_node_size, node.y - half_node_size, node.x + half_node_size,
-                                   node.y + half_node_size, fill=node.color, tags=f'tmp1')
-                tmp1 = canvas_now.create_oval(y.x - half_node_size, y.y - half_node_size, y.x + half_node_size,
-                                       y.y + half_node_size, fill=y.color, tags=f'Node{y.__hash__()}')
-                txt1 = canvas_now.create_text(node.x, node.y, fill='blue', text=node.val, tags=f'Node{y.__hash__()}')
-                txt2 = canvas_now.create_text(y.x, y.y, fill='blue', text=y.val, tags=f'tmp1')
+                                   node.y + half_node_size, fill=node.color, tags='swap1')
+                canvas_now.create_oval(y.x - half_node_size, y.y - half_node_size, y.x + half_node_size,
+                                       y.y + half_node_size, fill=y.color, tags='swap2')
+                txt1 = canvas_now.create_text(node.x, node.y, fill='blue', text=node.val, tags='swap2')
+                txt2 = canvas_now.create_text(y.x, y.y, fill='blue', text=y.val, tags='swap1')
                 move_object(txt1, node.x, node.y, y.x, y.y)
                 move_object(txt2, y.x, y.y, node.x, node.y)
                 node.val = y.val
-                # canvas_now.delete(tmp1)
-                canvas_now.delete(f'tmp1')
-                tmp_draw(node,canvas_now)
-            move_object(f'Node{y.__hash__()}',y.x,y.y,y.x, 0)
-
-            # ---
+                canvas_now.delete('swap1')
+                draw_node(node, canvas_now)
+            move_object('swap2',y.x,y.y,y.x, 0)
             if y.color == 'black':
                 explanation.append(
                     f'color({y.val if type(y) is RBNode else ""}) == black, starting fixing for {x.val if type(x) is RBNode else ""}')
                 fix_rb_tree_delete(x)
-                fix_happened = True
-            if fix_happened:
                 animate_rotations(rb_tree_root)
-                if x is RBNode:
-                    canvas_now.create_text(x.x, x.y - node_size, fill='black',
-                                       text="Recolor",
-                                       tags='str')
+                draw_recolor_text(x,'black')
                 r.frame.update()
                 r.frame.after(animation_time)
-                canvas_now.delete('str')
+                canvas_now.delete('recolor_txt')
             label.config(text='')
             canvas_now.delete('all')
             canvas_prev.delete('all')
@@ -490,153 +449,101 @@ def fix_rb_tree_delete(node):
             w = node.parent.right
             if type(w) is not RBLeaf and w.color == 'red':
                 w.color = 'black'
-                ww = w
                 node.parent.color = 'red'
-                np = node.parent
+                tmp_node1, tmp_node2 = w, node.parent
                 left_rotate(node.parent)
-                if type(ww) is RBNode:
-                    canvas_now.create_text(ww.x, ww.y - node_size, fill='black', text="Recolor",
-                                           tags='str')
-                if type(np) is RBNode:
-                    canvas_now.create_text(np.x, np.y - node_size, fill='black', text="Recolor",
-                                           tags='str')
+                draw_recolor_text(tmp_node1, 'black')
+                draw_recolor_text(tmp_node2, 'red')
                 r.frame.update()
                 r.frame.after(animation_time)
-                if type(ww) is RBNode:
-                    tmp_draw(ww, canvas_now)
-                if type(np) is RBNode:
-                    tmp_draw(np, canvas_now)
-                canvas_now.delete('str')
+                draw_node(tmp_node1, canvas_now)
+                draw_node(tmp_node2, canvas_now)
+                canvas_now.delete('recolor_txt')
                 w = node.parent.right
             if type(w) is not RBLeaf and w.left.color == 'black' and w.right.color == 'black':
                 w.color = 'red'
-                if type(w) is RBNode:
-                    canvas_now.create_text(w.x, w.y - node_size, fill='black', text="Recolor",
-                                           tags='str')
+                draw_recolor_text(w,'red')
                 r.frame.update()
                 r.frame.after(animation_time)
-                if type(w) is RBNode:
-                    tmp_draw(w, canvas_now)
-                canvas_now.delete('str')
+                draw_node(w, canvas_now)
+                canvas_now.delete('recolor_txt')
                 node = node.parent
             elif type(w) is not RBLeaf and w.right.color == 'black':
-                w.left.color = 'black' #TUUUUUUU
-                wl = w.left
+                w.left.color = 'black'
                 w.color = 'red'
-                ww = w
+                tmp_node1, tmp_node2 = w.left, w
                 right_rotate(w)
-                if type(wl) is RBNode:
-                    canvas_now.create_text(wl.x, wl.y - node_size, fill='black', text="Recolor",
-                                           tags='str')
-                if type(ww) is RBNode:
-                    canvas_now.create_text(ww.x, ww.y - node_size, fill='black', text="Recolor",
-                                           tags='str')
+                draw_recolor_text(tmp_node1,'black')
+                draw_recolor_text(tmp_node2,'red')
                 r.frame.update()
                 r.frame.after(animation_time)
-                if type(ww) is RBNode:
-                    tmp_draw(ww, canvas_now)
-                if type(wl) is RBNode:
-                    tmp_draw(wl, canvas_now)
-                canvas_now.delete('str')
+                draw_node(tmp_node1, canvas_now)
+                draw_node(tmp_node2, canvas_now)
+                canvas_now.delete('recolor_txt')
                 w = node.parent.right
             if node is not rb_tree_root:
                 w.color = node.parent.color
                 node.parent.color = 'black'
-                np = node.parent
                 w.right.color = 'black'
-                wr = w.right
+                tmp_node1, tmp_node2 = w, w.right
                 left_rotate(node.parent)
-                if type(np) is RBNode:
-                    canvas_now.create_text(np.x, np.y - node_size, fill='black',
-                                           text="Recolor",
-                                           tags='str')
-                if type(wr) is RBNode:
-                    canvas_now.create_text(wr.x, wr.y - node_size, fill='black',
-                                           text="Recolor",
-                                           tags='str')
+                draw_recolor_text(tmp_node1, 'black')
+                draw_recolor_text(tmp_node2, 'black')
                 r.frame.update()
                 r.frame.after(animation_time)
-                if type(np) is RBNode:
-                    tmp_draw(np, canvas_now)
-                if type(wr) is RBNode:
-                    tmp_draw(wr, canvas_now)
-                canvas_now.delete('str')
+                draw_node(tmp_node1, canvas_now)
+                draw_node(tmp_node2, canvas_now)
+                canvas_now.delete('recolor_txt')
                 node = rb_tree_root
         else:
             w = node.parent.left
             if type(w) is not RBLeaf and w.color == 'red':
                 w.color = 'black'
-                ww = w
                 node.parent.color = 'red'
-                np = node.parent
+                tmp_node1, tmp_node2 = w, node.parent
                 right_rotate(node.parent)
-                if type(ww) is RBNode:
-                    canvas_now.create_text(ww.x, ww.y - node_size, fill='black', text="Recolor",
-                                           tags='str')
-                if type(np) is RBNode:
-                    canvas_now.create_text(np.x, np.y - node_size, fill='black', text="Recolor",
-                                           tags='str')
+                draw_recolor_text(tmp_node1,'black')
+                draw_recolor_text(tmp_node2,'red')
                 r.frame.update()
                 r.frame.after(animation_time)
-                if type(ww) is RBNode:
-                    tmp_draw(ww, canvas_now)
-                if type(np) is RBNode:
-                    tmp_draw(np, canvas_now)
-                canvas_now.delete('str')
+                draw_node(tmp_node1, canvas_now)
+                draw_node(tmp_node2, canvas_now)
+                canvas_now.delete('recolor_txt')
                 w = node.parent.left
             if type(w) is not RBLeaf and w.right.color == 'black' and w.left.color == 'black':
                 w.color = 'red'
-                if type(w) is RBNode:
-                    canvas_now.create_text(w.x, w.y - node_size, fill='black', text="Recolor",
-                                           tags='str')
+                draw_recolor_text(w,'red')
                 r.frame.update()
                 r.frame.after(animation_time)
-                if type(w) is RBNode:
-                    tmp_draw(w, canvas_now)
-                canvas_now.delete('str')
+                draw_node(w, canvas_now)
+                canvas_now.delete('recolor_txt')
                 node = node.parent
             elif type(w) is not RBLeaf and w.left.color == 'black':
                 w.right.color = 'black'
-                wr = w.right
                 w.color = 'red'
-                ww = w
+                tmp_node1, tmp_node2 = w.right, w
                 left_rotate(w)
-                if type(wr) is RBNode:
-                    canvas_now.create_text(wr.x, wr.y - node_size, fill='black', text="Recolor",
-                                           tags='str')
-                if type(ww) is RBNode:
-                    canvas_now.create_text(ww.x, ww.y - node_size, fill='black', text="Recolor",
-                                           tags='str')
+                draw_recolor_text(tmp_node1, 'black')
+                draw_recolor_text(tmp_node2,'red')
                 r.frame.update()
                 r.frame.after(animation_time)
-                if type(ww) is RBNode:
-                    tmp_draw(ww, canvas_now)
-                if type(wr) is RBNode:
-                    tmp_draw(wr, canvas_now)
-                canvas_now.delete('str')
+                draw_node(tmp_node1, canvas_now)
+                draw_node(tmp_node2, canvas_now)
+                canvas_now.delete('recolor_txt')
                 w = node.parent.left
             if node is not rb_tree_root:  # Next
                 w.color = node.parent.color
                 node.parent.color = 'black'
-                np = node.parent
                 w.left.color = 'black'
-                wl = w.left
+                tmp_node1, tmp_node2 = node.parent, w.left
                 right_rotate(node.parent)
-                if type(np) is RBNode:
-                    canvas_now.create_text(np.x, np.y - node_size, fill='black',
-                                           text="Recolor",
-                                           tags='str')
-                if type(wl) is RBNode:
-                    canvas_now.create_text(wl.x, wl.y - node_size, fill='black',
-                                           text="Recolor",
-                                           tags='str')
+                draw_recolor_text(tmp_node1, 'black')
+                draw_recolor_text(tmp_node2, 'black')
                 r.frame.update()
                 r.frame.after(animation_time)
-                if type(np) is RBNode:
-                    tmp_draw(np, canvas_now)
-                if type(wl) is RBNode:
-                    tmp_draw(wl, canvas_now)
-                canvas_now.delete('str')
+                draw_node(tmp_node1, canvas_now)
+                draw_node(tmp_node1, canvas_now)
+                canvas_now.delete('recolor_txt')
                 node = rb_tree_root
     node.color = 'black'
 
@@ -718,12 +625,12 @@ def rb_tree_root_find(text, show_to_gui=True):
 # Canvas visualization
 def draw_rb_tree(tree, canvas):
     if type(tree) is not RBLeaf and tree is not None:
-        draw_RBNode(tree, canvas)
+        draw_subtree(tree, canvas)
         draw_rb_tree(tree.left, canvas)
         draw_rb_tree(tree.right, canvas)
 
 
-def draw_RBNode(node, canvas):
+def draw_subtree(node, canvas):
     if type(node) is not RBLeaf:
         if type(node.right) is not RBLeaf:
             draw_line(canvas, node, node.right, tags=[f'Line{node.__hash__()}', 'Line'])
@@ -734,10 +641,11 @@ def draw_RBNode(node, canvas):
         canvas.create_text(node.x, node.y, fill='white', text=node.val, tags=f'Node{node.__hash__()}')
 
 
-def tmp_draw(node, canvas):
-    canvas.create_oval(node.x - half_node_size, node.y - half_node_size, node.x + half_node_size,
-                       node.y + half_node_size, fill=node.color, tags=f'Node{node.__hash__()}')
-    canvas.create_text(node.x, node.y, fill='white', text=node.val, tags=f'Node{node.__hash__()}')
+def draw_node(node, canvas):
+    if type(node) is RBNode:
+        canvas.create_oval(node.x - half_node_size, node.y - half_node_size, node.x + half_node_size,
+                           node.y + half_node_size, fill=node.color, tags=f'Node{node.__hash__()}')
+        canvas.create_text(node.x, node.y, fill='white', text=node.val, tags=f'Node{node.__hash__()}')
 
 
 def draw_line(canvas, node1, node2, tags=None):
