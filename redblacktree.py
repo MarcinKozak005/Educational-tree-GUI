@@ -64,7 +64,6 @@ node_size = 26
 half_node_size = node_size / 2
 animation_time = 2000
 animation_unit = 100
-hint_frame = None
 
 
 def clear():
@@ -125,8 +124,7 @@ def rb_subtree_insert(val, tree):
 def rb_tree_root_insert(text):
     global rb_tree_root_copy
     global rb_tree_root
-    global hint_frame
-    insert_button.config(state='disabled')
+    set_buttons(False)
     rb_tree_root_copy = copy.deepcopy(rb_tree_root)
 
     if text.isdigit() and 0 <= int(text) <= 999:
@@ -158,7 +156,7 @@ def rb_tree_root_insert(text):
         explanation.reset()
     else:
         label.config(text='INSERT: Not a valid input (integer in range 0-999)')
-    insert_button.config(state='normal')
+    set_buttons(True)
 
 
 # Based on Thomas Cormen's Intro. to Algorithms
@@ -365,7 +363,7 @@ def update_positions(node):
 def rb_tree_root_delete(text):
     global rb_tree_root
     global rb_tree_root_copy
-    delete_button.config(state='disabled')
+    set_buttons(False)
     rb_tree_root_copy = copy.deepcopy(rb_tree_root)
     node = rb_tree_root_find(text, False)
     if text.isdigit() and 0 <= int(text) <= 999:
@@ -382,7 +380,7 @@ def rb_tree_root_delete(text):
                 draw_rb_tree(rb_tree_root_copy, canvas_prev)
                 explanation_label.config(text=explanation.string, wraplength=400)
                 explanation.reset()
-                delete_button.config(state='normal')
+                set_buttons(True)
                 return
             if type(node.left) is RBLeaf or type(node.right) is RBLeaf:
                 explanation.append(f'right or left child of {node.val} is Null')
@@ -436,10 +434,10 @@ def rb_tree_root_delete(text):
             explanation.reset()
             if type(rb_tree_root) is RBLeaf or rb_tree_root is None:
                 rb_tree_root = None
-            delete_button.config(state='normal')
+            set_buttons(True)
     else:
         label.config(text='DELETE: Not a valid input (integer in range 0-999)')
-    delete_button.config(state='normal')
+    set_buttons(True)
     print_tree(rb_tree_root)
 
 
@@ -549,10 +547,9 @@ def fix_rb_tree_delete(node):
 
 
 def tree_successor(node):
-    global hint_frame
     explanation.append(f'Successor of {node.val} is ', False)
     if type(node.right) is not RBLeaf:
-        move_object(hint_frame, node.x, node.y, node.right.x, node.right.y)
+        move_object('hint_frame', node.x, node.y, node.right.x, node.right.y)
         draw_exp_text(node.right, f'Looking for the minimum of {node.right.val}')
         return tree_minimum(node.right)
     y = node.parent
@@ -567,7 +564,7 @@ def tree_minimum(tree):
     explanation.append(f'Tree minimum of {tree.val} is ', False)
     while type(tree.left) is not RBLeaf:
         draw_exp_text(tree, f'{tree.val} has a left child ')
-        move_object(hint_frame, tree.x, tree.y, tree.left.x, tree.left.y)
+        move_object('hint_frame', tree.x, tree.y, tree.left.x, tree.left.y)
         tree = tree.left
     explanation.append(f'{tree.val}')
     draw_exp_text(tree, f'Minimum found:{tree.val}')
@@ -575,51 +572,49 @@ def tree_minimum(tree):
 
 
 def rb_tree_root_find(text, show_to_gui=True):
-    global hint_frame
-    find_button.config(state='disabled')
+    set_buttons(False)
     if text.isdigit() and 0 <= int(text) <= 999:
         val = int(text)
         explanation.append(f'Looking for a node {val}')
         curr = rb_tree_root
-        hint_frame = canvas_now.create_rectangle(rb_tree_root.x - half_node_size, rb_tree_root.y - half_node_size,
+        canvas_now.create_rectangle(rb_tree_root.x - half_node_size, rb_tree_root.y - half_node_size,
                                                  rb_tree_root.x + half_node_size, rb_tree_root.y + half_node_size,
-                                                 outline='red')
+                                                 outline='red', tags='hint_frame')
         while type(curr) is not RBLeaf and curr.val != val:
             if curr.val > val and type(curr.left) is RBNode:
                 draw_exp_text(curr, f'{val} < {curr.val}. Choosing left subtree')
-                move_object(hint_frame, curr.x, curr.y, curr.left.x, curr.left.y)
+                move_object('hint_frame', curr.x, curr.y, curr.left.x, curr.left.y)
                 curr = curr.left
             elif curr.val > val:
                 draw_exp_text(curr, f'{val} < {curr.val}. Choosing left subtree')
                 unit = (curr.r_edge - curr.l_edge) / 4
-                move_object(hint_frame, curr.x, curr.y, curr.x - unit, curr.y + y_space)
-                # curr.x - unit, curr.y + y_space - half_node_size * 1.75
-                draw_exp_text(curr, 'Element not found')
-                find_button.config(state='normal')
-                canvas_now.delete(hint_frame)
+                move_object('hint_frame', curr.x, curr.y, curr.x - unit, curr.y + y_space)
+                draw_exp_text(RBNode(curr.x - unit, curr.y + y_space,None, None,None,None), 'Element not found')
+                set_buttons(True)
+                canvas_now.delete('hint_frame')
                 return None
             elif curr.val <= val and type(curr.right) is RBNode:
                 draw_exp_text(curr, f'{val} >= {curr.val}. Choosing right subtree')
-                move_object(hint_frame, curr.x, curr.y, curr.right.x, curr.right.y)
+                move_object('hint_frame', curr.x, curr.y, curr.right.x, curr.right.y)
                 curr = curr.right
             elif curr.val <= val:
                 draw_exp_text(curr, f'{val} >= {curr.val}. Choosing right subtree')
                 unit = (curr.r_edge - curr.l_edge) / 4
-                move_object(hint_frame, curr.x, curr.y, curr.x + unit, curr.y + y_space)
-                draw_exp_text(curr, 'Element not found')
-                find_button.config(state='normal')
-                canvas_now.delete(hint_frame)
+                move_object('hint_frame', curr.x, curr.y, curr.x + unit, curr.y + y_space)
+                draw_exp_text(RBNode(curr.x + unit, curr.y + y_space,None, None,None,None), 'Element not found')
+                set_buttons(True)
+                canvas_now.delete('hint_frame')
                 return None
         draw_exp_text(curr, 'Found')
         if show_to_gui:
             label.config(text=f'Elem \'{text}\' found' if type(curr) is not RBLeaf else f'Elem \'{text}\' not found')
-            canvas_now.delete(hint_frame)
+            canvas_now.delete('hint_frame')
         else:
-            find_button.config(state='normal')
+            set_buttons(True)
             return curr
     else:
         label.config(text='FIND: Not a valid input (integer in range 0-999)')
-    find_button.config(state='normal')
+    set_buttons(True)
 
 
 # Canvas visualization
@@ -724,3 +719,9 @@ now_label.pack(pady=(5, 0))
 canvas_now.pack()
 frame32.grid(row=0, column=1)
 frame3.pack()
+
+buttons = [insert_button,delete_button,find_button,clear_button]
+
+def set_buttons(val):
+    for b in buttons:
+        b.config(state='normal' if val else 'disabled')
