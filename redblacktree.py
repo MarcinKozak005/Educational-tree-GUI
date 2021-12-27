@@ -19,7 +19,6 @@ class RBNode:
         # Animation connected
         self.x_next = x
         self.y_next = y
-        self.animate = True
 
     def successors(self):
         result = []
@@ -58,6 +57,7 @@ rb_tree_root = None
 rb_tree_root_copy = None
 explanation = Explanation()
 y_space = 50
+y_above = 30
 width = 800
 height = 300
 node_size = 26
@@ -65,8 +65,6 @@ half_node_size = node_size / 2
 animation_time = 2000
 animation_unit = 100
 hint_frame = None
-grey_node = None
-y_above = 30
 
 
 def clear():
@@ -87,7 +85,7 @@ def draw_exp_text(node, exp_str):
 
 def rb_subtree_insert(val, tree):
     unit = (tree.r_edge - tree.l_edge) / 4
-    if val >= tree.val and type(tree.right) != RBLeaf:
+    if val >= tree.val and type(tree.right) == RBNode:
         exp_str = f'{val} >= {tree.val}. Choosing right subtree'
         draw_exp_text(tree, exp_str)
         move_object('grey_node', tree.x, tree.y - half_node_size - y_above, tree.right.x,
@@ -99,7 +97,7 @@ def rb_subtree_insert(val, tree):
         newNode = RBNode(tree.x + unit, tree.y + y_space, val, tree.x, tree.r_edge, tree)
         tree.right = newNode
         move_object('grey_node', tree.x, tree.y - half_node_size - y_above, tree.right.x, tree.right.y - half_node_size)
-    elif val < tree.val and type(tree.left) != RBLeaf:
+    elif val < tree.val and type(tree.left) == RBNode:
         exp_str = f'{val} < {tree.val}. Choosing left subtree'
         draw_exp_text(tree, exp_str)
         move_object('grey_node', tree.x, tree.y - half_node_size - y_above, tree.left.x,
@@ -122,7 +120,6 @@ def rb_tree_root_insert(text):
     global rb_tree_root_copy
     global rb_tree_root
     global hint_frame
-    global grey_node
     insert_button.config(state='disabled')
     rb_tree_root_copy = copy.deepcopy(rb_tree_root)
 
@@ -139,9 +136,6 @@ def rb_tree_root_insert(text):
                                    rb_tree_root.x + half_node_size, rb_tree_root.y - y_above + half_node_size,
                                    fill='grey', tags=f'grey_node')
             canvas_now.create_text(rb_tree_root.x, rb_tree_root.y - y_above, fill='white', text=val, tags=f'grey_node')
-            # hint_frame = canvas_now.create_rectangle(rb_tree_root.x - half_node_size, rb_tree_root.y - half_node_size,
-            #                                          rb_tree_root.x + half_node_size, rb_tree_root.y + half_node_size,
-            #                                          outline='red')
             newNode = rb_subtree_insert(val, rb_tree_root)
             explanation.append(f'{val}[black] inserted. Starting fixing')
             draw_RBNode(newNode, canvas_now)
@@ -159,7 +153,6 @@ def rb_tree_root_insert(text):
     else:
         label.config(text='INSERT: Not a valid input (integer in range 0-999)')
     insert_button.config(state='normal')
-    print('----')
 
 
 # Based on Thomas Cormen's Intro. to Algorithms
@@ -382,8 +375,6 @@ def right_rotate(node):
 
 # Cavas vizualisation - place nodes in correct spots
 def update_positions(node):
-    # if type(node) is RBNode:
-    # print(f'Pre: {node.val} -- [{node.x},{node.y}] {node.l_edge}|{node.r_edge}')
     if type(node) is RBNode and node is not rb_tree_root:
         unit = (node.parent.r_edge - node.parent.l_edge) / 4
         if node is node.parent.right:
@@ -666,9 +657,6 @@ def fix_rb_tree_delete(node):
 
 def tree_successor(node):
     global hint_frame
-    # hint_frame = canvas_now.create_rectangle(node.x - half_node_size, node.y - half_node_size,
-    #                                          node.x + half_node_size, node.y + half_node_size,
-    #                                          outline='red')
     explanation.append(f'Successor of {node.val} is ', False)
     if type(node.right) is not RBLeaf:
         move_object(hint_frame, node.x, node.y, node.right.x, node.right.y)
@@ -852,7 +840,6 @@ find_field = tk.Entry(frame2)
 find_button = tk.Button(frame2, text='Find node', command=lambda: rb_tree_root_find(find_field.get()))
 clear_button = tk.Button(frame2, text='Clear tree', command=lambda: clear())
 back_button = tk.Button(frame2, text='Back to menu', command=lambda: r.show_frame(m.frame))
-tmp_button = tk.Button(frame2, text='Bulk Insert', command=lambda : tmp())
 label = tk.Label(frame2)
 insert_field.grid(row=0, column=0)
 insert_button.grid(row=0, column=1, padx=(0, 20))
@@ -863,7 +850,6 @@ find_button.grid(row=0, column=5, padx=(0, 20))
 clear_button.grid(row=0, column=6)
 back_button.grid(row=0, column=7, padx=(40, 0))
 label.grid(row=1, columnspan=6, sticky='WE')
-tmp_button.grid(row=0,column=8, padx=(20,0))
 frame2.pack()
 
 frame3 = tk.LabelFrame(frame, text='3')
