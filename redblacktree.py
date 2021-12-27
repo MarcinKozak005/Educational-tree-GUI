@@ -75,11 +75,13 @@ def clear():
     explanation_label.config(text='')
 
 
-def draw_exp_text(node, exp_str):
-    canvas_now.create_text(node.x, node.y + node_size, fill='black', text=exp_str, tags='str')
+def draw_exp_text(node, exp_str, above=True):
+    txt = canvas_now.create_text(node.x, node.y + (-1 if above else 1) * node_size, fill='white', text=exp_str, tags='exp_txt')
+    txt_bg = canvas_now.create_rectangle(canvas_now.bbox(txt), fill="grey", tags='exp_txt')
+    canvas_now.tag_lower(txt_bg)
     r.frame.update()
     r.frame.after(animation_time)
-    canvas_now.delete('str')
+    canvas_now.delete('exp_txt')
     explanation.append(exp_str)
 
 
@@ -87,32 +89,29 @@ def rb_subtree_insert(val, tree):
     unit = (tree.r_edge - tree.l_edge) / 4
     if val >= tree.val and type(tree.right) == RBNode:
         exp_str = f'{val} >= {tree.val}. Choosing right subtree'
-        draw_exp_text(tree, exp_str)
+        draw_exp_text(tree, exp_str, False)
         move_object('grey_node', tree.x, tree.y - half_node_size - y_above, tree.right.x,
                     tree.right.y - half_node_size - y_above)
         newNode = rb_subtree_insert(val, tree.right)
     elif val >= tree.val:
         exp_str = f'{val} >= {tree.val} and right({tree.val}) == null. Inserting {val} as right of {tree.val}'
-        draw_exp_text(tree, exp_str)
+        draw_exp_text(tree, exp_str, False)
         newNode = RBNode(tree.x + unit, tree.y + y_space, val, tree.x, tree.r_edge, tree)
         tree.right = newNode
         move_object('grey_node', tree.x, tree.y - half_node_size - y_above, tree.right.x, tree.right.y - half_node_size)
     elif val < tree.val and type(tree.left) == RBNode:
         exp_str = f'{val} < {tree.val}. Choosing left subtree'
-        draw_exp_text(tree, exp_str)
+        draw_exp_text(tree, exp_str, False)
         move_object('grey_node', tree.x, tree.y - half_node_size - y_above, tree.left.x,
                     tree.left.y - half_node_size - y_above)
         newNode = rb_subtree_insert(val, tree.left)
     else:
         exp_str = f'{val} < {tree.val} and left({tree.val}) == null. Inserting {val} as left of {tree.val}'
-        draw_exp_text(tree, exp_str)
+        draw_exp_text(tree, exp_str, False)
         newNode = RBNode(tree.x - unit, tree.y + y_space, val, tree.l_edge, tree.x, tree)
         tree.left = newNode
         move_object('grey_node', tree.x, tree.y - half_node_size - y_above, tree.left.x, tree.left.y - half_node_size)
-    canvas_now.create_text(newNode.x, newNode.y + node_size, fill='black', text='Inserting', tags='str')
-    r.frame.update()
-    r.frame.after(animation_time)
-    canvas_now.delete('str')
+    draw_exp_text(newNode,'Inserting',False)
     return newNode
 
 
@@ -287,11 +286,7 @@ def fix_rb_tree_insert(node):
 
 # Based on Thomas Cormen's Intro. to Algorithms
 def left_rotate(node):
-    exp_str = f'Left-rotate on {node.val}'
-    canvas_now.create_text(node.x, node.y - node_size, fill='black', text=exp_str, tags='str')
-    r.frame.update()
-    r.frame.after(animation_time)
-    canvas_now.delete('str')
+    draw_exp_text(node, f'Left-rotate on {node.val}')
     global rb_tree_root
     y = node.right
     node.right = y.left
@@ -346,11 +341,7 @@ def rotation_tick(node, x_unit, y_unit):
 
 # Based on Thomas Cormen's Intro. to Algorithms
 def right_rotate(node):
-    exp_str = f'Right-rotate on {node.val}'
-    canvas_now.create_text(node.x, node.y - node_size, fill='black', text=exp_str, tags='str')
-    r.frame.update()
-    r.frame.after(animation_time)
-    canvas_now.delete('str')
+    draw_exp_text(node, f'Right-rotate on {node.val}')
     global rb_tree_root
     y = node.left
     node.left = y.right
@@ -425,12 +416,7 @@ def rb_tree_root_delete(text):
                 explanation.append(f'right or left child of {node.val} is Null')
                 y = node
             else:
-                exp_string = f'We are looking for the successor of {node.val}'
-                explanation.append(exp_string)
-                canvas_now.create_text(node.x, node.y - node_size, fill='black', text=exp_string, tags='str')
-                r.frame.update()
-                r.frame.after(1000)
-                canvas_now.delete('str')
+                draw_exp_text(node, f'We are looking for the successor of {node.val}')
                 y = tree_successor(node)
             # ----
             if type(y.left) is not RBLeaf:
@@ -660,10 +646,7 @@ def tree_successor(node):
     explanation.append(f'Successor of {node.val} is ', False)
     if type(node.right) is not RBLeaf:
         move_object(hint_frame, node.x, node.y, node.right.x, node.right.y)
-        canvas_now.create_text(node.right.x, node.right.y - node_size, fill='black', text=f'Looking for the minimum of {node.right.val}', tags='str')
-        r.frame.update()
-        r.frame.after(1000)
-        canvas_now.delete('str')
+        draw_exp_text(node.right, f'Looking for the minimum of {node.right.val}')
         return tree_minimum(node.right)
     y = node.parent
     while type(y) is not RBLeaf and node is y.right:
@@ -676,19 +659,11 @@ def tree_successor(node):
 def tree_minimum(tree):
     explanation.append(f'Tree minimum of {tree.val} is ', False)
     while type(tree.left) is not RBLeaf:
-        canvas_now.create_text(tree.x, tree.y - node_size, fill='black',
-                               text=f'{tree.val} has a left child ', tags='str')
-        r.frame.update()
-        r.frame.after(1000)
-        canvas_now.delete('str')
+        draw_exp_text(tree, f'{tree.val} has a left child ')
         move_object(hint_frame, tree.x, tree.y, tree.left.x, tree.left.y)
         tree = tree.left
     explanation.append(f'{tree.val}')
-    canvas_now.create_text(tree.x, tree.y - node_size, fill='black',
-                           text=f'Minimum found:{tree.val}', tags='str')
-    r.frame.update()
-    r.frame.after(1000)
-    canvas_now.delete('str')
+    draw_exp_text(tree, f'Minimum found:{tree.val}')
     return tree
 
 
@@ -704,63 +679,31 @@ def rb_tree_root_find(text, show_to_gui=True):
                                                  outline='red')
         while type(curr) is not RBLeaf and curr.val != val:
             if curr.val > val and type(curr.left) is RBNode:
-                exp_string = f'{val} < {curr.val}. Choosing left subtree'
-                canvas_now.create_text(curr.x, curr.y - node_size, fill='black', text=exp_string, tags='str')
-                r.frame.update()
-                r.frame.after(1000)
-                canvas_now.delete('str')
+                draw_exp_text(curr, f'{val} < {curr.val}. Choosing left subtree')
                 move_object(hint_frame, curr.x, curr.y, curr.left.x, curr.left.y)
                 curr = curr.left
-                explanation.append(exp_string)
             elif curr.val > val:
-                exp_string = f'{val} < {curr.val}. Choosing left subtree'
-                canvas_now.create_text(curr.x, curr.y - node_size, fill='black', text=exp_string, tags='str')
-                r.frame.update()
-                r.frame.after(1000)
-                canvas_now.delete('str')
+                draw_exp_text(curr, f'{val} < {curr.val}. Choosing left subtree')
                 unit = (curr.r_edge - curr.l_edge) / 4
                 move_object(hint_frame, curr.x, curr.y, curr.x - unit, curr.y + y_space)
-                explanation.append(exp_string)
-                canvas_now.create_text(curr.x - unit, curr.y + y_space - half_node_size * 1.75, fill='black',
-                                       text='Element not found', tags='str')
-                r.frame.update()
-                r.frame.after(1000)
+                # curr.x - unit, curr.y + y_space - half_node_size * 1.75
+                draw_exp_text(curr, 'Element not found')
                 find_button.config(state='normal')
                 canvas_now.delete(hint_frame)
-                canvas_now.delete('str')
                 return None
             elif curr.val <= val and type(curr.right) is RBNode:
-                exp_string = f'{val} >= {curr.val}. Choosing right subtree'
-                canvas_now.create_text(curr.x, curr.y - node_size, fill='black', text=exp_string, tags='str')
-                r.frame.update()
-                r.frame.after(1000)
-                canvas_now.delete('str')
+                draw_exp_text(curr, f'{val} >= {curr.val}. Choosing right subtree')
                 move_object(hint_frame, curr.x, curr.y, curr.right.x, curr.right.y)
                 curr = curr.right
-                explanation.append(exp_string)
             elif curr.val <= val:
-                exp_string = f'{val} >= {curr.val}. Choosing right subtree'
-                canvas_now.create_text(curr.x, curr.y - node_size, fill='black', text=exp_string, tags='str')
-                r.frame.update()
-                r.frame.after(1000)
-                canvas_now.delete('str')
+                draw_exp_text(curr, f'{val} >= {curr.val}. Choosing right subtree')
                 unit = (curr.r_edge - curr.l_edge) / 4
                 move_object(hint_frame, curr.x, curr.y, curr.x + unit, curr.y + y_space)
-                explanation.append(exp_string)
-                canvas_now.create_text(curr.x + unit, curr.y + y_space - half_node_size * 1.75, fill='black',
-                                       text='Element not found', tags='str')
-                r.frame.update()
-                r.frame.after(1000)
+                draw_exp_text(curr, 'Element not found')
                 find_button.config(state='normal')
                 canvas_now.delete(hint_frame)
-                canvas_now.delete('str')
                 return None
-        exp_string = f'Found'
-        canvas_now.create_text(curr.x, curr.y - node_size, fill='black', text=exp_string, tags='str')
-        r.frame.update()
-        r.frame.after(1000)
-        canvas_now.delete('str')
-
+        draw_exp_text(curr, 'Found')
         if show_to_gui:
             label.config(text=f'Elem \'{text}\' found' if type(curr) is not RBLeaf else f'Elem \'{text}\' not found')
             canvas_now.delete(hint_frame)
