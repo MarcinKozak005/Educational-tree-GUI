@@ -56,8 +56,8 @@ class Explanation:
     def __init__(self):
         pass
 
-    def append(self, text, newline=True):
-        self.string += (f'[{self.line}] ' if newline else '') + f'{text}' + ('\n' if newline else '')
+    def append(self, text):
+        self.string += f'[{self.line}] {text}\n'
         self.line += 1
 
     def reset(self):
@@ -102,36 +102,32 @@ def draw_recolor_text(node, to_color):
         txt = canvas_now.create_text(node.x, node.y - node_size, fill='white', text=f'Change color to {to_color}',
                                      tags='recolor_txt')
         txt_bg = canvas_now.create_rectangle(canvas_now.bbox(txt), fill="grey", tags='recolor_txt')
+        explanation.append(f'Change color of {node.val} to {to_color}')
         canvas_now.tag_lower(txt_bg)
 
 
 def rb_subtree_insert(val, tree):
     unit = (tree.r_edge - tree.l_edge) / 4
     if val >= tree.val and type(tree.right) == RBNode:
-        exp_str = f'{val} >= {tree.val}. Choosing right subtree'
-        draw_exp_text(tree, exp_str, False)
+        draw_exp_text(tree, f'{val} >= {tree.val} => choosing right subtree', False)
         move_object('grey_node', tree.x, tree.y - half_node_size - y_above, tree.right.x,
                     tree.right.y - half_node_size - y_above)
         newNode = rb_subtree_insert(val, tree.right)
     elif val >= tree.val:
-        exp_str = f'{val} >= {tree.val} and right({tree.val}) == null. Inserting {val} as right of {tree.val}'
-        draw_exp_text(tree, exp_str, False)
+        draw_exp_text(tree, f'{val} >= {tree.val} => choosing right subtree', False)
         newNode = RBNode(tree.x + unit, tree.y + y_space, val, tree.x, tree.r_edge, tree)
         tree.right = newNode
         move_object('grey_node', tree.x, tree.y - half_node_size - y_above, tree.right.x, tree.right.y - half_node_size)
     elif val < tree.val and type(tree.left) == RBNode:
-        exp_str = f'{val} < {tree.val}. Choosing left subtree'
-        draw_exp_text(tree, exp_str, False)
+        draw_exp_text(tree, f'{val} < {tree.val} => choosing left subtree', False)
         move_object('grey_node', tree.x, tree.y - half_node_size - y_above, tree.left.x,
                     tree.left.y - half_node_size - y_above)
         newNode = rb_subtree_insert(val, tree.left)
     else:
-        exp_str = f'{val} < {tree.val} and left({tree.val}) == null. Inserting {val} as left of {tree.val}'
-        draw_exp_text(tree, exp_str, False)
+        draw_exp_text(tree, f'{val} < {tree.val} => choosing left subtree', False)
         newNode = RBNode(tree.x - unit, tree.y + y_space, val, tree.l_edge, tree.x, tree)
         tree.left = newNode
         move_object('grey_node', tree.x, tree.y - half_node_size - y_above, tree.left.x, tree.left.y - half_node_size)
-    draw_exp_text(newNode, 'Inserting', False)
     return newNode
 
 
@@ -149,12 +145,13 @@ def rb_tree_root_insert(text):
             rb_tree_root.color = 'black'
             explanation.append(f'Added node {val}[black]')
         else:
-            explanation.append(f'Tree not empty, looking for insert place for {val}[red]')
+            explanation.append(f'Tree is not empty, looking for insert place for {val}[red]')
             canvas_now.create_oval(rb_tree_root.x - half_node_size, rb_tree_root.y - y_above - half_node_size,
                                    rb_tree_root.x + half_node_size, rb_tree_root.y - y_above + half_node_size,
                                    fill='grey', tags=f'grey_node')
             canvas_now.create_text(rb_tree_root.x, rb_tree_root.y - y_above, fill='white', text=val, tags=f'grey_node')
             newNode = rb_subtree_insert(val, rb_tree_root)
+            draw_exp_text(newNode, f'Inserting {newNode.val}', False)
             explanation.append(f'{val}[black] inserted. Starting fixing')
             draw_subtree(newNode, canvas_now)
             canvas_now.delete('grey_node')
@@ -174,9 +171,6 @@ def rb_tree_root_insert(text):
 
 
 def fix_rb_tree_insert_case1(node, y):
-    explanation.append(
-        f'uncle({node.val}) == {y.val}, color({y.val}) == red, recoloring {y.parent.val} and it\'s children'
-        + f' {node.parent.val} and {y.val}')
     node.parent.color = 'black'
     y.color = 'black'
     node.parent.parent.color = 'red'
@@ -192,22 +186,18 @@ def fix_rb_tree_insert_case1(node, y):
 
 
 def fix_rb_tree_insert_half(node, side):
-    explanation.append(f'{node.parent.val} is {side} child of {node.parent.parent.val}, ', False)
     y = node.parent.parent['right' if side == 'left' else 'left']
     if y.color == 'red':
         fix_rb_tree_insert_case1(node, y)
-        node = node.parent.parent
+        return node.parent.parent
     elif node == node.parent['right' if side == 'left' else 'left']:
-        explanation.append(f'{node.val} is {"right" if side == "left" else "left"} child of {node.parent.val}. {side}-rotate on {node.val}')
         node = node.parent
         rotate(node, side)
     elif node is not rb_tree_root and node.parent is not rb_tree_root:
-        explanation.append(
-            f'Recolor {node.parent.val}, {node.parent.parent.val} and {"right" if side == "left" else "left"}-rotate on {node.parent.parent.val}')
         node.parent.color = 'black'
         node.parent.parent.color = 'red'
         tmp_node1, tmp_node2 = node.parent, node.parent.parent
-        rotate(node.parent.parent,'right' if side == 'left' else "left")
+        rotate(node.parent.parent, 'right' if side == 'left' else "left")
         draw_recolor_text(tmp_node1, 'black')
         draw_recolor_text(tmp_node2, 'red')
         r.frame.update()
@@ -215,17 +205,16 @@ def fix_rb_tree_insert_half(node, side):
         draw_node(tmp_node1, canvas_now)
         draw_node(tmp_node2, canvas_now)
         canvas_now.delete('recolor_txt')
+    return node
 
 
 # Based on Thomas Cormen's Intro. to Algorithms
 def fix_rb_tree_insert(node):
     while node is not rb_tree_root and node.parent.color == 'red':
-        explanation.append(f'{node.val} is not root and color({node.val}) == red, ', False)
         if node.parent == node.parent.parent.left:
-            fix_rb_tree_insert_half(node,'left')
+            node = fix_rb_tree_insert_half(node, 'left')
         else:
-            fix_rb_tree_insert_half(node,'right')
-    explanation.append(f'Set color({rb_tree_root.val}) = black')
+            node = fix_rb_tree_insert_half(node, 'right')
     if rb_tree_root.color != 'black':
         draw_recolor_text(rb_tree_root, 'black')
         r.frame.update()
@@ -323,9 +312,10 @@ def rb_tree_root_delete(text):
         if type(node) is not RBNode:
             label.config(text=f'There is no element \'{text}\' in the tree')
         else:
-            explanation.append(f'{text} found')
             if node is rb_tree_root and type(node.left) is RBLeaf and type(node.right) is RBLeaf:
-                move_object(f'Node{rb_tree_root.__hash__()}', rb_tree_root.x, rb_tree_root.y, rb_tree_root.x, 0)
+                canvas_now.delete('hint_frame')
+                move_object(f'Node{rb_tree_root.__hash__()}', rb_tree_root.x, rb_tree_root.y, rb_tree_root.x,
+                            -node_size)
                 rb_tree_root = None
                 label.config(text='')
                 canvas_now.delete('all')
@@ -336,10 +326,10 @@ def rb_tree_root_delete(text):
                 set_buttons(True)
                 return
             if type(node.left) is RBLeaf or type(node.right) is RBLeaf:
-                explanation.append(f'right or left child of {node.val} is Null')
+                explanation.append(f'Right or left child of {node.val} is a leaf')
                 y = node
             else:
-                draw_exp_text(node, f'We are looking for the successor of {node.val}')
+                draw_exp_text(node, f'Looking for the successor of {node.val}')
                 y = tree_successor(node)
             if type(y.left) is not RBLeaf:
                 x = y.left
@@ -347,31 +337,35 @@ def rb_tree_root_delete(text):
                 x = y.right
             x.parent = y.parent
             if y.parent is None:
-                explanation.append(f'Change of the root {x.val if type(x) is RBNode else ""}')
                 rb_tree_root = x
             elif y == y.parent.left:
                 y.parent.left = x
             else:
                 y.parent.right = x
             canvas_now.delete(f'Line{y.__hash__()}')
+            canvas_now.delete('hint_frame')
             update_positions(rb_tree_root)
             if y is not node:
-                explanation.append(f'Swap of {node.val} and {y.val}')
+                explanation.append(f'Swap {node.val} with {y.val}')
                 canvas_now.create_oval(node.x - half_node_size, node.y - half_node_size, node.x + half_node_size,
                                        node.y + half_node_size, fill=node.color, tags='swap1')
                 canvas_now.create_oval(y.x - half_node_size, y.y - half_node_size, y.x + half_node_size,
-                                       y.y + half_node_size, fill=y.color, tags='swap2')
-                txt1 = canvas_now.create_text(node.x, node.y, fill='blue', text=node.val, tags='swap2')
-                txt2 = canvas_now.create_text(y.x, y.y, fill='blue', text=y.val, tags='swap1')
-                move_object(txt1, node.x, node.y, y.x, y.y)
-                move_object(txt2, y.x, y.y, node.x, node.y)
+                                       y.y + half_node_size, fill=y.color, tags=f'Node{y.__hash__()}')
+                txt1 = canvas_now.create_text(node.x, node.y, fill='blue', text=node.val,
+                                              tags=[f'Node{y.__hash__()}', 'txt1'])
+                txt2 = canvas_now.create_text(y.x, y.y, fill='blue', text=y.val, tags=['swap1', 'txt2'])
+                txt1_bg = canvas_now.create_rectangle(canvas_now.bbox(txt1), fill='white',
+                                                      tags=[f'Node{y.__hash__()}', 'txt1'])
+                txt2_bg = canvas_now.create_rectangle(canvas_now.bbox(txt2), fill='white', tags=['swap1', 'txt2'])
+                canvas_now.tag_lower(txt1_bg, txt1)
+                canvas_now.tag_lower(txt2_bg, txt2)
+                move_object('txt1', node.x, node.y, y.x, y.y)
+                move_object('txt2', y.x, y.y, node.x, node.y)
                 node.val = y.val
                 canvas_now.delete('swap1')
                 draw_node(node, canvas_now)
-            move_object('swap2', y.x, y.y, y.x, 0)
+            move_object(f'Node{y.__hash__()}', y.x, y.y, y.x, -node_size)
             if y.color == 'black':
-                explanation.append(
-                    f'color({y.val if type(y) is RBNode else ""}) == black, starting fixing for {x.val if type(x) is RBNode else ""}')
                 fix_rb_tree_delete(x)
                 animate_rotations(rb_tree_root)
                 draw_recolor_text(x, 'black')
@@ -402,7 +396,7 @@ def fix_rb_tree_delete(node):
                 w.color = 'black'
                 node.parent.color = 'red'
                 tmp_node1, tmp_node2 = w, node.parent
-                rotate(node.parent,'left')
+                rotate(node.parent, 'left')
                 draw_recolor_text(tmp_node1, 'black')
                 draw_recolor_text(tmp_node2, 'red')
                 r.frame.update()
@@ -423,7 +417,7 @@ def fix_rb_tree_delete(node):
                 w.left.color = 'black'
                 w.color = 'red'
                 tmp_node1, tmp_node2 = w.left, w
-                rotate(w,'right')
+                rotate(w, 'right')
                 draw_recolor_text(tmp_node1, 'black')
                 draw_recolor_text(tmp_node2, 'red')
                 r.frame.update()
@@ -437,7 +431,7 @@ def fix_rb_tree_delete(node):
                 node.parent.color = 'black'
                 w.right.color = 'black'
                 tmp_node1, tmp_node2 = w, w.right
-                rotate(node.parent,'left')
+                rotate(node.parent, 'left')
                 draw_recolor_text(tmp_node1, 'black')
                 draw_recolor_text(tmp_node2, 'black')
                 r.frame.update()
@@ -452,7 +446,7 @@ def fix_rb_tree_delete(node):
                 w.color = 'black'
                 node.parent.color = 'red'
                 tmp_node1, tmp_node2 = w, node.parent
-                rotate(node.parent,'right')
+                rotate(node.parent, 'right')
                 draw_recolor_text(tmp_node1, 'black')
                 draw_recolor_text(tmp_node2, 'red')
                 r.frame.update()
@@ -473,7 +467,7 @@ def fix_rb_tree_delete(node):
                 w.right.color = 'black'
                 w.color = 'red'
                 tmp_node1, tmp_node2 = w.right, w
-                rotate(w,'left')
+                rotate(w, 'left')
                 draw_recolor_text(tmp_node1, 'black')
                 draw_recolor_text(tmp_node2, 'red')
                 r.frame.update()
@@ -487,7 +481,7 @@ def fix_rb_tree_delete(node):
                 node.parent.color = 'black'
                 w.left.color = 'black'
                 tmp_node1, tmp_node2 = node.parent, w.left
-                rotate(node.parent,'right')
+                rotate(node.parent, 'right')
                 draw_recolor_text(tmp_node1, 'black')
                 draw_recolor_text(tmp_node2, 'black')
                 r.frame.update()
@@ -500,7 +494,7 @@ def fix_rb_tree_delete(node):
 
 
 def tree_successor(node):
-    explanation.append(f'Successor of {node.val} is ', False)
+    explanation.append(f'Successor of {node.val} is ')
     if type(node.right) is not RBLeaf:
         move_object('hint_frame', node.x, node.y, node.right.x, node.right.y)
         draw_exp_text(node.right, f'Looking for the minimum of {node.right.val}')
@@ -514,13 +508,13 @@ def tree_successor(node):
 
 
 def tree_minimum(tree):
-    explanation.append(f'Tree minimum of {tree.val} is ', False)
+    tmp = tree
     while type(tree.left) is not RBLeaf:
         draw_exp_text(tree, f'{tree.val} has a left child ')
         move_object('hint_frame', tree.x, tree.y, tree.left.x, tree.left.y)
         tree = tree.left
-    explanation.append(f'{tree.val}')
-    draw_exp_text(tree, f'Minimum found:{tree.val}')
+    explanation.append(f'Tree minimum of {tmp.val} is {tree.val}')
+    draw_exp_text(tree, f'Minimum found: {tree.val}')
     return tree
 
 
@@ -558,7 +552,7 @@ def rb_tree_root_find(text, show_to_gui=True):
                 set_buttons(True)
                 canvas_now.delete('hint_frame')
                 return None
-        draw_exp_text(curr, 'Found')
+        draw_exp_text(curr, f'{curr.val} found')
         if show_to_gui:
             label.config(text=f'Elem \'{text}\' found' if type(curr) is not RBLeaf else f'Elem \'{text}\' not found')
             canvas_now.delete('hint_frame')
