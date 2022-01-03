@@ -75,7 +75,8 @@ height = 300
 node_size = 26
 half_node_size = node_size / 2
 animation_time = 2000
-animation_unit = 100
+animation_unit = 10
+layout = 'double'
 
 
 def clear():
@@ -278,8 +279,8 @@ def rotation_tick(node, x_unit, y_unit):
 
 
 # Cavas vizualisation - place nodes in correct spots
-def update_positions(node):
-    if type(node) is RBNode and node is not rb_tree_root:
+def update_positions(node, static=False):
+    if type(node) is RBNode and node is not rb_tree_root and node is not rb_tree_root_copy:
         unit = (node.parent.r_edge - node.parent.l_edge) / 4
         if node is node.parent.right:
             node.x_next = node.parent.x_next + unit
@@ -291,15 +292,18 @@ def update_positions(node):
             node.y_next = node.parent.y_next + y_space
             node.l_edge = node.parent.l_edge
             node.r_edge = node.parent.x_next
-    elif node is rb_tree_root:
+    elif type(node) is RBNode and (node is rb_tree_root or node is rb_tree_root_copy):
         node.x_next = width // 2
         node.y_next = y_space
         node.l_edge = 0
         node.r_edge = width
+    if type(node) is RBNode and static:
+        node.x = node.x_next
+        node.y = node.y_next
     if type(node) is RBNode:
         # print(f'Post: {node.val} -- [{node.x},{node.y}] {node.l_edge}|{node.r_edge}')
-        update_positions(node.left)
-        update_positions(node.right)
+        update_positions(node.left, static)
+        update_positions(node.right, static)
 
 
 def rb_tree_root_delete(text):
@@ -617,6 +621,40 @@ def print_tree(tree, i=0):
         i -= 1
 
 
+def change_layout():
+    global canvas_now, layout
+    global width, height
+    if layout == 'double':
+        canvas_prev.pack_forget()
+        prev_label.pack_forget()
+        frame31.grid_forget()
+        width, height = 1400, 600
+        canvas_now.config(width=width, height=height)
+        view_button.config(text='Show previous state and explanation: OFF')
+        canvas_now.delete('all')
+        update_positions(rb_tree_root, True)
+        draw_rb_tree(rb_tree_root, canvas_now)
+        layout = 'single'
+    elif layout == 'single':
+        canvas_now.pack_forget()
+        now_label.pack_forget()
+        prev_label.pack()
+        canvas_prev.pack()
+        now_label.pack()
+        canvas_now.pack()
+        frame31.grid(row=0, column=0, sticky='NS')
+        width, height = 800, 300
+        canvas_now.config(width=width, height=height)
+        view_button.config(text='Show previous state and explanation: ON')
+        canvas_now.delete('all')
+        canvas_prev.delete('all')
+        update_positions(rb_tree_root, True)
+        update_positions(rb_tree_root_copy, True)
+        draw_rb_tree(rb_tree_root, canvas_now)
+        draw_rb_tree(rb_tree_root_copy, canvas_prev)
+        layout = 'double'
+
+
 # GUI alignment
 frame = tk.Frame(r.frame)
 
@@ -632,6 +670,7 @@ delete_button = tk.Button(frame2, text='Delete node', command=lambda: rb_tree_ro
 find_field = tk.Entry(frame2)
 find_button = tk.Button(frame2, text='Find node', command=lambda: rb_tree_root_find(find_field.get()))
 clear_button = tk.Button(frame2, text='Clear tree', command=lambda: clear())
+view_button = tk.Button(frame2, text='Show previous state and explanation: ON', command=lambda: change_layout())
 back_button = tk.Button(frame2, text='Back to menu', command=lambda: r.show_frame(m.frame))
 label = tk.Label(frame2)
 insert_field.grid(row=0, column=0)
@@ -639,7 +678,8 @@ insert_button.grid(row=0, column=1, padx=(0, 20))
 delete_field.grid(row=0, column=2)
 delete_button.grid(row=0, column=3, padx=(0, 20))
 find_field.grid(row=0, column=4)
-find_button.grid(row=0, column=5, padx=(0, 20))
+find_button.grid(row=0, column=5)
+view_button.grid(row=0, column=6, padx=(0, 20))
 clear_button.grid(row=0, column=6)
 back_button.grid(row=0, column=7, padx=(40, 0))
 label.grid(row=1, columnspan=6, sticky='WE')
@@ -658,7 +698,7 @@ frame31.grid(row=0, column=0, sticky='NS')
 frame32 = tk.Frame(frame3)
 prev_label = tk.Label(frame32, text='Previous state of the tree:')
 canvas_prev = tk.Canvas(frame32, width=width, height=height, bg='white')
-now_label = tk.Label(frame32, text='Current state of the tree')
+now_label = tk.Label(frame32, text='Current state of the tree:')
 canvas_now = tk.Canvas(frame32, width=width, height=height, bg='white')
 prev_label.pack(pady=(5, 0))
 canvas_prev.pack()
@@ -667,7 +707,7 @@ canvas_now.pack()
 frame32.grid(row=0, column=1)
 frame3.pack()
 
-buttons = [insert_button, delete_button, find_button, clear_button]
+buttons = [insert_button, delete_button, find_button, clear_button, view_button]
 
 
 def set_buttons(val):
