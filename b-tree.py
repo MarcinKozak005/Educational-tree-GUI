@@ -12,6 +12,9 @@ class BTree:
     def search(self, key):
         self.root.search(key)
 
+    def delete(self, key):
+        self.root.delete(key)
+
     class BTreeNode:
         def __init__(self, tree, is_leaf):
             self.tree = tree
@@ -95,14 +98,94 @@ class BTree:
                 self.tree.root = s
                 s.split_child(0, s.children[0])
 
+        def delete(self, key):
+            # 1
+            if self.is_leaf and key in self.keys:
+                self.keys.remove(key)
+            # 2
+            elif key in self.keys:
+                i = self.keys.index(key)
+                # a
+                if len(self.children[i].keys) > 1:
+                    self.keys[i] = self.children[i].predecessor()
+                    self.children[i].delete(self.keys[i])
+                # b
+                elif len(self.children[i + 1].keys) > 1:
+                    self.keys[i] = self.children[i + 1].successor()
+                    self.children[i + 1].delete(self.keys[i])
+                # c
+                else:
+                    self.children[i].keys.append(key)
+                    self.children[i].keys.extend(self.children[i + 1].keys)
+                    self.children[i].children.extend(self.children[i + 1].children)
+                    self.keys.remove(key)
+                    self.children.pop(i + 1)
+                    self.children[i].delete(key)
+            # 3
+            else:
+                i = 0
+                while i < len(self.keys) and key > self.keys[i]:
+                    i += 1
+                # a
+                if len(self.children[i].keys) > 1:
+                    self.children[i].delete(key)
+                elif len(self.children[i].keys) == 1 and \
+                        i - 1 >= 0 and len(self.children[i - 1].keys) > 1:
+                    self.children[i].keys.insert(0, self.keys[i - 1])
+                    self.keys[i - 1] = self.children[i - 1].keys[-1]
+                    if self.children[i - 1].children:
+                        self.children[i].children.insert(0, self.children[i - 1].children[-1])
+                        self.children[i - 1].children.pop()
+                    self.children[i - 1].keys.pop()
+                    self.children[i].delete(key)
+                elif len(self.children[i].keys) == 1 and \
+                        i + 1 < len(self.children) and len(self.children[i + 1].keys) > 1:
+                    self.children[i].keys.append(self.keys[i])
+                    self.keys[i] = self.children[i + 1].keys[0]
+                    if self.children[i + 1].children:
+                        self.children[i].children.append(self.children[i + 1].children[0])
+                        self.children[i + 1].children.pop(0)
+                    self.children[i + 1].keys.pop(0)
+                    self.children[i].delete(key)
+                # b
+                elif len(self.children[i].keys) == 1 and \
+                        i - 1 >= 0 and len(self.children[i - 1].keys) == 1:
+                    self.children[i - 1].keys.append(self.keys[i - 1])
+                    self.children[i - 1].keys.extend(self.children[i].keys)
+                    self.children[i - 1].children.extend(self.children[i].children)
+                    self.keys.pop(i - 1)
+                    self.children.pop(i)
+                    self.children[i - 1].delete(key)
+                elif len(self.children[i].keys) == 1 and \
+                        i + 1 < len(self.children) and len(self.children[i + 1].keys) == 1:
+                    self.children[i].keys.append(self.keys[i])
+                    self.children[i].keys.extend(self.children[i + 1].keys)
+                    self.children[i].children.extend(self.children[i + 1].children)
+                    self.keys.pop(i)
+                    self.children.pop(i + 1)
+                    self.children[i].delete(key)
+
+        def predecessor(self):
+            if self.is_leaf:
+                return self.keys[-1]
+            else:
+                return self.children[-1].predecessor()
+
+        def successor(self):
+            if self.is_leaf:
+                return self.keys[0]
+            else:
+                return self.children[0].successor()
+
         def print_node(self, indent=0):
-            print('\t'*indent + f"{self.keys}")
+            print('\t' * indent + f"{self.keys}")
             for c in self.children:
-                c.print_node(indent+1)
+                c.print_node(indent + 1)
 
 
-btree_root = BTree(3)
+tree = BTree(3)
 numbers = [5, 4, 1, 9, 6, 3, 6, 8, 3, 1, 2, 5, 7]
+to_delete = [14, 1, 8, 4, 9, 3]
 
 # for x in numbers:
 #     btree_root.insert(x)
@@ -111,7 +194,10 @@ numbers = [5, 4, 1, 9, 6, 3, 6, 8, 3, 1, 2, 5, 7]
 #     print('---')
 
 for x in range(1, 15):
-    btree_root.insert_key(x)
-    btree_root.print_tree()
+    tree.insert_key(x)
+tree.print_tree()
+print("Deletion")
+for x in to_delete:
     print('---')
-
+    tree.delete(x)
+    tree.print_tree()
