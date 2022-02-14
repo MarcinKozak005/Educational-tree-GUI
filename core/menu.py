@@ -2,7 +2,7 @@ import tkinter as tk
 import core.root as r
 import drafts.list as li
 import drafts.frame2 as f2
-import redblack_tree.redblack_tree as rbt
+import redblack_tree.main as rbt
 
 frame = tk.Frame(r.frame)
 

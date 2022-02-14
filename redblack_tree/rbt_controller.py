@@ -1,6 +1,7 @@
 import copy
 import redblack_tree.rbt_model as rbt
 
+
 def validate_input(val):
     if val.isdigit() and 0 <= int(val) <= 999:
         return True
@@ -22,14 +23,22 @@ class Controller:
         self.view.clear()
 
     def perform(self, obj, func, arg):
-        self.view.set_buttons(False)  # To do controllera
+        self.view.set_buttons(False)
         if validate_input(arg):
-            if self.tree.root is not None:
+            val = int(arg)
+            if self.tree.root is not None and (func == 'insert' or func == 'delete' and obj.search_value_no_GUI(val)):
                 self.view.canvas_prev.delete('all')
-                self.tree.root.update_positions(self.tree.root, True, width=800)
+                self.tree.root.update_positions(True, width=800)
                 self.view.draw_rb_tree(self.tree.root, self.view.canvas_prev)
-                self.tree.root.update_positions(self.tree.root, True)
-            func(obj, int(arg))
+                self.tree.root.update_positions(True)
+            if func == 'insert':
+                obj.insert_value(val)
+            elif func == 'search':
+                obj.search_value(val)
+            elif func == 'delete':
+                obj.delete_value(val)
+            self.view.prepare_view()
+            self.view.draw_rb_tree(self.tree.root, self.view.canvas_now)
         else:
             self.view.info_label.config(text='Not a valid input (integer in range 0-999)')
         self.view.set_buttons(True)

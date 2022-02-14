@@ -1,7 +1,3 @@
-import tkinter as tk
-import core.root as r
-import core.menu as m
-import copy
 import redblack_tree.rbt_model as rbt
 import redblack_tree.rbt_view as v
 import redblack_tree.rbt_controller as c
@@ -14,14 +10,9 @@ view = v.View(
     node_size=26,
     animation_time=1500,
     animation_unit=10,
-    layout='double'
+    layout='double',
 )
 
 tree = rbt.RBTree(view)
 controller = c.Controller(tree, view)
-
-frame = view.create_GUI(controller,tree)
-
-# frame z view wyciągniej go/otrzymaj
-# GUI alignment
-
+frame = view.create_GUI(controller, tree)

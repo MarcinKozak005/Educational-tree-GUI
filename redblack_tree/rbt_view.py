@@ -38,19 +38,16 @@ class View:
         frame2 = tk.LabelFrame(frame, text='2')
         insert_field = tk.Entry(frame2)
         insert_button = tk.Button(frame2, text='Add node',
-                                  command=lambda: controller.perform(model, lambda obj, val: obj.insert_value(val),
-                                                                     insert_field.get()))
+                                  command=lambda: controller.perform(model, 'insert', insert_field.get()))
         delete_field = tk.Entry(frame2)
         delete_button = tk.Button(frame2, text='Delete node',
-                                  command=lambda: controller.perform(model, lambda obj, val: obj.insert_value(val),
-                                                                     insert_field.get()))
+                                  command=lambda: controller.perform(model, 'delete', delete_field.get()))
         find_field = tk.Entry(frame2)
         find_button = tk.Button(frame2, text='Find node',
-                                command=lambda: controller.perform(model, lambda obj, val: obj.insert_value(val),
-                                                                   insert_field.get()))
+                                command=lambda: controller.perform(model, 'search', find_field.get()))
         clear_button = tk.Button(frame2, text='Clear tree', command=lambda: controller.clear())
         self.view_button = tk.Button(frame2, text='Show previous state and explanation: ON',
-                                command=lambda: controller.change_layout())
+                                     command=lambda: controller.change_layout())
         back_button = tk.Button(frame2, text='Back to menu', command=lambda: r.show_frame(m.frame))
         self.info_label = tk.Label(frame2)
         insert_field.grid(row=0, column=0)
@@ -85,6 +82,25 @@ class View:
         self.now_label.pack(pady=(5, 0))
         self.canvas_now.pack()
         frame32.grid(row=0, column=1)
+        #
+        def tests():
+            cases = [
+                [1,2,3],
+                [3,2,1],
+                [2,1,3,4,5],
+                [2,1,5,4,3],
+                [1,3,2],
+                [3,1,2],
+                [4,5,3,2,1],
+                [4,5,1,2,3]
+            ]
+            for case in cases:
+                for c in case:
+                    controller.perform(model, 'insert', str(c))
+                _ = input("Press sth to process")
+                model.clear()
+        tk.Button(frame, text='Tests', command=tests).pack()
+        #
         frame3.pack()
 
         self.buttons = [insert_button, delete_button, find_button, clear_button, self.view_button]
@@ -110,25 +126,24 @@ class View:
                 self.draw_line(canvas, node, node.left, tags=[f'Line{node.__hash__()}', 'Line'])
             canvas.create_oval(node.x - self.half_node_size, node.y - self.half_node_size, node.x + self.half_node_size,
                                node.y + self.half_node_size, fill=node.color, tags=f'Node{node.__hash__()}')
-            canvas.create_text(node.x, node.y, fill='white', text=node.val, tags=f'Node{node.__hash__()}')
+            canvas.create_text(node.x, node.y, fill='white', text=node.value, tags=f'Node{node.__hash__()}')
 
     def draw_line(self, canvas, node1, node2, tags=None):
         if node1 is not None and node2 is not None and type(node1) is not rbt.RBTree.RBLeaf and type(
                 node2) is not rbt.RBTree.RBLeaf:
             canvas.create_line(node1.x, node1.y, node2.x, node2.y, fill='black', tags=tags)
 
-    def set_buttons(self, val):
+    def set_buttons(self, value):
         for b in self.buttons:  # dodawane z jakiegoś add buton do view?
-            b.config(state='normal' if val else 'disabled')
+            b.config(state='normal' if value else 'disabled')
 
-    # Metoda klasy rozszerzającej klasę z canvami? - to ma coś specyficznego dla RBTrees
     def draw_recolor_text(self, node, to_color):
         if type(node) is rbt.RBTree.RBNode:
             txt = self.canvas_now.create_text(node.x, node.y - self.node_size, fill='white',
                                               text=f'Change color to {to_color}',
                                               tags='recolor_txt')
             txt_bg = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill="grey", tags='recolor_txt')
-            self.explanation.append(f'Change color of {node.val} to {to_color}')
+            self.explanation.append(f'Change color of {node.value} to {to_color}')
             self.canvas_now.tag_lower(txt_bg)
 
     # Bardziej RBTree niż inne drzewa
@@ -173,7 +188,7 @@ class View:
         if type(node) is rbt.RBTree.RBNode:
             canvas.create_oval(node.x - self.half_node_size, node.y - self.half_node_size, node.x + self.half_node_size,
                                node.y + self.half_node_size, fill=node.color, tags=f'Node{node.__hash__()}')
-            canvas.create_text(node.x, node.y, fill='white', text=node.val, tags=f'Node{node.__hash__()}')
+            canvas.create_text(node.x, node.y, fill='white', text=node.value, tags=f'Node{node.__hash__()}')
 
     def move_object(self, obj, x1, y1, x2, y2):
         x_diff = x2 - x1
@@ -187,18 +202,21 @@ class View:
             self.canvas_now.after(self.animation_unit)
             counter -= 1
 
-    # Controller?
-
-
     def clear(self):
         self.canvas_prev.delete('all')
         self.canvas_now.delete('all')
         self.explanation_label.config(text='')
 
+    def prepare_view(self):
+        self.info_label.config(text='')
+        self.canvas_now.delete('all')
+        self.explanation_label.config(text=self.explanation.string, wraplength=400)
+        self.explanation.reset()
+
 
 class Explanation:
     string = ''
-    line = 0
+    line = 1
 
     def __init__(self):
         pass
@@ -209,4 +227,4 @@ class Explanation:
 
     def reset(self):
         self.string = ''
-        self.line = 0
+        self.line = 1
