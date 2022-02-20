@@ -48,12 +48,13 @@ class Controller:
         if view.layout == 'double':
             view.canvas_prev.pack_forget()
             view.prev_label.pack_forget()
-            view.frame31.grid_forget()
+            view.explanation_frame.grid_forget()
             view.width, view.height = 1400, 600
             view.canvas_now.config(width=view.width, height=view.height)
             view.view_button.config(text='Show previous state and explanation: OFF')
             view.canvas_now.delete('all')
-            self.tree.root.update_positions(self.tree.root, True)
+            if self.tree.root is not None:
+                self.tree.root.update_positions(True, view.width)
             view.draw_rb_tree(self.tree.root, view.canvas_now)
             view.layout = 'single'
         elif view.layout == 'single':
@@ -63,14 +64,12 @@ class Controller:
             view.canvas_prev.pack()
             view.now_label.pack()
             view.canvas_now.pack()
-            view.frame31.grid(row=0, column=0, sticky='NS')
+            view.explanation_frame.grid(row=0, column=0, sticky='NS')
             view.width, view.height = 800, 300
             view.canvas_now.config(width=view.width, height=view.height)
             view.view_button.config(text='Show previous state and explanation: ON')
             view.canvas_now.delete('all')
-            # view.canvas_prev.delete('all')
-            self.tree.root.update_positions(self.tree.root, True)
-            # update_positions(rb_tree_root_copy, True)
+            if self.tree.root is not None:
+                self.tree.root.update_positions(True, view.width)
             view.draw_rb_tree(self.tree.root, view.canvas_now)
-            # draw_rb_tree(rb_tree_root_copy, canvas_prev)
             view.layout = 'double'

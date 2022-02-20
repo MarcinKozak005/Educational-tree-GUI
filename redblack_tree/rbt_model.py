@@ -148,10 +148,10 @@ class RBTree:
             newNode = self.tree.root.subtree_insert_value(value)
             view.draw_exp_text(newNode, f'Inserting {newNode.value}', False)
             view.explanation.append(f'{value} inserted. Starting fixing')
-            view.draw_subtree(newNode, view.canvas_now)
+            view.draw_node_with_children_lines(newNode, view.canvas_now)
             view.canvas_now.delete('grey_node')
-            view.draw_line(view.canvas_now, newNode, newNode.parent, tags=[f'Line{newNode.__hash__()}', 'Line'])
-            view.canvas_now.tag_lower(f'Line{newNode.__hash__()}')
+            view.draw_line(view.canvas_now, newNode, newNode.parent)
+            view.canvas_now.tag_lower(f'Line{hash(newNode)}')
             newNode.fix_insert()
 
         def subtree_insert_value(self, value):
@@ -313,7 +313,7 @@ class RBTree:
             else:
                 if node is self.tree.root and type(node.left) is RBTree.RBLeaf and type(node.right) is RBTree.RBLeaf:
                     view.canvas_now.delete('hint_frame')
-                    view.move_object(f'Node{self.tree.root.__hash__()}', self.tree.root.x, self.tree.root.y,
+                    view.move_object(f'Node{hash(self.tree.root)}', self.tree.root.x, self.tree.root.y,
                                      self.tree.root.x,
                                      -view.node_size)
                     self.tree.clear()
@@ -335,7 +335,7 @@ class RBTree:
                     y.parent.left = x
                 else:
                     y.parent.right = x
-                view.canvas_now.delete(f'Line{y.__hash__()}')
+                view.canvas_now.delete(f'Line{hash(y)}')
                 view.canvas_now.delete('hint_frame')
                 self.tree.root.update_positions()
                 if y is not node:
@@ -345,12 +345,12 @@ class RBTree:
                                                 node.y + view.half_node_size, fill=node.color, tags='swap1')
                     view.canvas_now.create_oval(y.x - view.half_node_size, y.y - view.half_node_size,
                                                 y.x + view.half_node_size,
-                                                y.y + view.half_node_size, fill=y.color, tags=f'Node{y.__hash__()}')
+                                                y.y + view.half_node_size, fill=y.color, tags=f'Node{hash(y)}')
                     txt1 = view.canvas_now.create_text(node.x, node.y, fill='blue', text=node.value,
-                                                       tags=[f'Node{y.__hash__()}', 'txt1'])
+                                                       tags=[f'Node{hash(y)}', 'txt1'])
                     txt2 = view.canvas_now.create_text(y.x, y.y, fill='blue', text=y.value, tags=['swap1', 'txt2'])
                     txt1_bg = view.canvas_now.create_rectangle(view.canvas_now.bbox(txt1), fill='white',
-                                                               tags=[f'Node{y.__hash__()}', 'txt1'])
+                                                               tags=[f'Node{hash(y)}', 'txt1'])
                     txt2_bg = view.canvas_now.create_rectangle(view.canvas_now.bbox(txt2), fill='white',
                                                                tags=['swap1', 'txt2'])
                     view.canvas_now.tag_lower(txt1_bg, txt1)
@@ -360,7 +360,7 @@ class RBTree:
                     node.value = y.value
                     view.canvas_now.delete('swap1')
                     view.draw_node(node, view.canvas_now)
-                view.move_object(f'Node{y.__hash__()}', y.x, y.y, y.x, - view.node_size)
+                view.move_object(f'Node{hash(y)}', y.x, y.y, y.x, - view.node_size)
                 view.explanation.append(f'Remove {value} from tree')
                 if y.color == 'black':
                     self.fix_delete(x)
