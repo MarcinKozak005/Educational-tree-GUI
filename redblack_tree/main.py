@@ -8,4 +8,4 @@ view = v.View(
 
 tree = rbt.RBTree(view)
 controller = c.Controller(tree, view)
-frame = view.create_GUI(controller, tree)
+frame = view.create_GUI(controller)

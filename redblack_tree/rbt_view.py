@@ -26,11 +26,10 @@ class View:
         self.now_label = None
         self.view_button = None
 
-    def create_GUI(self, controller, model):
+    def create_GUI(self, controller):
         """
         Creates a GUI with buttons triggering model methods with the use of controller
-        :param controller: controller to call model methods
-        :param model: object on which insert/delete/search methods will be called
+        :param controller: controller to call model methods and to access the model
         :return: returns main tk.Frame with all GUI widgets
         """
 
@@ -43,13 +42,13 @@ class View:
         controls_frame = tk.Frame(frame)
         insert_field = tk.Entry(controls_frame)
         insert_button = tk.Button(controls_frame, text='Add node',
-                                  command=lambda: controller.perform(model, 'insert', insert_field.get()))
+                                  command=lambda: controller.perform(r.Action.insert, insert_field.get()))
         delete_field = tk.Entry(controls_frame)
         delete_button = tk.Button(controls_frame, text='Delete node',
-                                  command=lambda: controller.perform(model, 'delete', delete_field.get()))
+                                  command=lambda: controller.perform(r.Action.delete, delete_field.get()))
         find_field = tk.Entry(controls_frame)
         find_button = tk.Button(controls_frame, text='Find node',
-                                command=lambda: controller.perform(model, 'search', find_field.get()))
+                                command=lambda: controller.perform(r.Action.search, find_field.get()))
         clear_button = tk.Button(controls_frame, text='Clear tree', command=lambda: controller.clear())
         self.view_button = tk.Button(controls_frame, text='Show previous state and explanation: ON',
                                      command=lambda: controller.change_layout())
@@ -71,7 +70,7 @@ class View:
         self.explanation_frame = tk.Frame(visualization_frame)
         explanation_title_lab = tk.Label(self.explanation_frame)
         self.explanation_label = tk.Label(self.explanation_frame)
-        self.explanation_label.config(text='', justify=tk.LEFT, width=50, anchor=tk.W, background='pink')
+        self.explanation_label.config(text='', justify=tk.LEFT, width=50, anchor=tk.W)
         explanation_title_lab.config(text='Explanation', font=15)
         explanation_title_lab.pack()
         self.explanation_label.pack()
