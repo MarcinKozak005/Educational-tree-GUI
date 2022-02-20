@@ -203,19 +203,19 @@ class View:
                 self.draw_line(self.canvas_now, n.parent, n.parent.right)
                 self.draw_line(self.canvas_now, n.parent, n.parent.left)
             self.canvas_now.tag_lower('Line')
-
-        successors = node.successors()
-        units = {}
-        tmp = self.animation_time / self.animation_unit
-        for s in successors:
-            x_unit = (s.x_next - s.x) / tmp
-            y_unit = (s.y_next - s.y) / tmp
-            units[s] = (x_unit, y_unit)
-        while tmp > 0:
+        if node is not None:
+            successors = node.successors()
+            units = {}
+            tmp = self.animation_time / self.animation_unit
             for s in successors:
-                rotation_tick(s, units[s][0], units[s][1])
-            r.wait(self.animation_unit)
-            tmp -= 1
+                x_unit = (s.x_next - s.x) / tmp
+                y_unit = (s.y_next - s.y) / tmp
+                units[s] = (x_unit, y_unit)
+            while tmp > 0:
+                for s in successors:
+                    rotation_tick(s, units[s][0], units[s][1])
+                r.wait(self.animation_unit)
+                tmp -= 1
 
     def move_object(self, obj, x1, y1, x2, y2):
         """

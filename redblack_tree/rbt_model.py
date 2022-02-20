@@ -418,7 +418,8 @@ class RBTree:
                         node.parent.color = 'black'
                         w.right.color = 'black'
                         tmp_node1, tmp_node2, tmp_node3 = w, node.parent, w.right
-                        if node.parent is not self.tree.root:
+                        if node.parent is not self.tree.root or \
+                                node.parent is self.tree.root and type(node) is RBTree.RBLeaf:
                             node.parent.rotate('left')
                         view.draw_recolor_text(tmp_node1, node.parent.color)
                         view.draw_recolor_text(tmp_node2, 'black')
@@ -467,7 +468,8 @@ class RBTree:
                         node.parent.color = 'black'
                         w.left.color = 'black'
                         tmp_node1, tmp_node2, tmp_node3 = w, node.parent, w.left
-                        if node.parent is not self.tree.root:
+                        if node.parent is not self.tree.root or \
+                                node.parent is self.tree.root and type(node) is RBTree.RBLeaf:
                             node.parent.rotate('right')
                         view.draw_recolor_text(tmp_node1, node.parent.color)
                         view.draw_recolor_text(tmp_node2, 'black')
