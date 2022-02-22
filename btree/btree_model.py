@@ -95,7 +95,7 @@ class BTree:
             while i < len(self.values) and value.value > self.values[i].value:
                 i += 1
             if self.is_leaf:
-                self.values.insert(i, value)  # TODO: update positions
+                self.values.insert(i, value)
             else:
                 self.children[i].insert(value)
             if len(self.values) == self.tree.max_degree:
@@ -238,8 +238,8 @@ class BTree:
             # Values
             for i in range(len(self.values)):
                 self.values[i].x_next = \
-                    self.x_next - len(self.values) * self.tree.view.node_size // 2 + \
-                    self.tree.view.half_node_size + i * self.tree.view.node_size
+                    self.x_next - len(self.values) * self.tree.view.node_width // 2 + \
+                    self.tree.view.node_width//2 + i * self.tree.view.node_width
                 self.values[i].y_next = self.y_next
             if static:
                 self.x = self.x_next

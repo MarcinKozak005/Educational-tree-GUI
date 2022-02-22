@@ -3,8 +3,8 @@ import btree.btree_view as v
 import btree.btree_controller as c
 
 view = v.View(
-    node_size=38,
-    node_height=17
+    node_width=24,
+    node_height=18
 )
 
 tree = bt.BTree(3, view)

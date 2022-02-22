@@ -4,17 +4,16 @@ import core.root as r
 import btree.btree_model as bt
 import redblack_tree.rbt_model as rbt
 
+
 class View:
-    def __init__(self, node_size, node_height):
+    def __init__(self, node_width, node_height):
         self.explanation = Explanation()
         self.width = 1000
         self.height = 300
         self.y_space = 50
         self.y_above = 30
-        self.node_size = node_size
-        self.half_node_size = node_size / 2
+        self.node_width = node_width
         self.node_height = node_height
-        self.half_node_height = node_height//2
         self.animation_time = 150
         self.animation_unit = 10
         self.layout = 'double'
@@ -102,7 +101,7 @@ class View:
         :param above: if True -> exp_str will be above node, else below the node
         :return: returns nothing
         """
-        txt = self.canvas_now.create_text(node.x, node.y + (-1 if above else 1) * self.node_size,
+        txt = self.canvas_now.create_text(node.x, node.y + (-1 if above else 1) * self.node_width,
                                           fill='white',
                                           text=exp_str,
                                           tags='exp_txt')
@@ -120,7 +119,7 @@ class View:
         :return: returns nothing
         """
         if type(node) is rbt.RBTree.RBNode:
-            txt = self.canvas_now.create_text(node.x, node.y - self.node_size,
+            txt = self.canvas_now.create_text(node.x, node.y - self.node_width,
                                               fill='white',
                                               text=f'Change color to {to_color}',
                                               tags='recolor_txt')
@@ -137,25 +136,52 @@ class View:
         """
         if type(node) is bt.BTree.BTreeNode:  # and node is not None:
             for v in node.values:
-                self.draw_node_with_children_lines(v, canvas)
+                self.draw_node_with_children_lines(v, node, canvas)
             if not node.is_leaf:
                 for c in node.children:
                     self.draw_btree(c, canvas)
 
-    def draw_node_with_children_lines(self, node, canvas):
+    def draw_node_with_children_lines(self, value, node, canvas):
         """
         Draws node with children lines
+        :param value: value object
         :param node: node to draw
         :param canvas: canvas on which node will be drawn
         :return: returns nothing
         """
-        if type(node) is bt.BTree.BTreeNode.BValue:
-            # if not node.is_leaf:
-            #     for c in node.children:
-            #         self.draw_line(canvas, node, c)
-            self.draw_node(node, canvas)
+        if type(value) is bt.BTree.BTreeNode.BValue:
+            if not node.is_leaf:
+                index = node.values.index(value)
+                self.draw_line(canvas, value, node.children[index], tk.SW, tk.N)
+                if index == len(node.values) - 1:
+                    self.draw_line(canvas, value, node.children[index + 1], tk.SE, tk.N)
+            self.draw_node(value, canvas)
 
-    def draw_line(self, canvas, node1, node2):
+    def side_modifier(self, side):
+        if side == tk.NE:
+            sides = [tk.N, tk.E]
+        elif side == tk.SE:
+            sides = [tk.S, tk.E]
+        elif side == tk.SW:
+            sides = [tk.S, tk.W]
+        elif side == tk.NW:
+            sides = [tk.N, tk.W]
+        else:
+            sides = [side]
+
+        x_mod = 0
+        y_mod = 0
+        if tk.N in sides:
+            y_mod -= self.node_height // 2
+        if tk.E in sides:
+            x_mod += self.node_width // 2
+        if tk.S in sides:
+            y_mod += self.node_height // 2
+        if tk.W in sides:
+            x_mod -= self.node_width // 2
+        return x_mod, y_mod
+
+    def draw_line(self, canvas, node1, node2, from_side=tk.CENTER, to_side=tk.CENTER):
         """
         Draws a line between two nodes
         :param canvas: canvas to draw on
@@ -165,8 +191,10 @@ class View:
         """
         if node1 is not None and node2 is not None and type(node1) is not rbt.RBTree.RBLeaf \
                 and type(node2) is not rbt.RBTree.RBLeaf:
-            canvas.create_line(node1.x, node1.y, node2.x, node2.y, fill='black',
-                               tags=[f'Line{hash(node1)}', 'Line'])
+            from_mod = self.side_modifier(from_side)
+            to_mod = self.side_modifier(to_side)
+            canvas.create_line(node1.x + from_mod[0], node1.y + from_mod[1], node2.x + to_mod[0], node2.y + to_mod[1],
+                               fill='black', tags=[f'Line{hash(node1)}', 'Line'])
 
     def draw_node(self, node, canvas):
         """
@@ -176,9 +204,10 @@ class View:
         :return: returns nothing
         """
         if type(node) is bt.BTree.BTreeNode.BValue:
-            canvas.create_rectangle(node.x - self.half_node_size,node.y-self.half_node_height,  #TODO rozmiar?
-                                    node.x + self.half_node_size, node.y + self.half_node_height, fill='green',tags=f'Value{hash(node)}')
-            canvas.create_text(node.x,node.y,fill='white',text=node.value, tags=f'Value{hash(node)}')
+            canvas.create_rectangle(node.x - self.node_width // 2, node.y - self.node_height // 2,
+                                    node.x + self.node_width // 2, node.y + self.node_height // 2, fill='green',
+                                    tags=f'Value{hash(node)}')
+            canvas.create_text(node.x, node.y, fill='white', text=node.value, tags=f'Value{hash(node)}')
 
     def animate_rotations(self, node):
         """
@@ -206,6 +235,7 @@ class View:
                 self.draw_line(self.canvas_now, n.parent, n.parent.right)
                 self.draw_line(self.canvas_now, n.parent, n.parent.left)
             self.canvas_now.tag_lower('Line')
+
         if node is not None:
             successors = node.successors()
             units = {}
