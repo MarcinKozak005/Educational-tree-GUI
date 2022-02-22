@@ -250,6 +250,35 @@ class View:
                 r.wait(self.animation_unit)
                 tmp -= 1
 
+    def animate_values_movement(self, node):
+        def values_tick(v, x_un, y_un):
+            self.canvas_now.delete(f'Line{hash(v)}')
+            if self.canvas_now.find_withtag(f'Value{hash(v)}'):
+                self.canvas_now.move(f'Value{hash(v)}', x_un, y_un)
+            else:
+                self.canvas_now.move(f'grey_node', x_un, y_un)
+            v.x += x_un
+            v.y += y_un
+            index = node.values.index(v)
+            if index < len(node.children):
+                self.draw_line(self.canvas_now, v, node.children[index], tk.SW, tk.N)
+            if index == len(node.values) - 1 and index + 1 < len(node.children):
+                self.draw_line(self.canvas_now, v, node.children[index + 1], tk.SE, tk.N)
+            self.canvas_now.tag_lower('Line')
+
+        if node is not None:
+            units = {}
+            tmp = self.animation_time / self.animation_unit
+            for v in node.values:
+                x_unit = (v.x_next - v.x) / tmp
+                y_unit = (v.y_next - v.y) / tmp
+                units[v] = (x_unit, y_unit)
+            while tmp > 0:
+                for v in node.values:
+                    values_tick(v, units[v][0], units[v][1])
+                r.wait(self.animation_unit)
+                tmp -= 1
+
     def move_object(self, obj, x1, y1, x2, y2):
         """
         Moves object obj from (x1,y1) to (x2,y2)

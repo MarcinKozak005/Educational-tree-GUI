@@ -13,7 +13,21 @@ class BTree:
             self.root.values.append(BTree.BTreeNode.BValue(value))
             self.view.explanation.append(f'Added node {value}')
         else:
-            self.root.insert(BTree.BTreeNode.BValue(value))
+            view = self.view
+            view.explanation.append(f'Tree is not empty, looking for insert place for {value}')
+            view.canvas_now.create_rectangle(self.root.x - view.node_width // 2,
+                                             self.root.y - view.node_height // 2 - view.y_above,
+                                             self.root.x + view.node_width // 2,
+                                             self.root.y + view.node_height // 2 - view.y_above,
+                                             fill='red', tags=f'grey_node')
+            view.canvas_now.create_text(self.root.x, self.root.y - view.y_above, fill='white',
+                                        text=value, tags=f'grey_node')
+            view.canvas_now.create_rectangle(self.root.values[0].x - view.node_width//2,
+                                             self.root.values[0].y - view.node_height//2,
+                                             self.root.values[0].x + view.node_width//2,
+                                             self.root.values[0].y + view.node_height//2,
+                                             outline='red', tags='hint_frame')
+            self.root.insert(BTree.BTreeNode.BValue(value, self.root.x, self.root.y - view.y_above))
         self.root.update_positions(True)
 
     def print_tree(self):
@@ -24,6 +38,10 @@ class BTree:
 
     def delete_value(self, value):
         self.root.delete_value(value)
+
+    def update_positions(self, static=False, width=None):
+        if self.root is not None:
+            self.root.update_positions(static, width)
 
     class BTreeNode:
         def __init__(self, tree, is_leaf, x, y, l_edge, r_edge):
@@ -92,13 +110,23 @@ class BTree:
             :return: returns nothing
             """
             i = 0
+            # jak 0 to musze cofnąć framea
             while i < len(self.values) and value.value > self.values[i].value:
+                self.tree.view.move_object('hint_frame', self.values[i].x, self.values[i].y, self.values[i].x + self.tree.view.node_width,self.values[i].y)
+                self.tree.view.explanation.append(f'{value} > {self.values[i].value}, check next value')
                 i += 1
             if self.is_leaf:
                 self.values.insert(i, value)
+                self.tree.update_positions()
+                self.tree.view.animate_values_movement(self)
             else:
+                # cofnij o połowe i elo ?
+                self.tree.view.move_object('hint_frame', self.values[i-1].x + self.tree.view.node_width,self.values[i-1].y,self.values[i-1].x + self.tree.view.node_width//2,self.values[i-1].y)
+                self.tree.view.move_object('hint_frame', self.values[i - 1].x + self.tree.view.node_width // 2, self.values[i - 1].y, self.children[i].x, self.children[i].y-self.tree.view.node_height//2)
+                self.tree.view.move_object('hint_frame', self.children[i].x, self.children[i].y - self.tree.view.node_height // 2, self.children[i].values[0].x, self.children[i].values[0].y)
                 self.children[i].insert(value)
             if len(self.values) == self.tree.max_degree:
+                # zniknij hinta?
                 self.fix_insert()
 
         def fix_insert(self):
@@ -239,7 +267,7 @@ class BTree:
             for i in range(len(self.values)):
                 self.values[i].x_next = \
                     self.x_next - len(self.values) * self.tree.view.node_width // 2 + \
-                    self.tree.view.node_width//2 + i * self.tree.view.node_width
+                    self.tree.view.node_width // 2 + i * self.tree.view.node_width
                 self.values[i].y_next = self.y_next
             if static:
                 self.x = self.x_next
@@ -252,10 +280,10 @@ class BTree:
                     c.update_positions(static)
 
         class BValue:
-            def __init__(self, value):
+            def __init__(self, value,x=0,y=0):
                 self.value = value
-                self.x = 0
-                self.y = 0
+                self.x = x
+                self.y = y
                 # Animation connected
                 self.x_next = 0
                 self.y_next = 0
