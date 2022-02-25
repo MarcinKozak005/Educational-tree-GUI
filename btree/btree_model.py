@@ -28,8 +28,11 @@ class BTree:
     def print_tree(self):
         self.root.print_node()
 
-    def search(self, value):
-        self.root.search(value)
+    def search_value(self, value):
+        if self.root is None:
+            self.view.explanation.append(f'Tree is empty. Value cannot be found')
+        else:
+            self.root.search_value(value)
 
     def delete_value(self, value):
         self.root.delete_value(value)
@@ -62,7 +65,7 @@ class BTree:
             self.y_next = y
             self.id = self.get_id()
 
-        def search(self, value):
+        def search_value(self, value):
             """
             Searches for value in the node
             :param value: searched value
@@ -70,14 +73,42 @@ class BTree:
                      else None
             """
             i = 0
-            while i <= len(self.values) and value.value > self.values[i]:
+            self.tree.view.canvas_now.create_rectangle(self.values[0].x - self.tree.view.node_width // 2,
+                                                       self.values[0].y - self.tree.view.node_height // 2,
+                                                       self.values[0].x + self.tree.view.node_width // 2,
+                                                       self.values[0].y + self.tree.view.node_height // 2,
+                                                       outline='red', tags='hint_frame')
+            while i < len(self.values) and value > self.values[i].value:
+                self.tree.view.draw_exp_text(self.values[i],
+                                             f'[{self.id}]: {value} > {self.values[i].value}, check next value',
+                                             False)
+                self.tree.view.move_object('hint_frame', self.values[i].x, self.values[i].y,
+                                           self.values[i].x + self.tree.view.node_width, self.values[i].y)
                 i += 1
-            if i <= len(self.values) and value.value == self.values[i]:
+            if i < len(self.values) and value == self.values[i].value:
+                self.tree.view.draw_exp_text(self, f'Value found')
+                self.tree.view.canvas_now.delete('hint_frame')
                 return self, i
             if self.is_leaf:
+                self.tree.view.draw_exp_text(self, f'Value not found')
+                self.tree.view.canvas_now.delete('hint_frame')
                 return None
             else:
-                return self.children[i].search(value)
+                if i < len(self.values):
+                    self.tree.view.draw_exp_text(self.values[i],
+                                                 f'[{self.id}]: {value} < {self.values[i].value}, search in [{self.children[i].id}]',
+                                                 False)
+                else:
+                    self.tree.view.draw_exp_text(self, f'No next value', False)
+                    self.tree.view.move_object('hint_frame', self.values[i - 1].x + self.tree.view.node_width,
+                                               self.values[i - 1].y, self.values[i - 1].x,
+                                               self.values[i - 1].y)
+                    self.tree.view.draw_exp_text(self,
+                                                 f'Search value in a children node [{self.children[i].id}] of [{self.id}]',
+                                                 False)
+                self.tree.view.move_object('hint_frame', self.values[i - 1].x, self.values[i - 1].y,
+                                           self.children[i].values[0].x, self.children[i].values[0].y)
+                return self.children[i].search_value(value)
 
         def split_child(self, i, full_node):
             """
