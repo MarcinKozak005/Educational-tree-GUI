@@ -10,8 +10,8 @@ class BTree:
         if self.root is None:
             self.root = BTree.BTreeNode(self, True, self.view.width // 2, self.view.y_space, 0, self.view.width)
             self.view.explanation.append(f'Tree is empty')
-            self.root.values.append(BTree.BTreeNode.BValue(value))
-            self.view.explanation.append(f'Added node {value}')
+            self.root.values.append(BTree.BTreeNode.BValue(value, self.root))
+            self.view.explanation.append(f'Added value {value} in node [{self.root.id}]')
         else:
             view = self.view
             view.explanation.append(f'Tree is not empty, looking for insert place for {value}')
@@ -22,12 +22,7 @@ class BTree:
                                              fill='red', tags=f'grey_node')
             view.canvas_now.create_text(self.root.x, self.root.y - view.y_above, fill='white',
                                         text=value, tags=f'grey_node')
-            view.canvas_now.create_rectangle(self.root.values[0].x - view.node_width//2,
-                                             self.root.values[0].y - view.node_height//2,
-                                             self.root.values[0].x + view.node_width//2,
-                                             self.root.values[0].y + view.node_height//2,
-                                             outline='red', tags='hint_frame')
-            self.root.insert(BTree.BTreeNode.BValue(value, self.root.x, self.root.y - view.y_above))
+            self.root.insert(BTree.BTreeNode.BValue(value, None, self.root.x, self.root.y - view.y_above))
         self.root.update_positions(True)
 
     def print_tree(self):
@@ -44,6 +39,14 @@ class BTree:
             self.root.update_positions(static, width)
 
     class BTreeNode:
+
+        class_node_id = 64
+
+        @staticmethod
+        def get_id():
+            BTree.BTreeNode.class_node_id += 1
+            return chr(BTree.BTreeNode.class_node_id)
+
         def __init__(self, tree, is_leaf, x, y, l_edge, r_edge):
             self.tree = tree
             self.is_leaf = is_leaf
@@ -57,6 +60,7 @@ class BTree:
             self.r_edge = r_edge  # edges for nice visualization
             self.x_next = x
             self.y_next = y
+            self.id = self.get_id()
 
         def search(self, value):
             """
@@ -77,19 +81,26 @@ class BTree:
 
         def split_child(self, i, full_node):
             """
-            Splits full_node (i-th children of self) into self and z (new child of self with values >)
+            Splits full_node (i-th children of self) into self and new_node (new child of self with values >)
             :param i: position of full_node in self.children
             :param full_node: children of self
             :return: returns nothing
             """
-            new_node = BTree.BTreeNode(self.tree, full_node.is_leaf, 0, 0, 0, 0)
+            new_node = BTree.BTreeNode(self.tree, full_node.is_leaf, self.x, self.y, 0, 0)
             md = self.tree.max_degree
             split_point = (md + 1) // 2
             # Rewrite values: full_node to new_node
+            self.tree.view.draw_exp_text(full_node,
+                                         f'Rewrite values and children > {full_node.values[split_point - 1].value}'
+                                         f' from [{full_node.id}] to [{new_node.id}]'
+                                         f' and {full_node.values[split_point - 1].value} to [{self.id}]')
             for j in range(0, (md - 1) // 2):
                 if split_point < len(full_node.values):
                     new_node.values.insert(j, full_node.values[split_point])
+                    new_node.values[j].parent = new_node
                     full_node.values.pop(split_point)
+            new_node.x = new_node.values[0].x
+            new_node.y = new_node.values[0].y
             if not full_node.is_leaf:
                 # Rewrite children: full_node to new_node
                 for j in range(0, split_point):
@@ -101,7 +112,10 @@ class BTree:
             new_node.parent = self
             # Move one value from full_node to self
             self.values.insert(i, full_node.values[len(full_node.values) - 1])
+            self.values[i].parent = self
             full_node.values.pop(len(full_node.values) - 1)
+            self.tree.root.update_positions()
+            self.tree.view.animate_values_movement(self.tree.root)
 
         def insert(self, value):
             """
@@ -110,23 +124,51 @@ class BTree:
             :return: returns nothing
             """
             i = 0
-            # jak 0 to musze cofnąć framea
+            self.tree.view.canvas_now.create_rectangle(self.values[0].x - self.tree.view.node_width // 2,
+                                                       self.values[0].y - self.tree.view.node_height // 2,
+                                                       self.values[0].x + self.tree.view.node_width // 2,
+                                                       self.values[0].y + self.tree.view.node_height // 2,
+                                                       outline='red', tags='hint_frame')
             while i < len(self.values) and value.value > self.values[i].value:
-                self.tree.view.move_object('hint_frame', self.values[i].x, self.values[i].y, self.values[i].x + self.tree.view.node_width,self.values[i].y)
-                self.tree.view.explanation.append(f'{value} > {self.values[i].value}, check next value')
+                self.tree.view.draw_exp_text(self.values[i],
+                                             f'[{self.id}]: {value.value} > {self.values[i].value}, check next value',
+                                             False)
+                self.tree.view.move_object('hint_frame', self.values[i].x, self.values[i].y,
+                                           self.values[i].x + self.tree.view.node_width, self.values[i].y)
                 i += 1
+            if i < len(self.values):
+                self.tree.view.draw_exp_text(self.values[i],
+                                             f'[{self.id}]: {value.value} < {self.values[i].value}, insert to previous',
+                                             False)
+            else:
+                self.tree.view.draw_exp_text(self, f'No next value', False)
             if self.is_leaf:
                 self.values.insert(i, value)
+                value.x = self.x
+                value.y = self.y - self.tree.view.y_above
+                self.values[i].parent = self
+                self.tree.view.move_object('hint_frame', self.values[i - 1].x + self.tree.view.node_width,
+                                           self.values[i - 1].y, self.values[i - 1].x + self.tree.view.node_width // 2,
+                                           self.values[i - 1].y)
+                self.tree.view.draw_exp_text(self,
+                                             f'Node [{self.id}] is a leaf. Inserting {value.value} in the node [{self.id}]',
+                                             False)
                 self.tree.update_positions()
                 self.tree.view.animate_values_movement(self)
             else:
-                # cofnij o połowe i elo ?
-                self.tree.view.move_object('hint_frame', self.values[i-1].x + self.tree.view.node_width,self.values[i-1].y,self.values[i-1].x + self.tree.view.node_width//2,self.values[i-1].y)
-                self.tree.view.move_object('hint_frame', self.values[i - 1].x + self.tree.view.node_width // 2, self.values[i - 1].y, self.children[i].x, self.children[i].y-self.tree.view.node_height//2)
-                self.tree.view.move_object('hint_frame', self.children[i].x, self.children[i].y - self.tree.view.node_height // 2, self.children[i].values[0].x, self.children[i].values[0].y)
+                self.tree.view.move_object('hint_frame', self.values[i - 1].x + self.tree.view.node_width,
+                                           self.values[i - 1].y, self.values[i - 1].x + self.tree.view.node_width // 2,
+                                           self.values[i - 1].y)
+                self.tree.view.draw_exp_text(self,
+                                             f'Insert value to a children node [{self.children[i].id}] of [{self.id}]',
+                                             False)
+                self.tree.view.canvas_now.delete('hint_frame')
+                self.tree.view.move_object('grey_node', self.x, self.y, self.children[i].x, self.children[i].y)
                 self.children[i].insert(value)
             if len(self.values) == self.tree.max_degree:
-                # zniknij hinta?
+                self.tree.view.canvas_now.delete('hint_frame')
+                self.tree.view.draw_exp_text(self,
+                                             f'Number of values in [{self.id}] == max b-tree degree. Start fixing')
                 self.fix_insert()
 
         def fix_insert(self):
@@ -137,7 +179,9 @@ class BTree:
             if self.parent is not None:
                 self.parent.split_child(self.parent.children.index(self), self)
             else:
-                s = BTree.BTreeNode(self.tree, False, 0, 0, 0, 0)
+                self.tree.view.draw_exp_text(self, f'Root has too much values. Create new root and split old one')
+                s = BTree.BTreeNode(self.tree, False, self.tree.view.width // 2, self.tree.view.y_space, 0,
+                                    self.tree.view.width)
                 s.children.insert(0, self.tree.root)
                 self.tree.root.parent = s
                 self.tree.root = s
@@ -269,6 +313,9 @@ class BTree:
                     self.x_next - len(self.values) * self.tree.view.node_width // 2 + \
                     self.tree.view.node_width // 2 + i * self.tree.view.node_width
                 self.values[i].y_next = self.y_next
+            # Node
+
+            # Node end?
             if static:
                 self.x = self.x_next
                 self.y = self.y_next
@@ -279,9 +326,19 @@ class BTree:
                 for c in self.children:
                     c.update_positions(static)
 
+        def successors(self):
+            # Nodes and values
+            result = []
+            for c in self.children:
+                result += c.successors()
+            result.append(self)
+            result += self.values
+            return result
+
         class BValue:
-            def __init__(self, value,x=0,y=0):
+            def __init__(self, value, parent_node=None, x=0, y=0):
                 self.value = value
+                self.parent = parent_node
                 self.x = x
                 self.y = y
                 # Animation connected

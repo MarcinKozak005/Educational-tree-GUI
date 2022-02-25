@@ -14,7 +14,7 @@ class View:
         self.y_above = 30
         self.node_width = node_width
         self.node_height = node_height
-        self.animation_time = 150
+        self.animation_time = 1500
         self.animation_unit = 10
         self.layout = 'double'
         self.canvas_now = None
@@ -135,6 +135,8 @@ class View:
         :return: returns nothing
         """
         if type(node) is bt.BTree.BTreeNode:  # and node is not None:
+            self.canvas_now.create_text(node.x, node.y - self.node_height, fill='black', text=node.id,
+                                        tags=f'Node{hash(node)}')
             for v in node.values:
                 self.draw_node_with_children_lines(v, node, canvas)
             if not node.is_leaf:
@@ -209,32 +211,27 @@ class View:
                                     tags=f'Value{hash(node)}')
             canvas.create_text(node.x, node.y, fill='white', text=node.value, tags=f'Value{hash(node)}')
 
-    def animate_rotations(self, node):
-        """
-        Animates red-black tree rotations
-        :param node: node to start the rotation process
-        :return: returns nothing
-        """
+    def animate_values_movement(self, node):
+        def values_tick(v, x_un, y_un):
+            self.canvas_now.delete(f'Line{hash(v)}')
+            if self.canvas_now.find_withtag(f'Value{hash(v)}'):
+                self.canvas_now.move(f'Value{hash(v)}', x_un, y_un)
+            else:
+                self.canvas_now.move(f'grey_node', x_un, y_un)
+            v.x += x_un
+            v.y += y_un
+            index = v.parent.values.index(v)
+            if not v.parent.is_leaf:
+                if index < len(node.children):
+                    self.draw_line(self.canvas_now, v, v.parent.children[index], tk.SW, tk.N)
+                if index == len(node.values) - 1 and index + 1 < len(node.children):
+                    self.draw_line(self.canvas_now, v, v.parent.children[index + 1], tk.SE, tk.N)
+                self.canvas_now.tag_lower('Line')
 
-        def rotation_tick(n, x_un, y_un):
-            """
-            Performs the smallest move from the rotation
-            :param n: node
-            :param x_un: x_unit - amount to move along x-axis during single tick
-            :param y_un: y_unit - amount to move along y-axis during single tick
-            :return: returns nothing
-            """
-            self.canvas_now.delete(f'Line{hash(n)}')
-            self.canvas_now.delete(f'Line{hash(n.parent)}')
+        def nodes_tick(n, x_un, y_un):
             self.canvas_now.move(f'Node{hash(n)}', x_un, y_un)
             n.x += x_un
             n.y += y_un
-            self.draw_line(self.canvas_now, n, n.right)
-            self.draw_line(self.canvas_now, n, n.left)
-            if n.parent is not None:
-                self.draw_line(self.canvas_now, n.parent, n.parent.right)
-                self.draw_line(self.canvas_now, n.parent, n.parent.left)
-            self.canvas_now.tag_lower('Line')
 
         if node is not None:
             successors = node.successors()
@@ -246,36 +243,10 @@ class View:
                 units[s] = (x_unit, y_unit)
             while tmp > 0:
                 for s in successors:
-                    rotation_tick(s, units[s][0], units[s][1])
-                r.wait(self.animation_unit)
-                tmp -= 1
-
-    def animate_values_movement(self, node):
-        def values_tick(v, x_un, y_un):
-            self.canvas_now.delete(f'Line{hash(v)}')
-            if self.canvas_now.find_withtag(f'Value{hash(v)}'):
-                self.canvas_now.move(f'Value{hash(v)}', x_un, y_un)
-            else:
-                self.canvas_now.move(f'grey_node', x_un, y_un)
-            v.x += x_un
-            v.y += y_un
-            index = node.values.index(v)
-            if index < len(node.children):
-                self.draw_line(self.canvas_now, v, node.children[index], tk.SW, tk.N)
-            if index == len(node.values) - 1 and index + 1 < len(node.children):
-                self.draw_line(self.canvas_now, v, node.children[index + 1], tk.SE, tk.N)
-            self.canvas_now.tag_lower('Line')
-
-        if node is not None:
-            units = {}
-            tmp = self.animation_time / self.animation_unit
-            for v in node.values:
-                x_unit = (v.x_next - v.x) / tmp
-                y_unit = (v.y_next - v.y) / tmp
-                units[v] = (x_unit, y_unit)
-            while tmp > 0:
-                for v in node.values:
-                    values_tick(v, units[v][0], units[v][1])
+                    if type(s) is bt.BTree.BTreeNode.BValue:
+                        values_tick(s, units[s][0], units[s][1])
+                    elif type(s) is bt.BTree.BTreeNode:
+                        nodes_tick(s, units[s][0], units[s][1])
                 r.wait(self.animation_unit)
                 tmp -= 1
 
