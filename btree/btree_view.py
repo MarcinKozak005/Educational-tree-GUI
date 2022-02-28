@@ -5,7 +5,7 @@ import redblack_tree.rbt_model as rbt
 import mvc_base.view as view
 
 
-class BView(view.View):
+class BTView(view.View):
     def __init__(self, node_width, node_height, columns_to_skip, current_max_degree):
         super().__init__(node_width, node_height, columns_to_skip)
         self.current_max_degree = current_max_degree

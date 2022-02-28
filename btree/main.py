@@ -4,7 +4,7 @@ import btree.btree_controller as c
 
 initial_max_degree = 3
 
-view = v.BView(
+view = v.BTView(
     node_width=24,
     node_height=18,
     columns_to_skip=2,

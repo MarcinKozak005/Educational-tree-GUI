@@ -3,7 +3,7 @@ import redblack_tree.rbt_model as rbt
 import mvc_base.view as view
 
 
-class RBView(view.View):
+class RBTView(view.View):
     def __init__(self, node_width, node_height, columns_to_skip):
         super().__init__(node_width, node_height, columns_to_skip)
 
@@ -14,7 +14,7 @@ class RBView(view.View):
         :param to_color: color to which the node is recolored
         :return: returns nothing
         """
-        if type(node) is rbt.RBTree.RBNode:
+        if type(node) is rbt.RBTNode:
             txt = self.canvas_now.create_text(node.x, node.y - self.node_height,
                                               fill='white',
                                               text=f'Change color to {to_color}',
@@ -30,7 +30,7 @@ class RBView(view.View):
         :param canvas: canvas on which node will be drawn
         :return: returns nothing
         """
-        if type(node) is not rbt.RBTree.RBLeaf and node is not None:
+        if type(node) is not rbt.RBTLeaf and node is not None:
             self.draw_node_with_children_lines(node, canvas)
             self.draw_rb_tree(node.left, canvas)
             self.draw_rb_tree(node.right, canvas)
@@ -42,10 +42,10 @@ class RBView(view.View):
         :param canvas: canvas on which node will be drawn
         :return: returns nothing
         """
-        if type(node) is not rbt.RBTree.RBLeaf:
-            if type(node.right) is not rbt.RBTree.RBLeaf:
+        if type(node) is not rbt.RBTLeaf:
+            if type(node.right) is not rbt.RBTLeaf:
                 self.draw_line(canvas, node, node.right)
-            if type(node.left) is not rbt.RBTree.RBLeaf:
+            if type(node.left) is not rbt.RBTLeaf:
                 self.draw_line(canvas, node, node.left)
             self.draw_node(node, canvas)
 
@@ -57,8 +57,8 @@ class RBView(view.View):
         :param node2: to-node
         :return: returns nothing
         """
-        if node1 is not None and node2 is not None and type(node1) is not rbt.RBTree.RBLeaf \
-                and type(node2) is not rbt.RBTree.RBLeaf:
+        if node1 is not None and node2 is not None and type(node1) is not rbt.RBTLeaf \
+                and type(node2) is not rbt.RBTLeaf:
             canvas.create_line(node1.x, node1.y, node2.x, node2.y, fill='black',
                                tags=[f'Line{hash(node1)}', 'Line'])
 
@@ -69,7 +69,7 @@ class RBView(view.View):
         :param canvas: canvas on which the node will be drawn
         :return: returns nothing
         """
-        if type(node) is rbt.RBTree.RBNode:
+        if type(node) is rbt.RBTNode:
             canvas.create_oval(node.x - self.node_width // 2, node.y - self.node_height // 2,
                                node.x + self.node_width // 2,
                                node.y + self.node_height // 2, fill=node.color, tags=f'Node{hash(node)}')
