@@ -6,7 +6,7 @@ import redblack_tree.rbt_model as rbt
 
 
 class View:
-    def __init__(self, node_width, node_height):
+    def __init__(self, node_width, node_height, columns_to_skip):
         self.explanation = Explanation()
         self.width = 1000
         self.height = 300
@@ -26,6 +26,8 @@ class View:
         self.explanation_frame = None
         self.now_label = None
         self.view_button = None
+        self.current_max_degree = 3
+        self.columns_to_skip = columns_to_skip
 
     def create_GUI(self, controller):
         """
@@ -41,6 +43,18 @@ class View:
         main_subframe.pack(fill='x')
 
         controls_frame = tk.Frame(frame)
+        #
+        def change(*_):
+            if self.current_max_degree != max_degree_value.get():
+                controller.tree = bt.BTree(max_degree_value.get(), self)
+                self.clear()
+
+        max_degree_value = tk.IntVar(value=3)
+        max_degree_menu = tk.OptionMenu(controls_frame, max_degree_value, 3, 4, 5, 6)
+        max_degree_value.trace('w', change)
+        tk.Label(controls_frame, text='Max tree degree:').grid(row=0, column=0)
+        max_degree_menu.grid(row=0, column=1, padx=(0, 20))
+        #
         insert_field = tk.Entry(controls_frame)
         insert_button = tk.Button(controls_frame, text='Add node',
                                   command=lambda: controller.perform(r.Action.insert, insert_field.get()))
@@ -55,15 +69,16 @@ class View:
                                      command=lambda: controller.change_layout())
         back_button = tk.Button(controls_frame, text='Back to menu', command=lambda: r.show_frame(m.frame))
         self.info_label = tk.Label(controls_frame)
-        insert_field.grid(row=0, column=0)
-        insert_button.grid(row=0, column=1, padx=(0, 20))
-        delete_field.grid(row=0, column=2)
-        delete_button.grid(row=0, column=3, padx=(0, 20))
-        find_field.grid(row=0, column=4)
-        find_button.grid(row=0, column=5)
-        self.view_button.grid(row=0, column=6, padx=(20, 20))
-        clear_button.grid(row=0, column=7)
-        back_button.grid(row=0, column=8, padx=(40, 0))
+        cts = self.columns_to_skip
+        insert_field.grid(row=0, column=cts)
+        insert_button.grid(row=0, column=cts + 1, padx=(0, 20))
+        delete_field.grid(row=0, column=cts + 2)
+        delete_button.grid(row=0, column=cts + 3, padx=(0, 20))
+        find_field.grid(row=0, column=cts + 4)
+        find_button.grid(row=0, column=cts + 5)
+        self.view_button.grid(row=0, column=cts + 6, padx=(20, 20))
+        clear_button.grid(row=0, column=cts + 7)
+        back_button.grid(row=0, column=cts + 8, padx=(40, 0))
         self.info_label.grid(row=1, columnspan=6, sticky='WE')
         controls_frame.pack()
 
@@ -111,22 +126,6 @@ class View:
         self.canvas_now.delete('exp_txt')
         self.explanation.append(exp_str)
 
-    def draw_recolor_text(self, node, to_color):
-        """
-        Draws the recoloring info on the node
-        :param node: the node to be recolored
-        :param to_color: color to which the node is recolored
-        :return: returns nothing
-        """
-        if type(node) is rbt.RBTree.RBNode:
-            txt = self.canvas_now.create_text(node.x, node.y - self.node_width,
-                                              fill='white',
-                                              text=f'Change color to {to_color}',
-                                              tags='recolor_txt')
-            txt_bg = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill="grey", tags='recolor_txt')
-            self.explanation.append(f'Change color of {node.value} to {to_color}')
-            self.canvas_now.tag_lower(txt_bg)
-
     def draw_btree(self, node, canvas):
         """
         Draws node and it's left/right subtrees
@@ -135,8 +134,8 @@ class View:
         :return: returns nothing
         """
         if type(node) is bt.BTree.BTreeNode:  # and node is not None:
-            canvas.create_text(node.values[0].x - 0.75*self.node_width, node.y, fill='black', text=node.id,
-                                        tags=f'Node{hash(node)}')
+            canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill='black', text=node.id,
+                               tags=f'Node{hash(node)}')
             for v in node.values:
                 self.draw_node_with_children_lines(v, node, canvas)
             if not node.is_leaf:

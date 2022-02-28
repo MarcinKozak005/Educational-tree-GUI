@@ -46,6 +46,10 @@ class BTree:
     def search_value_no_GUI(self, value):
         return self.root.search_value_no_GUI(value)
 
+    def clear(self):
+        self.root = None
+        BTree.BTreeNode.class_node_id = 64
+
     class BTreeNode:
 
         class_node_id = 64
@@ -474,9 +478,6 @@ class BTree:
                     self.x_next - len(self.values) * self.tree.view.node_width // 2 + \
                     self.tree.view.node_width // 2 + i * self.tree.view.node_width
                 self.values[i].y_next = self.y_next
-            # Node
-
-            # Node end?
             if static:
                 self.x = self.x_next
                 self.y = self.y_next
