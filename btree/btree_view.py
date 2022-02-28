@@ -1,139 +1,41 @@
 import tkinter as tk
-import core.menu as m
 import core.root as r
 import btree.btree_model as bt
 import redblack_tree.rbt_model as rbt
+import mvc_base.view as view
 
 
-class View:
-    def __init__(self, node_width, node_height, columns_to_skip):
-        self.explanation = Explanation()
-        self.width = 1000
-        self.height = 300
-        self.y_space = 50
-        self.y_above = 30
-        self.node_width = node_width
-        self.node_height = node_height
-        self.animation_time = 1500
-        self.animation_unit = 10
-        self.layout = 'double'
-        self.canvas_now = None
-        self.canvas_prev = None
-        self.info_label = None
-        self.explanation_label = None
-        self.buttons = []
-        self.prev_label = None
-        self.explanation_frame = None
-        self.now_label = None
-        self.view_button = None
-        self.current_max_degree = 3
-        self.columns_to_skip = columns_to_skip
+class BView(view.View):
+    def __init__(self, node_width, node_height, columns_to_skip, current_max_degree):
+        super().__init__(node_width, node_height, columns_to_skip)
+        self.current_max_degree = current_max_degree
 
     def create_GUI(self, controller):
-        """
-        Creates a GUI with buttons triggering model methods with the use of controller
-        :param controller: controller to call model methods and to access the model
-        :return: returns main tk.Frame with all GUI widgets
-        """
+        frame = super().create_GUI(controller)
 
-        frame = tk.Frame(r.frame)
-
-        main_subframe = tk.Frame(frame)
-        tk.Label(main_subframe, text='RedBlack Tree', bg='red', height=2).pack(fill='x')
-        main_subframe.pack(fill='x')
-
-        controls_frame = tk.Frame(frame)
-        #
-        def change(*_):
-            if self.current_max_degree != max_degree_value.get():
-                controller.tree = bt.BTree(max_degree_value.get(), self)
+        def selector_change(*_):
+            new_value = max_degree_value.get()
+            if self.current_max_degree != new_value:
+                self.current_max_degree = new_value
+                controller.tree = bt.BTree(new_value, self)
                 self.clear()
 
-        max_degree_value = tk.IntVar(value=3)
-        max_degree_menu = tk.OptionMenu(controls_frame, max_degree_value, 3, 4, 5, 6)
-        max_degree_value.trace('w', change)
-        tk.Label(controls_frame, text='Max tree degree:').grid(row=0, column=0)
+        max_degree_value = tk.IntVar(value=self.current_max_degree)
+        max_degree_menu = tk.OptionMenu(self.controls_frame, max_degree_value, *[3, 4, 5, 6])
+        max_degree_value.trace('w', selector_change)
+        tk.Label(self.controls_frame, text='Max tree degree:').grid(row=0, column=0)
         max_degree_menu.grid(row=0, column=1, padx=(0, 20))
-        #
-        insert_field = tk.Entry(controls_frame)
-        insert_button = tk.Button(controls_frame, text='Add node',
-                                  command=lambda: controller.perform(r.Action.insert, insert_field.get()))
-        delete_field = tk.Entry(controls_frame)
-        delete_button = tk.Button(controls_frame, text='Delete node',
-                                  command=lambda: controller.perform(r.Action.delete, delete_field.get()))
-        find_field = tk.Entry(controls_frame)
-        find_button = tk.Button(controls_frame, text='Find node',
-                                command=lambda: controller.perform(r.Action.search, find_field.get()))
-        clear_button = tk.Button(controls_frame, text='Clear tree', command=lambda: controller.clear())
-        self.view_button = tk.Button(controls_frame, text='Show previous state and explanation: ON',
-                                     command=lambda: controller.change_layout())
-        back_button = tk.Button(controls_frame, text='Back to menu', command=lambda: r.show_frame(m.frame))
-        self.info_label = tk.Label(controls_frame)
-        cts = self.columns_to_skip
-        insert_field.grid(row=0, column=cts)
-        insert_button.grid(row=0, column=cts + 1, padx=(0, 20))
-        delete_field.grid(row=0, column=cts + 2)
-        delete_button.grid(row=0, column=cts + 3, padx=(0, 20))
-        find_field.grid(row=0, column=cts + 4)
-        find_button.grid(row=0, column=cts + 5)
-        self.view_button.grid(row=0, column=cts + 6, padx=(20, 20))
-        clear_button.grid(row=0, column=cts + 7)
-        back_button.grid(row=0, column=cts + 8, padx=(40, 0))
-        self.info_label.grid(row=1, columnspan=6, sticky='WE')
-        controls_frame.pack()
-
-        visualization_frame = tk.Frame(frame)
-        self.explanation_frame = tk.Frame(visualization_frame)
-        explanation_title_lab = tk.Label(self.explanation_frame)
-        self.explanation_label = tk.Label(self.explanation_frame)
-        self.explanation_label.config(text='', justify=tk.LEFT, width=50, anchor=tk.W)
-        explanation_title_lab.config(text='Explanation', font=15)
-        explanation_title_lab.pack()
-        self.explanation_label.pack()
-        self.explanation_frame.grid(row=0, column=0, sticky='NS')
-
-        canvas_frame = tk.Frame(visualization_frame)
-        self.prev_label = tk.Label(canvas_frame, text='Previous state of the tree:')
-        self.canvas_prev = tk.Canvas(canvas_frame, width=self.width, height=self.height, bg='white')
-        self.now_label = tk.Label(canvas_frame, text='Current state of the tree:')
-        self.canvas_now = tk.Canvas(canvas_frame, width=self.width, height=self.height, bg='white')
-        self.prev_label.pack(pady=(5, 0))
-        self.canvas_prev.pack()
-        self.now_label.pack(pady=(5, 0))
-        self.canvas_now.pack()
-        canvas_frame.grid(row=0, column=1)
-        visualization_frame.pack()
-
-        self.buttons = [insert_button, delete_button, find_button, clear_button, self.view_button]
 
         return frame
 
-    def draw_exp_text(self, node, exp_str, above=True):
-        """
-        Draws explanation text exp_str above/below a given node
-        :param node: node above/below which a exp_str will be drawn
-        :param exp_str: string to draw
-        :param above: if True -> exp_str will be above node, else below the node
-        :return: returns nothing
-        """
-        txt = self.canvas_now.create_text(node.x, node.y + (-1 if above else 1) * self.node_width,
-                                          fill='white',
-                                          text=exp_str,
-                                          tags='exp_txt')
-        txt_bg = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill="grey", tags='exp_txt')
-        self.canvas_now.tag_lower(txt_bg)
-        r.wait(self.animation_time)
-        self.canvas_now.delete('exp_txt')
-        self.explanation.append(exp_str)
-
-    def draw_btree(self, node, canvas):
+    def draw_tree(self, node, canvas):
         """
         Draws node and it's left/right subtrees
         :param node: node to draw
         :param canvas: canvas on which node will be drawn
         :return: returns nothing
         """
-        if type(node) is bt.BTree.BTreeNode:  # and node is not None:
+        if type(node) is bt.BTree.BTreeNode:
             canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill='black', text=node.id,
                                tags=f'Node{hash(node)}')
             for v in node.values:
@@ -248,75 +150,3 @@ class View:
                         nodes_tick(s, units[s][0], units[s][1])
                 r.wait(self.animation_unit)
                 tmp -= 1
-
-    def move_object(self, obj, x1, y1, x2, y2):
-        """
-        Moves object obj from (x1,y1) to (x2,y2)
-        :param obj: object to move identifier
-        :param x1: initial x coordinate
-        :param y1: initial y coordinate
-        :param x2: final x coordinate
-        :param y2: final y coordinate
-        :return: returns nothing
-        """
-        x_diff = x2 - x1
-        y_diff = y2 - y1
-        x_unit = x_diff / (self.animation_time / self.animation_unit)
-        y_unit = y_diff / (self.animation_time / self.animation_unit)
-        counter = self.animation_time / self.animation_unit
-        while counter > 0:
-            self.canvas_now.move(obj, x_unit, y_unit)
-            r.wait(self.animation_unit)
-            counter -= 1
-
-    def clear(self):
-        """
-        Clears canvases and explanation label
-        :return: returns nothing
-        """
-        self.canvas_prev.delete('all')
-        self.canvas_now.delete('all')
-        self.explanation_label.config(text='')
-
-    def prepare_view(self):
-        """
-        Clears labels and canvas_now
-        :return: returns nothing
-        """
-        self.info_label.config(text='')
-        self.canvas_now.delete('all')
-        self.explanation_label.config(text=self.explanation.string, wraplength=300)
-        self.explanation.reset()
-
-    def set_buttons(self, value):
-        """
-        Enables/Disable buttons
-        :param value: if True -> enable buttons, else disable
-        :return: returns nothing
-        """
-        for b in self.buttons:
-            b.config(state='normal' if value else 'disabled')
-
-
-class Explanation:
-
-    def __init__(self):
-        self.string = ''
-        self.line = 1
-
-    def append(self, text):
-        """
-        Appends text with line number to string
-        :param text: text to be appended
-        :return: returns nothing
-        """
-        self.string += f'[{self.line}] {text}\n'
-        self.line += 1
-
-    def reset(self):
-        """
-        Resets all values
-        :return: returns nothing
-        """
-        self.string = ''
-        self.line = 1
