@@ -35,11 +35,16 @@ class BTree:
             self.root.search_value(value)
 
     def delete_value(self, value):
-        self.root.delete_value(value)
+        tmp = self.root.search_value(value)
+        if tmp:
+            self.root.delete_value(value)
 
     def update_positions(self, static=False, width=None):
         if self.root is not None:
             self.root.update_positions(static, width)
+
+    def search_value_no_GUI(self, value):
+        return self.root.search_value_no_GUI(value)
 
     class BTreeNode:
 
@@ -48,6 +53,10 @@ class BTree:
         @staticmethod
         def get_id():
             BTree.BTreeNode.class_node_id += 1
+            if BTree.BTreeNode.class_node_id == 91:
+                BTree.BTreeNode.class_node_id = 97
+            elif BTree.BTreeNode.class_node_id == 123:
+                BTree.BTreeNode.class_node_id = 65
             return chr(BTree.BTreeNode.class_node_id)
 
         def __init__(self, tree, is_leaf, x, y, l_edge, r_edge):
@@ -86,7 +95,7 @@ class BTree:
                                            self.values[i].x + self.tree.view.node_width, self.values[i].y)
                 i += 1
             if i < len(self.values) and value == self.values[i].value:
-                self.tree.view.draw_exp_text(self, f'Value found')
+                self.tree.view.draw_exp_text(self, f'Value found in node [{self.id}]')
                 self.tree.view.canvas_now.delete('hint_frame')
                 return self, i
             if self.is_leaf:
@@ -100,15 +109,33 @@ class BTree:
                                                  False)
                 else:
                     self.tree.view.draw_exp_text(self, f'No next value', False)
-                    self.tree.view.move_object('hint_frame', self.values[i - 1].x + self.tree.view.node_width,
-                                               self.values[i - 1].y, self.values[i - 1].x,
-                                               self.values[i - 1].y)
                     self.tree.view.draw_exp_text(self,
                                                  f'Search value in a children node [{self.children[i].id}] of [{self.id}]',
                                                  False)
+                if i != 0:
+                    self.tree.view.move_object('hint_frame', self.values[i - 1].x + self.tree.view.node_width,
+                                               self.values[i - 1].y, self.values[i - 1].x,
+                                               self.values[i - 1].y)
                 self.tree.view.move_object('hint_frame', self.values[i - 1].x, self.values[i - 1].y,
                                            self.children[i].values[0].x, self.children[i].values[0].y)
                 return self.children[i].search_value(value)
+
+        def search_value_no_GUI(self, value):
+            """
+            Searches for value in the node
+            :param value: searched value
+            :return: if found: tuple (node_with_value, position_of_value_in_node),
+                     else None
+            """
+            i = 0
+            while i < len(self.values) and value > self.values[i].value:
+                i += 1
+            if i < len(self.values) and value == self.values[i].value:
+                return self, i
+            if self.is_leaf:
+                return None
+            else:
+                return self.children[i].search_value_no_GUI(value)
 
         def split_child(self, i, full_node):
             """
@@ -121,11 +148,8 @@ class BTree:
             md = self.tree.max_degree
             split_point = (md + 1) // 2
             # Rewrite values: full_node to new_node
-            self.tree.view.draw_exp_text(full_node,
-                                         f'Rewrite values and children > {full_node.values[split_point - 1].value}'
-                                         f' from [{full_node.id}] to [{new_node.id}]'
-                                         f' and {full_node.values[split_point - 1].value} to [{self.id}]')
-            for j in range(0, (md - 1) // 2):
+            self.tree.view.draw_exp_text(full_node, f'Rewrite {full_node.values[split_point - 1].value} to [{self.id}]')
+            for j in range(0, (md - 1) // 2 + (0 if md % 2 else 1)):
                 if split_point < len(full_node.values):
                     new_node.values.insert(j, full_node.values[split_point])
                     new_node.values[j].parent = new_node
@@ -147,6 +171,12 @@ class BTree:
             full_node.values.pop(len(full_node.values) - 1)
             self.tree.root.update_positions()
             self.tree.view.animate_values_movement(self.tree.root)
+            self.tree.view.draw_exp_text(full_node,
+                                         f'Values < {self.values[0].value} stays in [{full_node.id}] node')
+            self.tree.view.draw_exp_text(new_node,
+                                         f'Values > {self.values[0].value} makes new node [{new_node.id}]')
+            self.tree.view.draw_exp_text(self,
+                                         f'Nodes [{full_node.id}] and [{new_node.id}] become a children of [{self.id}]')
 
         def insert(self, value):
             """
@@ -225,69 +255,145 @@ class BTree:
             """
             prev = self.parent
             if not self.values:
-                if self is self.tree.root:
+                self.tree.view.draw_exp_text(self, f'Node [{self.id}] has no values')
+                if self is self.tree.root and len(self.children) > 0:
+                    self.tree.view.draw_exp_text(self,
+                                                 f'Node [{self.id}] is a root.'
+                                                 f'New root is first child of [{self.id}]: [{self.children[0].id}]')
                     self.tree.root = self.children[0]
+                    self.children[0].parent = None
+                    self.tree.root.update_positions()
+                    self.tree.view.animate_values_movement(self.tree.root)
+                    return
+                elif self is self.tree.root and len(self.children) == 0:
+                    self.tree.view.draw_exp_text(self,
+                                                 f'Node [{self.id}] is a root. Root has no children. Tree is empty')
+                    self.tree.root = None
                     return
                 i = prev.children.index(self)
                 if i - 1 >= 0 and len(prev.children[i - 1].values) > 1:
+                    self.tree.view.draw_exp_text(self,
+                                                 f'Rewrite value {prev.values[i - 1].value} '
+                                                 f'from [{prev.id}] to [{self.id}]')
                     self.values.insert(0, prev.values[i - 1])
-                    prev.values[i - 1] = prev.children[i - 1].values[-1]
+                    prev.values[i - 1].parent = self
+                    prev.values.pop(i - 1)
+                    self.update_positions()
+                    self.tree.view.animate_values_movement(self.tree.root)
+                    self.tree.view.draw_exp_text(prev,
+                                                 f'Too much children compared to values. '
+                                                 f'Rewrite {prev.children[i - 1].values[-1].value} from '
+                                                 f'[{prev.children[i - 1].id}] to [{prev.id}]')
+                    prev.values.insert(i - 1, prev.children[i - 1].values[-1])
+                    prev.children[i - 1].values[-1].parent = prev
+                    prev.children[i - 1].values.pop()
                     if prev.children[i - 1].children:
                         self.children.insert(0, prev.children[i - 1].children[-1])
                         prev.children[i - 1].children[-1].parent = self
                         prev.children[i - 1].children.pop()
-                    prev.children[i - 1].values.pop()
                 elif i + 1 < len(prev.children) and len(prev.children[i + 1].values) > 1:
+                    self.tree.view.draw_exp_text(self,
+                                                 f'Rewrite value {prev.values[i].value} '
+                                                 f'from [{prev.id}] to [{self.id}]')
                     self.values.append(prev.values[i])
-                    prev.values[i] = prev.children[i + 1].values[0]
+                    prev.values[i].parent = self
+                    prev.values.pop(i)
+                    self.update_positions()
+                    self.tree.view.animate_values_movement(self.tree.root)
+                    self.tree.view.draw_exp_text(prev,
+                                                 f'Too much children compared to values. '
+                                                 f'Rewrite {prev.children[i + 1].values[0].value} from '
+                                                 f'[{prev.children[i + 1].id}] to [{prev.id}]')
+                    prev.values.insert(i, prev.children[i + 1].values[0])
+                    prev.children[i + 1].values[0].parent = prev
+                    prev.children[i + 1].values.pop(0)
                     if prev.children[i + 1].children:
                         self.children.append(prev.children[i + 1].children[0])
                         prev.children[i + 1].children[0].parent = self
                         prev.children[i + 1].children.pop(0)
-                    prev.children[i + 1].values.pop(0)
                 elif i - 1 >= 0 and len(prev.children[i - 1].values) == 1:
+                    self.tree.view.draw_exp_text(prev,
+                                                 f'Rewrite value {prev.values[i - 1].value} '
+                                                 f'from [{prev.id}] to [{prev.children[i - 1].id}]')
+                    self.tree.view.draw_exp_text(prev,
+                                                 f'Delete [{self.id}] node')
                     prev.children[i - 1].values.append(prev.values[i - 1])
-                    prev.children[i - 1].values.extend(self.values)
+                    prev.values[i - 1].parent = prev.children[i - 1]
                     for n in self.children:
                         n.parent = prev.children[i - 1]
                     prev.children[i - 1].children.extend(self.children)
                     prev.values.pop(i - 1)
                     prev.children.pop(i)
                 elif i + 1 < len(prev.children) and len(prev.children[i + 1].values) == 1:
-                    self.values.append(prev.values[i])
-                    self.values.extend(prev.children[i + 1].values)
+                    self.tree.view.draw_exp_text(prev,
+                                                 f'Rewrite value {prev.values[i].value} '
+                                                 f'from [{prev.id}] to [{self.id}]')
+                    self.tree.view.draw_exp_text(prev,
+                                                 f'Delete [{prev.children[i + 1].id}] node')
+                    prev.children[i + 1].values.insert(0, prev.values[i])
+                    prev.values[i].parent = prev.children[i + 1]
+                    # self.values.append(prev.values[i])
+                    # prev.values[i].parent = self
                     for n in prev.children[i + 1].children:
                         n.parent = self
-                    self.children.extend(prev.children[i + 1].children)
+                    prev.children[i + 1].children.extend(self.children)
                     prev.values.pop(i)
-                    prev.children.pop(i + 1)
+                    prev.children.pop(i)
+                    # self.children.extend(prev.children[i + 1].children)
+                    # prev.values.pop(i)
+                    # prev.children.pop(i + 1)
                 else:
                     return
                 prev.fix_delete()
+            self.tree.update_positions()
+            self.tree.view.animate_values_movement(self.tree.root)
 
         def delete_value(self, value):
-            if self.is_leaf and value in self.values:
-                self.values.remove(value)
+            tmp = [self.values[i].value for i in range(len(self.values))]
+            if self.is_leaf and value in tmp:
+                i = tmp.index(value)
+                removed_node = self.values.pop(i)
+                self.tree.view.canvas_now.delete(f'Value{hash(removed_node)}')
                 self.fix_delete()
-            elif value in self.values:
-                i = self.values.index(value)
+            elif value in tmp:
+                i = tmp.index(value)
                 if len(self.children[i].values) > 1:
+                    self.tree.view.draw_exp_text(self.children[i],
+                                                 f'Node [{self.children[i].id}] has > 1 values. Looking for the '
+                                                 f'predecessor of {value}')
+                    self.tree.view.canvas_now.delete(f'Value{hash(self.values[i])}')
+                    self.tree.view.canvas_now.delete(f'Line{hash(self.values[i])}')
                     self.values[i], to_fix = self.children[i].predecessor()
+                    self.values[i].parent = self
                     to_fix.fix_delete()
                 elif len(self.children[i + 1].values) > 1:
+                    self.tree.view.draw_exp_text(self.children[i],
+                                                 f'Node [{self.children[i + 1].id}] has > 1 values. Looking for the '
+                                                 f'successor of {value}')
+                    self.tree.view.canvas_now.delete(f'Value{hash(self.values[i])}')
+                    self.tree.view.canvas_now.delete(f'Line{hash(self.values[i])}')
                     self.values[i], to_fix = self.children[i + 1].successor()
+                    self.values[i].parent = self
                     to_fix.fix_delete()
                 else:
-                    self.children[i].values.append(value)
-                    self.children[i].values.extend(self.children[i + 1].values)
+                    self.tree.view.draw_exp_text(self,
+                                                 f'Merge nodes [{self.children[i].id}] and [{self.children[i + 1].id}]')
+                    self.children[i].values.append(BTree.BTreeNode.BValue(value, self.children[i]))
+                    for v in self.children[i + 1].values:
+                        v.parent = self.children[i]
+                        self.children[i].values.append(v)
                     self.children[i].children.extend(self.children[i + 1].children)
-                    self.values.remove(value)
+                    for c in self.children[i + 1].children:
+                        c.parent = self.children[i]
+                    self.tree.view.canvas_now.delete(f'Value{hash(self.values[i])}')
+                    self.tree.view.canvas_now.delete(f'Line{hash(self.values[i])}')
+                    self.values.pop(i)
                     self.children.pop(i + 1)
                     self.children[i].delete_value(value)
                     self.fix_delete()
             else:
                 i = 0
-                while i < len(self.values) and value > self.values[i]:
+                while i < len(self.values) and value > self.values[i].value:
                     i += 1
                 self.children[i].delete_value(value)
 
@@ -297,9 +403,21 @@ class BTree:
             Removes the predecessor!
             :return: predecessor, node from which predecessor was deleted
             """
+            last = self.values[-1]
+            self.tree.view.canvas_now.create_rectangle(last.x - self.tree.view.node_width // 2,
+                                                       last.y - self.tree.view.node_height // 2,
+                                                       last.x + self.tree.view.node_width // 2,
+                                                       last.y + self.tree.view.node_height // 2,
+                                                       outline='red', tags='hint_frame')
             if self.is_leaf:
+                self.tree.view.draw_exp_text(self, f'Node [{self.id}] is a leaf, last value is a predecessor')
                 return self.values.pop(-1), self
             else:
+                self.tree.view.draw_exp_text(self,
+                                             f'Node [{self.id}] is not a leaf, search for predecessor in last child')
+                self.tree.view.move_object('hint_frame', last.x, last.y, self.children[-1].values[-1].x,
+                                           self.children[-1].values[-1].y)
+                self.tree.view.canvas_now.delete('hint_frame')
                 return self.children[-1].predecessor()
 
         def successor(self):
@@ -308,9 +426,21 @@ class BTree:
             Removes the successor!
             :return: successor, node from which successor was deleted
             """
+            first = self.values[0]
+            self.tree.view.canvas_now.create_rectangle(first.x - self.tree.view.node_width // 2,
+                                                       first.y - self.tree.view.node_height // 2,
+                                                       first.x + self.tree.view.node_width // 2,
+                                                       first.y + self.tree.view.node_height // 2,
+                                                       outline='red', tags='hint_frame')
             if self.is_leaf:
+                self.tree.view.draw_exp_text(self, f'Node [{self.id}] is a leaf, first value is a successor')
                 return self.values.pop(0), self
             else:
+                self.tree.view.draw_exp_text(self,
+                                             f'Node [{self.id}] is not a leaf, search for successor in a first child')
+                self.tree.view.move_object('hint_frame', first.x, first.y, self.children[0].values[0].x,
+                                           self.children[0].values[0].y)
+                self.tree.view.canvas_now.delete('hint_frame')
                 return self.children[0].successor()
 
         def print_node(self, indent=0):

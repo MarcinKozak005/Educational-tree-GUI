@@ -135,7 +135,7 @@ class View:
         :return: returns nothing
         """
         if type(node) is bt.BTree.BTreeNode:  # and node is not None:
-            self.canvas_now.create_text(node.x, node.y - self.node_height, fill='black', text=node.id,
+            canvas.create_text(node.values[0].x - 0.75*self.node_width, node.y, fill='black', text=node.id,
                                         tags=f'Node{hash(node)}')
             for v in node.values:
                 self.draw_node_with_children_lines(v, node, canvas)
