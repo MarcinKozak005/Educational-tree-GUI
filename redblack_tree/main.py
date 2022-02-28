@@ -1,6 +1,6 @@
 import redblack_tree.rbt_model as rbt
 import redblack_tree.rbt_view as v
-import redblack_tree.rbt_controller as c
+import mvc_base.controller as c
 
 view = v.RBTView(
     node_width=26,

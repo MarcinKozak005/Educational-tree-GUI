@@ -35,14 +35,14 @@ class BTView(view.View):
         :param canvas: canvas on which node will be drawn
         :return: returns nothing
         """
-        if type(node) is bt.BTree.BTreeNode:
+        if type(node) is bt.BTNode:
             canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill='black', text=node.id,
                                tags=f'Node{hash(node)}')
             for v in node.values:
                 self.draw_node_with_children_lines(v, node, canvas)
             if not node.is_leaf:
                 for c in node.children:
-                    self.draw_btree(c, canvas)
+                    self.draw_tree(c, canvas)
 
     def draw_node_with_children_lines(self, value, node, canvas):
         """
@@ -52,7 +52,7 @@ class BTView(view.View):
         :param canvas: canvas on which node will be drawn
         :return: returns nothing
         """
-        if type(value) is bt.BTree.BTreeNode.BValue:
+        if type(value) is bt.BTValue:
             if not node.is_leaf:
                 index = node.values.index(value)
                 self.draw_line(canvas, value, node.children[index], tk.SW, tk.N)
@@ -92,8 +92,8 @@ class BTView(view.View):
         :param node2: to-node
         :return: returns nothing
         """
-        if node1 is not None and node2 is not None and type(node1) is not rbt.RBTree.RBLeaf \
-                and type(node2) is not rbt.RBTree.RBLeaf:
+        if node1 is not None and node2 is not None and type(node1) is not rbt.RBTLeaf \
+                and type(node2) is not rbt.RBTLeaf:
             from_mod = self.side_modifier(from_side)
             to_mod = self.side_modifier(to_side)
             canvas.create_line(node1.x + from_mod[0], node1.y + from_mod[1], node2.x + to_mod[0], node2.y + to_mod[1],
@@ -106,7 +106,7 @@ class BTView(view.View):
         :param canvas: canvas on which the node will be drawn
         :return: returns nothing
         """
-        if type(node) is bt.BTree.BTreeNode.BValue:
+        if type(node) is bt.BTValue:
             canvas.create_rectangle(node.x - self.node_width // 2, node.y - self.node_height // 2,
                                     node.x + self.node_width // 2, node.y + self.node_height // 2, fill='green',
                                     tags=f'Value{hash(node)}')
@@ -144,9 +144,9 @@ class BTView(view.View):
                 units[s] = (x_unit, y_unit)
             while tmp > 0:
                 for s in successors:
-                    if type(s) is bt.BTree.BTreeNode.BValue:
+                    if type(s) is bt.BTValue:
                         values_tick(s, units[s][0], units[s][1])
-                    elif type(s) is bt.BTree.BTreeNode:
+                    elif type(s) is bt.BTNode:
                         nodes_tick(s, units[s][0], units[s][1])
                 r.wait(self.animation_unit)
                 tmp -= 1

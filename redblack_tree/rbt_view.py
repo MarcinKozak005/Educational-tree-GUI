@@ -32,8 +32,8 @@ class RBTView(view.View):
         """
         if type(node) is not rbt.RBTLeaf and node is not None:
             self.draw_node_with_children_lines(node, canvas)
-            self.draw_rb_tree(node.left, canvas)
-            self.draw_rb_tree(node.right, canvas)
+            self.draw_tree(node.left, canvas)
+            self.draw_tree(node.right, canvas)
 
     def draw_node_with_children_lines(self, node, canvas):
         """

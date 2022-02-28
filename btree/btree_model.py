@@ -75,7 +75,7 @@ class BTNode(model.AnimatedObject, model.Node):
 
     def __init__(self, tree, is_leaf, x, y):
         model.AnimatedObject.__init__(self, x, y, None)
-        model.Node.__init__(self, tree, 0, self.tree.view.width)
+        model.Node.__init__(self, tree, 0, tree.view.width)
         self.is_leaf = is_leaf
         self.values = []
         self.children = []

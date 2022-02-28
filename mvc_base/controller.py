@@ -31,10 +31,10 @@ class Controller:
         if validate_input(arg):
             val = int(arg)
             if self.tree.root is not None and \
-                    (func == r.Action.insert or func == r.Action.delete and self.tree.search_value_no_GUI(val)):
+                    (func == r.Action.insert or (func == r.Action.delete and self.tree.search_value_no_GUI(val))):
                 self.view.canvas_prev.delete('all')
                 self.tree.root.update_positions(True, width=1000)
-                self.view.draw_rb_tree(self.tree.root, self.view.canvas_prev)
+                self.view.draw_tree(self.tree.root, self.view.canvas_prev)
                 self.tree.root.update_positions(True)
             if func == r.Action.insert:
                 self.tree.insert_value(val)
@@ -43,7 +43,7 @@ class Controller:
             elif func == r.Action.search:
                 self.tree.search_value(val)
             self.view.prepare_view()
-            self.view.draw_rb_tree(self.tree.root, self.view.canvas_now)
+            self.view.draw_tree(self.tree.root, self.view.canvas_now)
         else:
             self.view.info_label.config(text='Not a valid input (integer in range 0-999)')
         self.view.set_buttons(True)
@@ -60,7 +60,7 @@ class Controller:
             view.canvas_now.delete('all')
             if self.tree.root is not None:
                 self.tree.root.update_positions(True, view.width)
-            view.draw_rb_tree(self.tree.root, view.canvas_now)
+            view.draw_tree(self.tree.root, view.canvas_now)
             view.layout = 'single'
         elif view.layout == 'single':
             view.canvas_now.pack_forget()
@@ -76,5 +76,5 @@ class Controller:
             view.canvas_now.delete('all')
             if self.tree.root is not None:
                 self.tree.root.update_positions(True, view.width)
-            view.draw_rb_tree(self.tree.root, view.canvas_now)
+            view.draw_tree(self.tree.root, view.canvas_now)
             view.layout = 'double'
