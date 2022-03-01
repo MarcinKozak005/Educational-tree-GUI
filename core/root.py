@@ -11,6 +11,11 @@ def wait(time):
     frame.after(time)
 
 
+hint_frame = 'hint_frame'
+grey_node = 'grey_node'
+exp_txt = 'exp_txt'
+
+
 class Action(Enum):
     insert = 1
     delete = 2
