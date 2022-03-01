@@ -1,5 +1,5 @@
-import btree.btree_model as btree
-import btree.btree_view as v
+import btree.bt_model as btree
+import btree.bt_view as v
 import mvc_base.controller as c
 
 initial_max_degree = 3

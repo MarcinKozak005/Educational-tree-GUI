@@ -1,7 +1,8 @@
+import abc
 import tkinter as tk
+
 import core.menu as m
 import core.root as r
-import abc
 
 
 class View(abc.ABC):
@@ -13,7 +14,7 @@ class View(abc.ABC):
         self.y_above = 30
         self.node_width = node_width
         self.node_height = node_height
-        self.animation_time = 1500
+        self.animation_time = 150
         self.animation_unit = 10
         self.layout = 'double'
         self.columns_to_skip = columns_to_skip
@@ -66,11 +67,11 @@ class View(abc.ABC):
         txt = self.canvas_now.create_text(node.x, node.y + (-1 if above else 1) * self.node_height,
                                           fill='white',
                                           text=exp_str,
-                                          tags='exp_txt')
-        txt_bg = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill="grey", tags='exp_txt')
+                                          tags=r.exp_txt)
+        txt_bg = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill="grey", tags=r.exp_txt)
         self.canvas_now.tag_lower(txt_bg)
         r.wait(self.animation_time)
-        self.canvas_now.delete('exp_txt')
+        self.canvas_now.delete(r.exp_txt)
         self.explanation.append(exp_str)
 
     def move_object(self, obj, x1, y1, x2, y2):
@@ -135,13 +136,13 @@ class View(abc.ABC):
         main_subframe.pack(fill='x')
 
         self.controls_frame = tk.Frame(frame)
-        insert_field = tk.Entry(self.controls_frame)
+        insert_field = tk.Entry(self.controls_frame, width=7)
         insert_button = tk.Button(self.controls_frame, text='Add node',
                                   command=lambda: controller.perform(r.Action.insert, insert_field.get()))
-        delete_field = tk.Entry(self.controls_frame)
+        delete_field = tk.Entry(self.controls_frame, width=7)
         delete_button = tk.Button(self.controls_frame, text='Delete node',
                                   command=lambda: controller.perform(r.Action.delete, delete_field.get()))
-        find_field = tk.Entry(self.controls_frame)
+        find_field = tk.Entry(self.controls_frame, width=7)
         find_button = tk.Button(self.controls_frame, text='Find node',
                                 command=lambda: controller.perform(r.Action.search, find_field.get()))
         clear_button = tk.Button(self.controls_frame, text='Clear tree', command=lambda: controller.clear())

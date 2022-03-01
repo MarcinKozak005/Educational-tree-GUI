@@ -1,6 +1,6 @@
+import mvc_base.controller as c
 import rbt.rbt_model as rbt
 import rbt.rbt_view as v
-import mvc_base.controller as c
 
 view = v.RBTView(
     node_width=26,

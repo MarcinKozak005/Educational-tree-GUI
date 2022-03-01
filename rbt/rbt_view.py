@@ -1,6 +1,5 @@
-import core.root as r
-import rbt.rbt_model as rbt
 import mvc_base.view as view
+import rbt.rbt_model as rbt
 
 
 class RBTView(view.View):
@@ -19,7 +18,7 @@ class RBTView(view.View):
                                               fill='white',
                                               text=f'Change color to {to_color}',
                                               tags='recolor_txt')
-            txt_bg = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill="grey", tags='recolor_txt')
+            txt_bg = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill='grey', tags='recolor_txt')
             self.explanation.append(f'Change color of {node.value} to {to_color}')
             self.canvas_now.tag_lower(txt_bg)
 
@@ -58,7 +57,5 @@ class RBTView(view.View):
         if type(node) is rbt.RBTNode:
             canvas.create_oval(node.x - self.node_width // 2, node.y - self.node_height // 2,
                                node.x + self.node_width // 2,
-                               node.y + self.node_height // 2, fill=node.color, tags=f'Node{hash(node)}')
-            canvas.create_text(node.x, node.y, fill='white', text=node.value, tags=f'Node{hash(node)}')
-
-
+                               node.y + self.node_height // 2, fill=node.color, tags=node.tag())
+            canvas.create_text(node.x, node.y, fill='white', text=node.value, tags=node.tag())

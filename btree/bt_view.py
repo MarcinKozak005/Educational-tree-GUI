@@ -1,5 +1,6 @@
 import tkinter as tk
-import btree.btree_model as btree
+
+import btree.bt_model as btree
 import mvc_base.view as view
 
 
@@ -35,7 +36,7 @@ class BTView(view.View):
         """
         if type(node) is btree.BTNode:
             canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill='black', text=node.id,
-                               tags=f'Node{hash(node)}')
+                               tags=node.tag())
             for v in node.values:
                 self.draw_object_with_children_lines(v, canvas)
             if not node.is_leaf:
@@ -68,7 +69,5 @@ class BTView(view.View):
         if type(node) is btree.BTValue:
             canvas.create_rectangle(node.x - self.node_width // 2, node.y - self.node_height // 2,
                                     node.x + self.node_width // 2, node.y + self.node_height // 2, fill='green',
-                                    tags=f'Value{hash(node)}')
-            canvas.create_text(node.x, node.y, fill='white', text=node.value, tags=f'Value{hash(node)}')
-
-
+                                    tags=node.tag())
+            canvas.create_text(node.x, node.y, fill='white', text=node.value, tags=node.tag())

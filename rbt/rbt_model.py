@@ -96,7 +96,7 @@ class RBTNode(model.AnimatedObject, model.Node):
     def tick(self, view, x_unit, y_unit):
         view.canvas_now.delete(f'Line{hash(self)}')
         view.canvas_now.delete(f'Line{hash(self.parent)}')
-        view.canvas_now.move(f'Node{hash(self)}', x_unit, y_unit)
+        view.canvas_now.move(self.tag(), x_unit, y_unit)
         self.x += x_unit
         self.y += y_unit
         view.draw_line(view.canvas_now, self, self.right)
@@ -105,6 +105,9 @@ class RBTNode(model.AnimatedObject, model.Node):
             view.draw_line(view.canvas_now, self.parent, self.parent.right)
             view.draw_line(view.canvas_now, self.parent, self.parent.left)
         view.canvas_now.tag_lower('Line')
+
+    def tag(self):
+        return f'Node{hash(self)}'
 
     def insert_value(self, value):
         """
@@ -118,13 +121,13 @@ class RBTNode(model.AnimatedObject, model.Node):
                                     self.tree.root.y - view.y_above - view.node_height // 2,
                                     self.tree.root.x + view.node_width // 2,
                                     self.tree.root.y - view.y_above + view.node_height // 2,
-                                    fill='grey', tags=f'grey_node')
+                                    fill='grey', tags=r.grey_node)
         view.canvas_now.create_text(self.tree.root.x, self.tree.root.y - view.y_above, fill='white', text=value,
-                                    tags=f'grey_node')
+                                    tags=r.grey_node)
         newNode = self.tree.root.subtree_insert_value(value)
         view.draw_exp_text(newNode, f'Inserting {newNode.value}', False)
         view.explanation.append(f'{value} inserted. Starting fixing')
-        view.draw_node_with_children_lines(newNode, view.canvas_now)
+        view.draw_object_with_children_lines(newNode, view.canvas_now)
         view.canvas_now.delete('grey_node')
         view.draw_line(view.canvas_now, newNode, newNode.parent)
         view.canvas_now.tag_lower(f'Line{hash(newNode)}')
@@ -143,8 +146,8 @@ class RBTNode(model.AnimatedObject, model.Node):
             return
         else:
             if node is self.tree.root and type(node.left) is RBTLeaf and type(node.right) is RBTLeaf:
-                view.canvas_now.delete('hint_frame')
-                view.move_object(f'Node{hash(self.tree.root)}', self.tree.root.x, self.tree.root.y,
+                view.canvas_now.delete(r.hint_frame)
+                view.move_object(self.tree.root.tag(), self.tree.root.x, self.tree.root.y,
                                  self.tree.root.x,
                                  -view.node_width)
                 self.tree.clear()
@@ -167,7 +170,7 @@ class RBTNode(model.AnimatedObject, model.Node):
             else:
                 y.parent.right = x
             view.canvas_now.delete(f'Line{hash(y)}')
-            view.canvas_now.delete('hint_frame')
+            view.canvas_now.delete(r.hint_frame)
             self.tree.root.update_positions()
             if y is not node:
                 view.explanation.append(f'Swap {node.value} with {y.value}')
@@ -176,12 +179,12 @@ class RBTNode(model.AnimatedObject, model.Node):
                                             node.y + view.node_height // 2, fill=node.color, tags='swap1')
                 view.canvas_now.create_oval(y.x - view.node_width // 2, y.y - view.node_height // 2,
                                             y.x + view.node_width // 2,
-                                            y.y + view.node_height // 2, fill=y.color, tags=f'Node{hash(y)}')
+                                            y.y + view.node_height // 2, fill=y.color, tags=y.tag())
                 txt1 = view.canvas_now.create_text(node.x, node.y, fill='blue', text=node.value,
-                                                   tags=[f'Node{hash(y)}', 'txt1'])
+                                                   tags=[y.tag(), 'txt1'])
                 txt2 = view.canvas_now.create_text(y.x, y.y, fill='blue', text=y.value, tags=['swap1', 'txt2'])
                 txt1_bg = view.canvas_now.create_rectangle(view.canvas_now.bbox(txt1), fill='white',
-                                                           tags=[f'Node{hash(y)}', 'txt1'])
+                                                           tags=[y.tag(), 'txt1'])
                 txt2_bg = view.canvas_now.create_rectangle(view.canvas_now.bbox(txt2), fill='white',
                                                            tags=['swap1', 'txt2'])
                 view.canvas_now.tag_lower(txt1_bg, txt1)
@@ -191,7 +194,7 @@ class RBTNode(model.AnimatedObject, model.Node):
                 node.value = y.value
                 view.canvas_now.delete('swap1')
                 view.draw_node(node, view.canvas_now)
-            view.move_object(f'Node{hash(y)}', y.x, y.y, y.x, - view.node_height)
+            view.move_object(y.tag(), y.x, y.y, y.x, - view.node_height)
             view.explanation.append(f'Remove {value} from tree')
             if y.color == 'black':
                 self.fix_delete(x)
@@ -217,40 +220,40 @@ class RBTNode(model.AnimatedObject, model.Node):
                                          curr.y - view.node_height // 2,
                                          curr.x + view.node_width // 2,
                                          curr.y + view.node_height // 2,
-                                         outline='red', tags='hint_frame')
+                                         outline='red', tags=r.hint_frame)
         while type(curr) is not RBTLeaf and curr.value != value:
             if curr.value > value and type(curr.left) is RBTNode:
                 view.draw_exp_text(curr, f'{value} < {curr.value}. Choosing left subtree')
-                view.move_object('hint_frame', curr.x, curr.y, curr.left.x, curr.left.y)
+                view.move_object(r.hint_frame, curr.x, curr.y, curr.left.x, curr.left.y)
                 curr = curr.left
             elif curr.value > value:
                 view.draw_exp_text(curr, f'{value} < {curr.value}. Choosing left subtree')
                 unit = (curr.r_edge - curr.l_edge) / 4
-                view.move_object('hint_frame', curr.x, curr.y, curr.x - unit, curr.y + view.y_space)
+                view.move_object(r.hint_frame, curr.x, curr.y, curr.x - unit, curr.y + view.y_space)
                 view.draw_exp_text(
                     RBTNode(None, curr.x - unit, curr.y + view.y_space, self.tree),
                     'Element not found')
-                view.canvas_now.delete('hint_frame')
+                view.canvas_now.delete(r.hint_frame)
                 return None
             elif curr.value <= value and type(curr.right) is RBTNode:
                 view.draw_exp_text(curr, f'{value} >= {curr.value}. Choosing right subtree')
-                view.move_object('hint_frame', curr.x, curr.y, curr.right.x, curr.right.y)
+                view.move_object(r.hint_frame, curr.x, curr.y, curr.right.x, curr.right.y)
                 curr = curr.right
             elif curr.value <= value:
                 view.draw_exp_text(curr, f'{value} >= {curr.value}. Choosing right subtree')
                 unit = (curr.r_edge - curr.l_edge) / 4
-                view.move_object('hint_frame', curr.x, curr.y, curr.x + unit, curr.y + view.y_space)
+                view.move_object(r.hint_frame, curr.x, curr.y, curr.x + unit, curr.y + view.y_space)
                 view.draw_exp_text(
                     RBTNode(None, curr.x + unit, curr.y + view.y_space, self.tree),
                     'Element not found')
-                view.canvas_now.delete('hint_frame')
+                view.canvas_now.delete(r.hint_frame)
                 return None
         view.draw_exp_text(curr, f'{curr.value} found')
         if show_to_gui:
             view.info_label.config(
                 text=f'Elem \'{value}\' found' if type(
                     curr) is not RBTLeaf else f'Elem \'{value}\' not found')
-            view.canvas_now.delete('hint_frame')
+            view.canvas_now.delete(r.hint_frame)
         else:
             return curr
 
@@ -321,7 +324,7 @@ class RBTNode(model.AnimatedObject, model.Node):
         """
         view = self.tree.view
         if type(self.right) is not RBTLeaf:
-            view.move_object('hint_frame', self.x, self.y, self.right.x, self.right.y)
+            view.move_object(r.hint_frame, self.x, self.y, self.right.x, self.right.y)
             view.draw_exp_text(self.right, f'Looking for the minimum of {self.right.value}')
             tmp = self.right.subtree_minimum()
             return tmp
@@ -414,7 +417,7 @@ class RBTNode(model.AnimatedObject, model.Node):
                 n.parent.color = 'black'
                 n.parent.parent.color = 'red'
                 tmp_node1, tmp_node2 = n.parent, n.parent.parent
-                n.parent.parent.rotate('right' if side == 'left' else "left")
+                n.parent.parent.rotate('right' if side == 'left' else 'left')
                 view.draw_recolor_text(tmp_node1, 'black')
                 view.draw_recolor_text(tmp_node2, 'red')
                 r.wait(view.animation_time)
@@ -577,7 +580,7 @@ class RBTNode(model.AnimatedObject, model.Node):
         view = self.tree.view
         while type(subtree.left) is not RBTLeaf:
             view.draw_exp_text(subtree, f'{subtree.value} has a left child ')
-            view.move_object('hint_frame', subtree.x, subtree.y, subtree.left.x, subtree.left.y)
+            view.move_object(r.hint_frame, subtree.x, subtree.y, subtree.left.x, subtree.left.y)
             subtree = subtree.left
         view.draw_exp_text(subtree, f'Minimum found: {subtree.value}')
         return subtree

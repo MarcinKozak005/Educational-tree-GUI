@@ -52,6 +52,10 @@ class AnimatedObject(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
+    def tag(self):
+        pass
+
 
 class Node:
     def __init__(self, tree, l_edge, r_edge):
