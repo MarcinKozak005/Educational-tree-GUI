@@ -32,8 +32,28 @@ class View(abc.ABC):
     def draw_tree(self, node, canvas):
         pass
 
-    # @abc.abstractmethod
-    # def draw_node_with_children_lines(self):
+    @abc.abstractmethod
+    def draw_object_with_children_lines(self, obj, canvas):
+        pass
+
+    @abc.abstractmethod
+    def draw_object(self, obj, canvas):
+        pass
+
+    def animate(self, node):
+        if node is not None:
+            successors = node.successors()
+            units = {}
+            tmp = self.animation_time / self.animation_unit
+            for s in successors:
+                x_unit = (s.x_next - s.x) / tmp
+                y_unit = (s.y_next - s.y) / tmp
+                units[s] = (x_unit, y_unit)
+            while tmp > 0:
+                for s in successors:
+                    s.tick(self, units[s][0], units[s][1])
+                r.wait(self.animation_unit)
+                tmp -= 1
 
     def draw_exp_text(self, node, exp_str, above=True):
         """
@@ -89,7 +109,7 @@ class View(abc.ABC):
         """
         self.info_label.config(text='')
         self.canvas_now.delete('all')
-        self.explanation_label.config(text=self.explanation.string, wraplength=300)
+        self.explanation_label.config(text=self.explanation.string, wraplength=350)
         self.explanation.reset()
 
     def set_buttons(self, value):
@@ -167,6 +187,50 @@ class View(abc.ABC):
         self.buttons = [insert_button, delete_button, find_button, clear_button, self.view_button]
 
         return frame
+
+    def side_modifier(self, side):
+        if side == tk.NE:
+            sides = [tk.N, tk.E]
+        elif side == tk.SE:
+            sides = [tk.S, tk.E]
+        elif side == tk.SW:
+            sides = [tk.S, tk.W]
+        elif side == tk.NW:
+            sides = [tk.N, tk.W]
+        else:
+            sides = [side]
+
+        x_mod = 0
+        y_mod = 0
+        if tk.N in sides:
+            y_mod -= self.node_height // 2
+        if tk.E in sides:
+            x_mod += self.node_width // 2
+        if tk.S in sides:
+            y_mod += self.node_height // 2
+        if tk.W in sides:
+            x_mod -= self.node_width // 2
+        return x_mod, y_mod
+
+    def draw_line(self, canvas, node1, node2, from_side=tk.CENTER, to_side=tk.CENTER):
+        """
+        Draws a line between two nodes
+        :param canvas: canvas to draw on
+        :param node1: from-node
+        :param node2: to-node
+        :param from_side:
+        :param to_side:
+        :return: returns nothing
+        """
+        if node1 is not None and node2 is not None:
+            from_mod = self.side_modifier(from_side)
+            to_mod = self.side_modifier(to_side)
+            try:
+                canvas.create_line(node1.x + from_mod[0], node1.y + from_mod[1], node2.x + to_mod[0],
+                                   node2.y + to_mod[1],
+                                   fill='black', tags=[f'Line{hash(node1)}', 'Line'])
+            except AttributeError as e:
+                print(e)
 
 
 class Explanation:

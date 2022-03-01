@@ -1,4 +1,4 @@
-import btree.btree_model as bt
+import btree.btree_model as btree
 import btree.btree_view as v
 import mvc_base.controller as c
 
@@ -11,6 +11,6 @@ view = v.BTView(
     current_max_degree=initial_max_degree
 )
 
-tree = bt.BTree(view, initial_max_degree)
+tree = btree.BTree(view, initial_max_degree)
 controller = c.Controller(tree, view)
 frame = view.create_GUI(controller)

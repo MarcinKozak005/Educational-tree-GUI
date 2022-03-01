@@ -93,6 +93,19 @@ class RBTNode(model.AnimatedObject, model.Node):
         self.right = RBTLeaf()
         self.color = 'red'
 
+    def tick(self, view, x_unit, y_unit):
+        view.canvas_now.delete(f'Line{hash(self)}')
+        view.canvas_now.delete(f'Line{hash(self.parent)}')
+        view.canvas_now.move(f'Node{hash(self)}', x_unit, y_unit)
+        self.x += x_unit
+        self.y += y_unit
+        view.draw_line(view.canvas_now, self, self.right)
+        view.draw_line(view.canvas_now, self, self.left)
+        if self.parent is not None:
+            view.draw_line(view.canvas_now, self.parent, self.parent.right)
+            view.draw_line(view.canvas_now, self.parent, self.parent.left)
+        view.canvas_now.tag_lower('Line')
+
     def insert_value(self, value):
         """
         Inserts value into the node
@@ -182,7 +195,7 @@ class RBTNode(model.AnimatedObject, model.Node):
             view.explanation.append(f'Remove {value} from tree')
             if y.color == 'black':
                 self.fix_delete(x)
-                view.animate_rotations(self.tree.root)
+                view.animate(self.tree.root)
                 view.draw_recolor_text(x, 'black')
                 r.wait(view.animation_time)
                 view.canvas_now.delete('recolor_txt')
@@ -553,7 +566,7 @@ class RBTNode(model.AnimatedObject, model.Node):
         y[side] = self
         self.parent = y
         self.tree.root.update_positions()
-        view.animate_rotations(y)
+        view.animate(y)
 
     def subtree_minimum(self):
         """

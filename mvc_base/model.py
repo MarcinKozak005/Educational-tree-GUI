@@ -44,6 +44,14 @@ class AnimatedObject(abc.ABC):
         self.x_next = x
         self.y_next = y
 
+    @abc.abstractmethod
+    def tick(self, view, x_unit, y_unit):
+        """
+        Performs the smallest move from the rotation
+        :return: returns nothing
+        """
+        pass
+
 
 class Node:
     def __init__(self, tree, l_edge, r_edge):

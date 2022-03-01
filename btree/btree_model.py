@@ -1,4 +1,5 @@
 import mvc_base.model as model
+import tkinter as tk
 
 
 class BTree(model.Tree):
@@ -60,6 +61,22 @@ class BTValue(model.AnimatedObject):
         super().__init__(x, y, parent_node)
         self.value = value
 
+    def tick(self, view, x_un, y_un):
+        view.canvas_now.delete(f'Line{hash(self)}')
+        if view.canvas_now.find_withtag(f'Value{hash(self)}'):
+            view.canvas_now.move(f'Value{hash(self)}', x_un, y_un)
+        else:
+            view.canvas_now.move(f'grey_node', x_un, y_un)
+        self.x += x_un
+        self.y += y_un
+        index = self.parent.values.index(self)
+        if not self.parent.is_leaf:
+            if index < len(self.parent.children):
+                view.draw_line(view.canvas_now, self, self.parent.children[index], tk.SW, tk.N)
+            if index == len(self.parent.values) - 1 and index + 1 < len(self.parent.children):
+                view.draw_line(view.canvas_now, self, self.parent.children[index + 1], tk.SE, tk.N)
+            view.canvas_now.tag_lower('Line')
+
 
 class BTNode(model.AnimatedObject, model.Node):
     class_node_id = 64
@@ -80,6 +97,11 @@ class BTNode(model.AnimatedObject, model.Node):
         self.values = []
         self.children = []
         self.id = BTNode.get_id()
+
+    def tick(self, view, x_unit, y_unit):
+        view.canvas_now.move(f'Node{hash(self)}', x_unit, y_unit)
+        self.x += x_unit
+        self.y += y_unit
 
     def insert_value(self, value):
         """
@@ -118,7 +140,7 @@ class BTNode(model.AnimatedObject, model.Node):
                                          f'Node [{self.id}] is a leaf. Inserting {value.value} in the node [{self.id}]',
                                          False)
             self.tree.update_positions()
-            self.tree.view.animate_values_movement(self)
+            self.tree.view.animate(self)
         else:
             self.tree.view.move_object('hint_frame', self.values[i - 1].x + self.tree.view.node_width,
                                        self.values[i - 1].y, self.values[i - 1].x + self.tree.view.node_width // 2,
@@ -128,7 +150,7 @@ class BTNode(model.AnimatedObject, model.Node):
                                          False)
             self.tree.view.canvas_now.delete('hint_frame')
             self.tree.view.move_object('grey_node', self.x, self.y, self.children[i].x, self.children[i].y)
-            self.children[i].insert(value)
+            self.children[i].insert_value(value)
         if len(self.values) == self.tree.max_degree:
             self.tree.view.canvas_now.delete('hint_frame')
             self.tree.view.draw_exp_text(self,
@@ -355,7 +377,7 @@ class BTNode(model.AnimatedObject, model.Node):
         self.values[i].parent = self
         full_node.values.pop(len(full_node.values) - 1)
         self.tree.root.update_positions()
-        self.tree.view.animate_values_movement(self.tree.root)
+        self.tree.view.animate(self.tree.root)
         self.tree.view.draw_exp_text(full_node,
                                      f'Values < {self.values[0].value} stays in [{full_node.id}] node')
         self.tree.view.draw_exp_text(new_node,
@@ -393,7 +415,7 @@ class BTNode(model.AnimatedObject, model.Node):
                 self.tree.root = self.children[0]
                 self.children[0].parent = None
                 self.tree.root.update_positions()
-                self.tree.view.animate_values_movement(self.tree.root)
+                self.tree.view.animate(self.tree.root)
                 return
             elif self is self.tree.root and len(self.children) == 0:
                 self.tree.view.draw_exp_text(self,
@@ -409,7 +431,7 @@ class BTNode(model.AnimatedObject, model.Node):
                 prev.values[i - 1].parent = self
                 prev.values.pop(i - 1)
                 self.update_positions()
-                self.tree.view.animate_values_movement(self.tree.root)
+                self.tree.view.animate(self.tree.root)
                 self.tree.view.draw_exp_text(prev,
                                              f'Too much children compared to values. '
                                              f'Rewrite {prev.children[i - 1].values[-1].value} from '
@@ -429,7 +451,7 @@ class BTNode(model.AnimatedObject, model.Node):
                 prev.values[i].parent = self
                 prev.values.pop(i)
                 self.update_positions()
-                self.tree.view.animate_values_movement(self.tree.root)
+                self.tree.view.animate(self.tree.root)
                 self.tree.view.draw_exp_text(prev,
                                              f'Too much children compared to values. '
                                              f'Rewrite {prev.children[i + 1].values[0].value} from '
@@ -476,7 +498,7 @@ class BTNode(model.AnimatedObject, model.Node):
                 return
             prev.fix_delete()
         self.tree.update_positions()
-        self.tree.view.animate_values_movement(self.tree.root)
+        self.tree.view.animate(self.tree.root)
 
     def predecessor(self):
         """

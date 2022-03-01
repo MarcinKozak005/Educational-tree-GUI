@@ -1,5 +1,5 @@
-import redblack_tree.rbt_model as rbt
-import redblack_tree.rbt_view as v
+import rbt.rbt_model as rbt
+import rbt.rbt_view as v
 import mvc_base.controller as c
 
 view = v.RBTView(
