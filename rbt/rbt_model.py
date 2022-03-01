@@ -128,7 +128,7 @@ class RBTNode(model.AnimatedObject, model.Node):
         view.draw_exp_text(newNode, f'Inserting {newNode.value}', False)
         view.explanation.append(f'{value} inserted. Starting fixing')
         view.draw_object_with_children_lines(newNode, view.canvas_now)
-        view.canvas_now.delete('grey_node')
+        view.canvas_now.delete(r.grey_node)
         view.draw_line(view.canvas_now, newNode, newNode.parent)
         view.canvas_now.tag_lower(f'Line{hash(newNode)}')
         newNode.fix_insert()
@@ -200,7 +200,7 @@ class RBTNode(model.AnimatedObject, model.Node):
                 self.fix_delete(x)
                 view.animate(self.tree.root)
                 view.draw_recolor_text(x, 'black')
-                r.wait(view.animation_time)
+                r.wait(view.long_animation_time)
                 view.canvas_now.delete('recolor_txt')
             view.explanation.append(f'Deletion finished')
             if type(self.tree.root) is RBTLeaf:
@@ -359,25 +359,25 @@ class RBTNode(model.AnimatedObject, model.Node):
         unit = (self.r_edge - self.l_edge) / 4
         if value >= self.value and type(self.right) is RBTNode:
             view.draw_exp_text(self, f'{value} >= {self.value} --> choosing right subtree', False)
-            view.move_object('grey_node', self.x, self.y - view.node_height // 2 - view.y_above, self.right.x,
+            view.move_object(r.grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.right.x,
                              self.right.y - view.node_height // 2 - view.y_above)
             newNode = self.right.subtree_insert_value(value)
         elif value >= self.value:
             view.draw_exp_text(self, f'{value} >= {self.value} --> choosing right subtree', False)
             newNode = RBTNode(value, self.x + unit, self.y + view.y_space, self.tree, self.x, self.r_edge, self)
             self.right = newNode
-            view.move_object('grey_node', self.x, self.y - view.node_height // 2 - view.y_above, self.right.x,
+            view.move_object(r.grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.right.x,
                              self.right.y - view.node_height // 2)
         elif value < self.value and type(self.left) is RBTNode:
             view.draw_exp_text(self, f'{value} < {self.value} --> choosing left subtree', False)
-            view.move_object('grey_node', self.x, self.y - view.node_height // 2 - view.y_above, self.left.x,
+            view.move_object(r.grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.left.x,
                              self.left.y - view.node_height // 2 - view.y_above)
             newNode = self.left.subtree_insert_value(value)
         else:
             view.draw_exp_text(self, f'{value} < {self.value} --> choosing left subtree', False)
             newNode = RBTNode(value, self.x - unit, self.y + view.y_space, self.tree, self.l_edge, self.x, self)
             self.left = newNode
-            view.move_object('grey_node', self.x, self.y - view.node_height // 2 - view.y_above, self.left.x,
+            view.move_object(r.grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.left.x,
                              self.left.y - view.node_height // 2)
         return newNode
 
@@ -404,7 +404,7 @@ class RBTNode(model.AnimatedObject, model.Node):
                 view.draw_recolor_text(n.parent, 'black')
                 view.draw_recolor_text(y, 'black')
                 view.draw_recolor_text(n.parent.parent, 'red')
-                r.wait(view.animation_time)
+                r.wait(view.long_animation_time)
                 view.draw_node(n.parent, view.canvas_now)
                 view.draw_node(y, view.canvas_now)
                 view.draw_node(n.parent.parent, view.canvas_now)
@@ -420,7 +420,7 @@ class RBTNode(model.AnimatedObject, model.Node):
                 n.parent.parent.rotate('right' if side == 'left' else 'left')
                 view.draw_recolor_text(tmp_node1, 'black')
                 view.draw_recolor_text(tmp_node2, 'red')
-                r.wait(view.animation_time)
+                r.wait(view.long_animation_time)
                 view.draw_node(tmp_node1, view.canvas_now)
                 view.draw_node(tmp_node2, view.canvas_now)
                 view.canvas_now.delete('recolor_txt')
@@ -433,7 +433,7 @@ class RBTNode(model.AnimatedObject, model.Node):
                 node = fix_insert_subpart(node, 'right')
         if self.tree.root.color != 'black':
             view.draw_recolor_text(self.tree.root, 'black')
-            r.wait(view.animation_time)
+            r.wait(view.long_animation_time)
         self.tree.root.color = 'black'
         view.explanation.append(f'Fixing finished')
 
@@ -454,7 +454,7 @@ class RBTNode(model.AnimatedObject, model.Node):
                     node.parent.rotate('left')
                     view.draw_recolor_text(tmp_node1, 'black')
                     view.draw_recolor_text(tmp_node2, 'red')
-                    r.wait(view.animation_time)
+                    r.wait(view.long_animation_time)
                     view.draw_node(tmp_node1, view.canvas_now)
                     view.draw_node(tmp_node2, view.canvas_now)
                     view.canvas_now.delete('recolor_txt')
@@ -462,7 +462,7 @@ class RBTNode(model.AnimatedObject, model.Node):
                 if type(w) is not RBTLeaf and w.left.color == 'black' and w.right.color == 'black':
                     w.color = 'red'
                     view.draw_recolor_text(w, 'red')
-                    r.wait(view.animation_time)
+                    r.wait(view.long_animation_time)
                     view.draw_node(w, view.canvas_now)
                     view.canvas_now.delete('recolor_txt')
                     node = node.parent
@@ -473,7 +473,7 @@ class RBTNode(model.AnimatedObject, model.Node):
                     w.rotate('right')
                     view.draw_recolor_text(tmp_node1, 'black')
                     view.draw_recolor_text(tmp_node2, 'red')
-                    r.wait(view.animation_time)
+                    r.wait(view.long_animation_time)
                     view.draw_node(tmp_node1, view.canvas_now)
                     view.draw_node(tmp_node2, view.canvas_now)
                     view.canvas_now.delete('recolor_txt')
@@ -489,7 +489,7 @@ class RBTNode(model.AnimatedObject, model.Node):
                     view.draw_recolor_text(tmp_node1, node.parent.color)
                     view.draw_recolor_text(tmp_node2, 'black')
                     view.draw_recolor_text(tmp_node3, 'black')
-                    r.wait(view.animation_time)
+                    r.wait(view.long_animation_time)
                     view.draw_node(tmp_node1, view.canvas_now)
                     view.draw_node(tmp_node2, view.canvas_now)
                     view.draw_node(tmp_node3, view.canvas_now)
@@ -504,7 +504,7 @@ class RBTNode(model.AnimatedObject, model.Node):
                     node.parent.rotate('right')
                     view.draw_recolor_text(tmp_node1, 'black')
                     view.draw_recolor_text(tmp_node2, 'red')
-                    r.wait(view.animation_time)
+                    r.wait(view.long_animation_time)
                     view.draw_node(tmp_node1, view.canvas_now)
                     view.draw_node(tmp_node2, view.canvas_now)
                     view.canvas_now.delete('recolor_txt')
@@ -512,7 +512,7 @@ class RBTNode(model.AnimatedObject, model.Node):
                 if type(w) is not RBTLeaf and w.right.color == 'black' and w.left.color == 'black':
                     w.color = 'red'
                     view.draw_recolor_text(w, 'red')
-                    r.wait(view.animation_time)
+                    r.wait(view.long_animation_time)
                     view.draw_node(w, view.canvas_now)
                     view.canvas_now.delete('recolor_txt')
                     node = node.parent
@@ -523,7 +523,7 @@ class RBTNode(model.AnimatedObject, model.Node):
                     w.rotate('left')
                     view.draw_recolor_text(tmp_node1, 'black')
                     view.draw_recolor_text(tmp_node2, 'red')
-                    r.wait(view.animation_time)
+                    r.wait(view.long_animation_time)
                     view.draw_node(tmp_node1, view.canvas_now)
                     view.draw_node(tmp_node2, view.canvas_now)
                     view.canvas_now.delete('recolor_txt')
@@ -539,7 +539,7 @@ class RBTNode(model.AnimatedObject, model.Node):
                     view.draw_recolor_text(tmp_node1, node.parent.color)
                     view.draw_recolor_text(tmp_node2, 'black')
                     view.draw_recolor_text(tmp_node3, 'black')
-                    r.wait(view.animation_time)
+                    r.wait(view.long_animation_time)
                     view.draw_node(tmp_node1, view.canvas_now)
                     view.draw_node(tmp_node2, view.canvas_now)
                     view.draw_node(tmp_node3, view.canvas_now)

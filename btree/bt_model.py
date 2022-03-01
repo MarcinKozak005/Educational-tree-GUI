@@ -128,7 +128,7 @@ class BTNode(model.AnimatedObject, model.Node):
                                          f'[{self.id}]: {value.value} > {self.values[i].value}, check next value',
                                          False)
             self.tree.view.move_object(r.hint_frame, self.values[i].x, self.values[i].y,
-                                       self.values[i].x + self.tree.view.node_width, self.values[i].y)
+                                       self.values[i].x + self.tree.view.node_width, self.values[i].y, True)
             i += 1
         if i < len(self.values):
             self.tree.view.draw_exp_text(self.values[i],
@@ -143,7 +143,7 @@ class BTNode(model.AnimatedObject, model.Node):
             self.values[i].parent = self
             self.tree.view.move_object(r.hint_frame, self.values[i - 1].x + self.tree.view.node_width,
                                        self.values[i - 1].y, self.values[i - 1].x + self.tree.view.node_width // 2,
-                                       self.values[i - 1].y)
+                                       self.values[i - 1].y, True)
             self.tree.view.draw_exp_text(self,
                                          f'Node [{self.id}] is a leaf. Inserting {value.value} in the node [{self.id}]',
                                          False)
@@ -152,12 +152,12 @@ class BTNode(model.AnimatedObject, model.Node):
         else:
             self.tree.view.move_object(r.hint_frame, self.values[i - 1].x + self.tree.view.node_width,
                                        self.values[i - 1].y, self.values[i - 1].x + self.tree.view.node_width // 2,
-                                       self.values[i - 1].y)
+                                       self.values[i - 1].y, True)
             self.tree.view.draw_exp_text(self,
                                          f'Insert value to a children node [{self.children[i].id}] of [{self.id}]',
                                          False)
             self.tree.view.canvas_now.delete(r.hint_frame)
-            self.tree.view.move_object('grey_node', self.x, self.y, self.children[i].x, self.children[i].y)
+            self.tree.view.move_object(r.grey_node, self.x, self.y, self.children[i].x, self.children[i].y)
             self.children[i].insert_value(value)
         if len(self.values) == self.tree.max_degree:
             self.tree.view.canvas_now.delete(r.hint_frame)
@@ -232,7 +232,7 @@ class BTNode(model.AnimatedObject, model.Node):
                                          f'[{self.id}]: {value} > {self.values[i].value}, check next value',
                                          False)
             self.tree.view.move_object(r.hint_frame, self.values[i].x, self.values[i].y,
-                                       self.values[i].x + self.tree.view.node_width, self.values[i].y)
+                                       self.values[i].x + self.tree.view.node_width, self.values[i].y, True)
             i += 1
         if i < len(self.values) and value == self.values[i].value:
             self.tree.view.draw_exp_text(self, f'Value found in node [{self.id}]')
@@ -256,7 +256,7 @@ class BTNode(model.AnimatedObject, model.Node):
             if i != 0:
                 self.tree.view.move_object(r.hint_frame, self.values[i - 1].x + self.tree.view.node_width,
                                            self.values[i - 1].y, self.values[i - 1].x,
-                                           self.values[i - 1].y)
+                                           self.values[i - 1].y, True)
             self.tree.view.move_object(r.hint_frame, self.values[i - 1].x, self.values[i - 1].y,
                                        self.children[i].values[0].x, self.children[i].values[0].y)
             return self.children[i].search_value(value)
@@ -342,7 +342,7 @@ class BTNode(model.AnimatedObject, model.Node):
             self.tree.view.draw_exp_text(self,
                                          f'Node [{self.id}] is not a leaf, search for successor in a first child')
             self.tree.view.move_object(r.hint_frame, first.x, first.y, self.children[0].values[0].x,
-                                       self.children[0].values[0].y)
+                                       self.children[0].values[0].y, True)
             self.tree.view.canvas_now.delete(r.hint_frame)
             return self.children[0].successor()
 

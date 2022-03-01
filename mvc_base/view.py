@@ -14,7 +14,8 @@ class View(abc.ABC):
         self.y_above = 30
         self.node_width = node_width
         self.node_height = node_height
-        self.animation_time = 150
+        self.long_animation_time = 1500
+        self.short_animation_time = 500
         self.animation_unit = 10
         self.layout = 'double'
         self.columns_to_skip = columns_to_skip
@@ -41,11 +42,12 @@ class View(abc.ABC):
     def draw_object(self, obj, canvas):
         pass
 
-    def animate(self, node):
+    def animate(self, node, time=False):
+        time = self.short_animation_time if time else self.long_animation_time
         if node is not None:
             successors = node.successors()
             units = {}
-            tmp = self.animation_time / self.animation_unit
+            tmp = time / self.animation_unit
             for s in successors:
                 x_unit = (s.x_next - s.x) / tmp
                 y_unit = (s.y_next - s.y) / tmp
@@ -70,11 +72,11 @@ class View(abc.ABC):
                                           tags=r.exp_txt)
         txt_bg = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill="grey", tags=r.exp_txt)
         self.canvas_now.tag_lower(txt_bg)
-        r.wait(self.animation_time)
+        r.wait(self.long_animation_time)
         self.canvas_now.delete(r.exp_txt)
         self.explanation.append(exp_str)
 
-    def move_object(self, obj, x1, y1, x2, y2):
+    def move_object(self, obj, x1, y1, x2, y2, time=False):
         """
         Moves object obj from (x1,y1) to (x2,y2)
         :param obj: object to move identifier
@@ -84,11 +86,12 @@ class View(abc.ABC):
         :param y2: final y coordinate
         :return: returns nothing
         """
+        time = self.short_animation_time if time else self.long_animation_time
         x_diff = x2 - x1
         y_diff = y2 - y1
-        x_unit = x_diff / (self.animation_time / self.animation_unit)
-        y_unit = y_diff / (self.animation_time / self.animation_unit)
-        counter = self.animation_time / self.animation_unit
+        x_unit = x_diff / (time / self.animation_unit)
+        y_unit = y_diff / (time / self.animation_unit)
+        counter = time / self.animation_unit
         while counter > 0:
             self.canvas_now.move(obj, x_unit, y_unit)
             r.wait(self.animation_unit)
