@@ -8,14 +8,15 @@ import core.root as r
 class View(abc.ABC):
     def __init__(self, node_width, node_height, columns_to_skip):
         self.explanation = Explanation()
+        self.hint_frame = HintFrame(self)
         self.width = 1000
         self.height = 300
         self.y_space = 50
         self.y_above = 30
         self.node_width = node_width
         self.node_height = node_height
-        self.long_animation_time = 150
-        self.short_animation_time = 50
+        self.long_animation_time = 500
+        self.short_animation_time = 100
         self.animation_unit = 10
         self.layout = 'double'
         self.columns_to_skip = columns_to_skip
@@ -73,7 +74,7 @@ class View(abc.ABC):
         txt_bg = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill="grey", tags=r.exp_txt)
         self.canvas_now.tag_lower(txt_bg)
         r.wait(self.long_animation_time)
-        self.canvas_now.delete(r.exp_txt)
+        self.erase(r.exp_txt)
         self.explanation.append(exp_str)
 
     def move_object(self, obj, x1, y1, x2, y2, time=False):
@@ -103,7 +104,7 @@ class View(abc.ABC):
         :return: returns nothing
         """
         self.canvas_prev.delete('all')
-        self.canvas_now.delete('all')
+        self.erase('all')
         self.explanation_label.config(text='')
 
     def prepare_view(self):
@@ -112,7 +113,7 @@ class View(abc.ABC):
         :return: returns nothing
         """
         self.info_label.config(text='')
-        self.canvas_now.delete('all')
+        self.erase('all')
         self.explanation_label.config(text=self.explanation.string, wraplength=350)
         self.explanation.reset()
 
@@ -235,6 +236,32 @@ class View(abc.ABC):
                                    fill=fill, tags=[f'Line{hash(node1)}', 'Line'])
             except AttributeError as e:
                 print(e)
+
+    def erase(self, tag):
+        self.canvas_now.delete(tag)
+
+
+class HintFrame:
+    def __init__(self, view):
+        self.view = view
+        self.x = 0
+        self.y = 0
+
+    def draw(self, x=None, y=None):
+        x = x if x else self.x
+        y = y if y else self.y
+        self.x = x
+        self.y = y
+        self.view.canvas_now.create_rectangle(x - self.view.node_width // 2,
+                                              y - self.view.node_height // 2,
+                                              x + self.view.node_width // 2,
+                                              y + self.view.node_height // 2,
+                                              outline='red', tags=r.hint_frame)
+
+    def move(self, x, y, time=False):
+        self.view.move_object(r.hint_frame, self.x, self.y, x, y, time)
+        self.x = x
+        self.y = y
 
 
 class Explanation:

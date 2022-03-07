@@ -64,7 +64,7 @@ class BPTValue(model.AnimatedObject):
         self.value = value
 
     def tick(self, view, x_un, y_un):
-        view.canvas_now.delete(f'Line{hash(self)}')
+        view.erase(f'Line{hash(self)}')
         if view.canvas_now.find_withtag(self.tag()):
             view.canvas_now.move(self.tag(), x_un, y_un)
         else:
@@ -118,49 +118,52 @@ class BPTNode(model.AnimatedObject, model.Node):
         :return: returns nothing
         """
         i = 0
-        self.tree.view.canvas_now.create_rectangle(self.values[0].x - self.tree.view.node_width // 2,
-                                                   self.values[0].y - self.tree.view.node_height // 2,
-                                                   self.values[0].x + self.tree.view.node_width // 2,
-                                                   self.values[0].y + self.tree.view.node_height // 2,
-                                                   outline='red', tags=r.hint_frame)
+        self.tree.view.hint_frame.draw(self.values[0].x, self.values[0].y)
         while i < len(self.values) and value.value > self.values[i].value:
             self.tree.view.draw_exp_text(self.values[i],
                                          f'[{self.id}]: {value.value} > {self.values[i].value}, check next value',
                                          False)
-            self.tree.view.move_object(r.hint_frame, self.values[i].x, self.values[i].y,
-                                       self.values[i].x + self.tree.view.node_width, self.values[i].y, True)
+            self.tree.view.hint_frame.move(self.values[i].x + self.tree.view.node_width, self.values[i].y, True)
+            # ASDself.tree.view.move_object(r.hint_frame, self.values[i].x, self.values[i].y,
+            #                            self.values[i].x + self.tree.view.node_width, self.values[i].y, True)
             i += 1
         if i < len(self.values):
             self.tree.view.draw_exp_text(self.values[i],
                                          f'[{self.id}]: {value.value} < {self.values[i].value}, insert to previous',
                                          False)
+            self.tree.view.hint_frame.move(self.values[i].x - self.tree.view.node_width // 2, self.values[i].y, True)
         else:
             self.tree.view.draw_exp_text(self, f'No next value', False)
+            self.tree.view.hint_frame.move(self.values[-1].x + self.tree.view.node_width // 2, self.values[-1].y, True)
         if self.is_leaf:
             self.values.insert(i, value)
             value.x = self.x
             value.y = self.y - self.tree.view.y_above
             self.values[i].parent = self
-            self.tree.view.move_object(r.hint_frame, self.values[i - 1].x + self.tree.view.node_width,
-                                       self.values[i - 1].y, self.values[i - 1].x + self.tree.view.node_width // 2,
-                                       self.values[i - 1].y, True)
+            # self.tree.view.hint_frame.move(self.values[i - 1].x + self.tree.view.node_width // 2,
+            #                                self.values[i - 1].y, True)
+            # ASDself.tree.view.move_object(r.hint_frame, self.values[i - 1].x + self.tree.view.node_width,
+            #                            self.values[i - 1].y, self.values[i - 1].x + self.tree.view.node_width // 2,
+            #                            self.values[i - 1].y, True)
             self.tree.view.draw_exp_text(self,
                                          f'Node [{self.id}] is a leaf. Inserting {value.value} in the node [{self.id}]',
                                          False)
             self.tree.update_positions()
             self.tree.view.animate(self)
         else:
-            self.tree.view.move_object(r.hint_frame, self.values[i - 1].x + self.tree.view.node_width,
-                                       self.values[i - 1].y, self.values[i - 1].x + self.tree.view.node_width // 2,
-                                       self.values[i - 1].y, True)
+            # self.tree.view.hint_frame.move(self.values[i - 1].x + self.tree.view.node_width // 2,
+            #                                self.values[i - 1].y, True)
+            # ASDself.tree.view.move_object(r.hint_frame, self.values[i - 1].x + self.tree.view.node_width,
+            #                            self.values[i - 1].y, self.values[i - 1].x + self.tree.view.node_width // 2,
+            #                            self.values[i - 1].y, True)
             self.tree.view.draw_exp_text(self,
                                          f'Insert value to a children node [{self.children[i].id}] of [{self.id}]',
                                          False)
-            self.tree.view.canvas_now.delete(r.hint_frame)
+            self.tree.view.erase(r.hint_frame)
             self.tree.view.move_object(r.grey_node, self.x, self.y, self.children[i].x, self.children[i].y)
             self.children[i].insert_value(value)
         if len(self.values) == self.tree.max_degree:
-            self.tree.view.canvas_now.delete(r.hint_frame)
+            self.tree.view.erase(r.hint_frame)
             self.tree.view.draw_exp_text(self, f'Number of values in [{self.id}] == max b-tree degree. Start fixing')
             self.fix_insert()
 
@@ -169,7 +172,7 @@ class BPTNode(model.AnimatedObject, model.Node):
         if self.is_leaf and value in tmp:
             i = tmp.index(value)
             removed_node = self.values.pop(i)
-            self.tree.view.canvas_now.delete(removed_node.tag())
+            self.tree.view.erase(removed_node.tag())
             self.fix_delete()
         elif value in tmp:
             i = tmp.index(value)
@@ -177,8 +180,8 @@ class BPTNode(model.AnimatedObject, model.Node):
                 self.tree.view.draw_exp_text(self.children[i],
                                              f'Node [{self.children[i].id}] has > 1 values. Looking for the '
                                              f'predecessor of {value}')
-                self.tree.view.canvas_now.delete(self.values[i].tag())
-                self.tree.view.canvas_now.delete(f'Line{hash(self.values[i])}')
+                self.tree.view.erase(self.values[i].tag())
+                self.tree.view.erase(f'Line{hash(self.values[i])}')
                 self.values[i], to_fix = self.children[i].predecessor()
                 self.values[i].parent = self
                 to_fix.fix_delete()
@@ -186,8 +189,8 @@ class BPTNode(model.AnimatedObject, model.Node):
                 self.tree.view.draw_exp_text(self.children[i],
                                              f'Node [{self.children[i + 1].id}] has > 1 values. Looking for the '
                                              f'successor of {value}')
-                self.tree.view.canvas_now.delete(self.values[i].tag())
-                self.tree.view.canvas_now.delete(f'Line{hash(self.values[i])}')
+                self.tree.view.erase(self.values[i].tag())
+                self.tree.view.erase(f'Line{hash(self.values[i])}')
                 self.values[i], to_fix = self.children[i + 1].successor()
                 self.values[i].parent = self
                 to_fix.fix_delete()
@@ -201,8 +204,8 @@ class BPTNode(model.AnimatedObject, model.Node):
                 self.children[i].children.extend(self.children[i + 1].children)
                 for c in self.children[i + 1].children:
                     c.parent = self.children[i]
-                self.tree.view.canvas_now.delete(self.values[i].tag())
-                self.tree.view.canvas_now.delete(f'Line{hash(self.values[i])}')
+                self.tree.view.erase(self.values[i].tag())
+                self.tree.view.erase(f'Line{hash(self.values[i])}')
                 self.values.pop(i)
                 self.children.pop(i + 1)
                 self.children[i].delete_value(value)
@@ -221,44 +224,57 @@ class BPTNode(model.AnimatedObject, model.Node):
                  else None
         """
         i = 0
-        self.tree.view.canvas_now.create_rectangle(self.values[0].x - self.tree.view.node_width // 2,
-                                                   self.values[0].y - self.tree.view.node_height // 2,
-                                                   self.values[0].x + self.tree.view.node_width // 2,
-                                                   self.values[0].y + self.tree.view.node_height // 2,
-                                                   outline='red', tags=r.hint_frame)
+        self.tree.view.hint_frame.draw(self.values[0].x, self.values[0].y)
+        # ASDself.tree.view.canvas_now.create_rectangle(self.values[0].x - self.tree.view.node_width // 2,
+        #                                            self.values[0].y - self.tree.view.node_height // 2,
+        #                                            self.values[0].x + self.tree.view.node_width // 2,
+        #                                            self.values[0].y + self.tree.view.node_height // 2,
+        #                                            outline='red', tags=r.hint_frame)
         while i < len(self.values) and value > self.values[i].value:
             self.tree.view.draw_exp_text(self.values[i],
                                          f'[{self.id}]: {value} > {self.values[i].value}, check next value',
                                          False)
-            self.tree.view.move_object(r.hint_frame, self.values[i].x, self.values[i].y,
-                                       self.values[i].x + self.tree.view.node_width, self.values[i].y, True)
+            self.tree.view.hint_frame.move(self.values[i].x + self.tree.view.node_width, self.values[i].y, True)
+            # ASDself.tree.view.move_object(r.hint_frame, self.values[i].x, self.values[i].y,
+            #                            self.values[i].x + self.tree.view.node_width, self.values[i].y, True)
             i += 1
-        if i < len(self.values) and value == self.values[i].value:
+        if i < len(self.values) and self.is_leaf and value == self.values[i].value:
             self.tree.view.draw_exp_text(self, f'Value found in node [{self.id}]')
-            self.tree.view.canvas_now.delete(r.hint_frame)
+            self.tree.view.erase(r.hint_frame)
             return self, i
         if self.is_leaf:
             self.tree.view.draw_exp_text(self, f'Value not found')
-            self.tree.view.canvas_now.delete(r.hint_frame)
+            self.tree.view.erase(r.hint_frame)
             return None
         else:
+            new_i = i
             if i < len(self.values):
-                self.tree.view.draw_exp_text(self.values[i],
-                                             f'[{self.id}]: {value} < {self.values[i].value}, '
-                                             f'search in [{self.children[i].id}]',
-                                             False)
+                if value < self.values[i].value:
+                    self.tree.view.draw_exp_text(self.values[i],
+                                                 f'[{self.id}]: {value} < {self.values[i].value}, '
+                                                 f'search in [{self.children[i].id}]',
+                                                 False)
+                elif value == self.values[i].value:
+                    self.tree.view.draw_exp_text(self.values[i],
+                                                 f'[{self.id}]: {value} == {self.values[i].value}, '
+                                                 f'search in [{self.children[i + 1].id}]',
+                                                 False)
+                    new_i = i + 1
             else:
                 self.tree.view.draw_exp_text(self, f'No next value', False)
                 self.tree.view.draw_exp_text(self,
                                              f'Search value in a children node [{self.children[i].id}] of [{self.id}]',
                                              False)
             if i != 0:
-                self.tree.view.move_object(r.hint_frame, self.values[i - 1].x + self.tree.view.node_width,
-                                           self.values[i - 1].y, self.values[i - 1].x,
-                                           self.values[i - 1].y, True)
-            self.tree.view.move_object(r.hint_frame, self.values[i - 1].x, self.values[i - 1].y,
-                                       self.children[i].values[0].x, self.children[i].values[0].y)
-            return self.children[i].search_value(value)
+                self.tree.view.hint_frame.move(self.values[i - 1].x,
+                                               self.values[i - 1].y, True)
+                # ASDself.tree.view.move_object(r.hint_frame, self.values[i - 1].x + self.tree.view.node_width,
+                #                            self.values[i - 1].y, self.values[i - 1].x,
+                #                            self.values[i - 1].y, True)
+            self.tree.view.hint_frame.move(self.children[new_i].values[0].x, self.children[new_i].values[0].y)
+            # ASDself.tree.view.move_object(r.hint_frame, self.values[i - 1].x, self.values[i - 1].y,
+            #                            self.children[new_i].values[0].x, self.children[new_i].values[0].y)
+            return self.children[new_i].search_value(value)
 
     def search_value_no_GUI(self, value):
         """
@@ -329,6 +345,7 @@ class BPTNode(model.AnimatedObject, model.Node):
         :return: successor, node from which successor was deleted
         """
         first = self.values[0]
+        self.tree.view.hint_frame.draw(first.x, first.y)
         self.tree.view.canvas_now.create_rectangle(first.x - self.tree.view.node_width // 2,
                                                    first.y - self.tree.view.node_height // 2,
                                                    first.x + self.tree.view.node_width // 2,
@@ -340,9 +357,11 @@ class BPTNode(model.AnimatedObject, model.Node):
         else:
             self.tree.view.draw_exp_text(self,
                                          f'Node [{self.id}] is not a leaf, search for successor in a first child')
-            self.tree.view.move_object(r.hint_frame, first.x, first.y, self.children[0].values[0].x,
-                                       self.children[0].values[0].y, True)
-            self.tree.view.canvas_now.delete(r.hint_frame)
+            self.tree.view.hint_frame.move(self.children[0].values[0].x,
+                                           self.children[0].values[0].y, True)
+            # ASDself.tree.view.move_object(r.hint_frame, first.x, first.y, self.children[0].values[0].x,
+            #                            self.children[0].values[0].y, True)
+            self.tree.view.erase(r.hint_frame)
             return self.children[0].successor()
 
     def print_node(self, indent=0):
@@ -385,7 +404,8 @@ class BPTNode(model.AnimatedObject, model.Node):
         self.values[i].parent = self
         # b+tree
         if full_node.is_leaf:
-            tmp = BPTValue(full_node.values[len(full_node.values) - 1].value, new_node, full_node.values[len(full_node.values) - 1].x, full_node.values[len(full_node.values) - 1].y)
+            tmp = BPTValue(full_node.values[len(full_node.values) - 1].value, new_node,
+                           full_node.values[len(full_node.values) - 1].x, full_node.values[len(full_node.values) - 1].y)
             self.tree.view.draw_object(tmp, self.tree.view.canvas_now)
             new_node.values.insert(0, tmp)
         # b+tree end
@@ -521,18 +541,21 @@ class BPTNode(model.AnimatedObject, model.Node):
         :return: predecessor, node from which predecessor was deleted
         """
         last = self.values[-1]
-        self.tree.view.canvas_now.create_rectangle(last.x - self.tree.view.node_width // 2,
-                                                   last.y - self.tree.view.node_height // 2,
-                                                   last.x + self.tree.view.node_width // 2,
-                                                   last.y + self.tree.view.node_height // 2,
-                                                   outline='red', tags=r.hint_frame)
+        self.tree.view.hint_frame.draw(last.x, last.y)
+        # ASDself.tree.view.canvas_now.create_rectangle(last.x - self.tree.view.node_width // 2,
+        #                                            last.y - self.tree.view.node_height // 2,
+        #                                            last.x + self.tree.view.node_width // 2,
+        #                                            last.y + self.tree.view.node_height // 2,
+        #                                            outline='red', tags=r.hint_frame)
         if self.is_leaf:
             self.tree.view.draw_exp_text(self, f'Node [{self.id}] is a leaf, last value is a predecessor')
             return self.values.pop(-1), self
         else:
             self.tree.view.draw_exp_text(self,
                                          f'Node [{self.id}] is not a leaf, search for predecessor in last child')
-            self.tree.view.move_object(r.hint_frame, last.x, last.y, self.children[-1].values[-1].x,
-                                       self.children[-1].values[-1].y)
-            self.tree.view.canvas_now.delete(r.hint_frame)
+            self.tree.view.hint_frame.move(self.children[-1].values[-1].x,
+                                           self.children[-1].values[-1].y)
+            # ASDself.tree.view.move_object(r.hint_frame, last.x, last.y, self.children[-1].values[-1].x,
+            #                            self.children[-1].values[-1].y)
+            self.tree.view.erase(r.hint_frame)
             return self.children[-1].predecessor()

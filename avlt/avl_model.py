@@ -102,8 +102,8 @@ class AVLTNode(model.AnimatedObject, model.Node):
         self.height = 1
 
     def tick(self, view, x_unit, y_unit):
-        view.canvas_now.delete(f'Line{hash(self)}')
-        view.canvas_now.delete(f'Line{hash(self.parent)}')
+        view.erase(f'Line{hash(self)}')
+        view.erase(f'Line{hash(self.parent)}')
         view.canvas_now.move(self.tag(), x_unit, y_unit)
         self.x += x_unit
         self.y += y_unit
@@ -136,7 +136,7 @@ class AVLTNode(model.AnimatedObject, model.Node):
         view.draw_exp_text(newNode, f'Inserting {newNode.value}', False)
         view.explanation.append(f'{value} inserted. Starting fixing')
         view.draw_object_with_children_lines(newNode, view.canvas_now)
-        view.canvas_now.delete(r.grey_node)
+        view.erase(r.grey_node)
         view.draw_line(view.canvas_now, newNode, newNode.parent)
         view.canvas_now.tag_lower(f'Line{hash(newNode)}')
         newNode.fix_insert(value)
@@ -154,7 +154,7 @@ class AVLTNode(model.AnimatedObject, model.Node):
             return
         else:
             if node is self.tree.root and type(node.left) is AVLTLeaf and type(node.right) is AVLTLeaf:
-                view.canvas_now.delete(r.hint_frame)
+                view.erase(r.hint_frame)
                 view.move_object(self.tree.root.tag(), self.tree.root.x, self.tree.root.y,
                                  self.tree.root.x,
                                  -view.node_width)
@@ -177,8 +177,8 @@ class AVLTNode(model.AnimatedObject, model.Node):
                 y.parent.left = x
             else:
                 y.parent.right = x
-            view.canvas_now.delete(f'Line{hash(y)}')
-            view.canvas_now.delete(r.hint_frame)
+            view.erase(f'Line{hash(y)}')
+            view.erase(r.hint_frame)
             self.tree.root.update_positions()
             if y is not node:
                 view.explanation.append(f'Swap {node.value} with {y.value}')
@@ -200,7 +200,7 @@ class AVLTNode(model.AnimatedObject, model.Node):
                 view.move_object('txt1', node.x, node.y, y.x, y.y)
                 view.move_object('txt2', y.x, y.y, node.x, node.y)
                 node.value = y.value
-                view.canvas_now.delete('swap1')
+                view.erase('swap1')
                 view.draw_object(node, view.canvas_now)
             view.move_object(y.tag(), y.x, y.y, y.x, - view.node_height)
             view.explanation.append(f'Remove {value} from tree')
@@ -220,44 +220,49 @@ class AVLTNode(model.AnimatedObject, model.Node):
         view = self.tree.view
         view.explanation.append(f'Looking for a node {value}')
         curr = self.tree.root
-        view.canvas_now.create_rectangle(curr.x - view.node_width // 2,
-                                         curr.y - view.node_height // 2,
-                                         curr.x + view.node_width // 2,
-                                         curr.y + view.node_height // 2,
-                                         outline='red', tags=r.hint_frame)
+        view.hint_frame.draw(curr.x, curr.y)
+        # ASDview.canvas_now.create_rectangle(curr.x - view.node_width // 2,
+        #                                  curr.y - view.node_height // 2,
+        #                                  curr.x + view.node_width // 2,
+        #                                  curr.y + view.node_height // 2,
+        #                                  outline='red', tags=r.hint_frame)
         while type(curr) is not AVLTLeaf and curr.value != value:
             if curr.value > value and type(curr.left) is AVLTNode:
                 view.draw_exp_text(curr, f'{value} < {curr.value}. Choosing left subtree')
-                view.move_object(r.hint_frame, curr.x, curr.y, curr.left.x, curr.left.y)
+                view.hint_frame.move(curr.left.x, curr.left.y)
+                # ASDview.move_object(r.hint_frame, curr.x, curr.y, curr.left.x, curr.left.y)
                 curr = curr.left
             elif curr.value > value:
                 view.draw_exp_text(curr, f'{value} < {curr.value}. Choosing left subtree')
                 unit = (curr.r_edge - curr.l_edge) / 4
-                view.move_object(r.hint_frame, curr.x, curr.y, curr.x - unit, curr.y + view.y_space)
+                view.hint_frame.move(curr.x - unit, curr.y + view.y_space)
+                # ASDview.move_object(r.hint_frame, curr.x, curr.y, curr.x - unit, curr.y + view.y_space)
                 view.draw_exp_text(
                     AVLTNode(None, curr.x - unit, curr.y + view.y_space, self.tree),
                     'Element not found')
-                view.canvas_now.delete(r.hint_frame)
+                view.erase(r.hint_frame)
                 return None
             elif curr.value <= value and type(curr.right) is AVLTNode:
                 view.draw_exp_text(curr, f'{value} >= {curr.value}. Choosing right subtree')
-                view.move_object(r.hint_frame, curr.x, curr.y, curr.right.x, curr.right.y)
+                view.hint_frame.move(curr.right.x, curr.right.y)
+                # ASDview.move_object(r.hint_frame, curr.x, curr.y, curr.right.x, curr.right.y)
                 curr = curr.right
             elif curr.value <= value:
                 view.draw_exp_text(curr, f'{value} >= {curr.value}. Choosing right subtree')
                 unit = (curr.r_edge - curr.l_edge) / 4
-                view.move_object(r.hint_frame, curr.x, curr.y, curr.x + unit, curr.y + view.y_space)
+                view.hint_frame.move(curr.x + unit, curr.y + view.y_space)
+                # ASDview.move_object(r.hint_frame, curr.x, curr.y, curr.x + unit, curr.y + view.y_space)
                 view.draw_exp_text(
                     AVLTNode(None, curr.x + unit, curr.y + view.y_space, self.tree),
                     'Element not found')
-                view.canvas_now.delete(r.hint_frame)
+                view.erase(r.hint_frame)
                 return None
         view.draw_exp_text(curr, f'{curr.value} found')
         if show_to_gui:
             view.info_label.config(
                 text=f'Elem \'{value}\' found' if type(
                     curr) is not AVLTLeaf else f'Elem \'{value}\' not found')
-            view.canvas_now.delete(r.hint_frame)
+            view.erase(r.hint_frame)
         else:
             return curr
 
@@ -328,7 +333,8 @@ class AVLTNode(model.AnimatedObject, model.Node):
         """
         view = self.tree.view
         if type(self.right) is not AVLTLeaf:
-            view.move_object(r.hint_frame, self.x, self.y, self.right.x, self.right.y)
+            view.hint_frame.move(self.right.x, self.right.y)
+            # ASDview.move_object(r.hint_frame, self.x, self.y, self.right.x, self.right.y)
             view.draw_exp_text(self.right, f'Looking for the minimum of {self.right.value}')
             tmp = self.right.subtree_minimum()
             return tmp
