@@ -16,6 +16,7 @@ class AVLTree(model.Tree):
             self.view.explanation.append(f'Added node {value}')
         else:
             self.root.insert_value(value)
+            self.view.draw_exp_text(self.root, f'Calculate height')
 
     def delete_value(self, value):
         """
@@ -27,6 +28,7 @@ class AVLTree(model.Tree):
             self.view.explanation.append(f'Tree is empty. Impossible to delete form empty tree')
         else:
             self.root.delete_value(value)
+            self.view.draw_exp_text(self.root, f'Calculate height')
 
     def search_value(self, value):
         """
@@ -182,10 +184,10 @@ class AVLTNode(model.AnimatedObject, model.Node):
                 view.explanation.append(f'Swap {node.value} with {y.value}')
                 view.canvas_now.create_oval(node.x - view.node_width // 2, node.y - view.node_height // 2,
                                             node.x + view.node_width // 2,
-                                            node.y + view.node_height // 2, fill=node.color, tags='swap1')
+                                            node.y + view.node_height // 2, fill='green', tags='swap1')
                 view.canvas_now.create_oval(y.x - view.node_width // 2, y.y - view.node_height // 2,
                                             y.x + view.node_width // 2,
-                                            y.y + view.node_height // 2, fill=y.color, tags=y.tag())
+                                            y.y + view.node_height // 2, fill='green', tags=y.tag())
                 txt1 = view.canvas_now.create_text(node.x, node.y, fill='blue', text=node.value,
                                                    tags=[y.tag(), 'txt1'])
                 txt2 = view.canvas_now.create_text(y.x, y.y, fill='blue', text=y.value, tags=['swap1', 'txt2'])
@@ -199,15 +201,11 @@ class AVLTNode(model.AnimatedObject, model.Node):
                 view.move_object('txt2', y.x, y.y, node.x, node.y)
                 node.value = y.value
                 view.canvas_now.delete('swap1')
-                view.draw_node(node, view.canvas_now)
+                view.draw_object(node, view.canvas_now)
             view.move_object(y.tag(), y.x, y.y, y.x, - view.node_height)
             view.explanation.append(f'Remove {value} from tree')
-            if y.color == 'black':
-                self.fix_delete(x)
-                view.animate(self.tree.root)
-                view.draw_recolor_text(x, 'black')
-                r.wait(view.long_animation_time)
-                view.canvas_now.delete('recolor_txt')
+            self.fix_delete()
+            view.animate(self.tree.root)
             view.explanation.append(f'Deletion finished')
             if type(self.tree.root) is AVLTLeaf:
                 self.tree.clear()
@@ -353,8 +351,6 @@ class AVLTNode(model.AnimatedObject, model.Node):
         self.right.print_node(indent)
         indent -= 1
 
-    # RBNode specific methods below
-
     def subtree_insert_value(self, value):
         """
         Looks for the place to insert new value
@@ -393,131 +389,48 @@ class AVLTNode(model.AnimatedObject, model.Node):
         Fixes the red-black subtree starting in self after the insertion process
         :return: returns nothing
         """
-
+        self.height = 1 + max(self.left.get_height(), self.right.get_height())
         balance = self.get_balance()
-        if balance > 1 and value < self.left.value:
+        if balance > 1 and type(self.left) is AVLTNode and value < self.left.value:
             self.rotate('right')
 
-        if balance < -1 and value > self.right.value:
+        if balance < -1 and type(self.right) is AVLTNode and value > self.right.value:
             self.rotate('left')
 
-        if balance > 1 and value > self.left.value:
-            self.left.rotate('left').rotate('right')  # TODO rotate musi zwracac cos
+        if balance > 1 and type(self.left) is AVLTNode and value > self.left.value:
+            self.left.rotate('left')
+            self.rotate('right')
 
-        # Case 4 - Right Left
-        if balance < -1 and value < self.right.value:
-            self.right.rotate('right').rotate('left')
+        if balance < -1 and type(self.right) is AVLTNode and value < self.right.value:
+            self.right.rotate('right')
+            self.rotate('left')
 
+        if self.parent is not None:
+            self.parent.fix_insert(value)
 
-    def fix_delete(self, node):
+    def fix_delete(self):
         """
         Fixes the red-black tree constraints in node subtree after the deletion process
         :node: node to start fixing process
         :return: returns nothing
         """
-        view = self.tree.view
-        while node is not self.tree.root and node.color == 'black':
-            if node == node.parent.left:
-                w = node.parent.right
-                if type(w) is not AVLTLeaf and w.color == 'red':
-                    w.color = 'black'
-                    node.parent.color = 'red'
-                    tmp_node1, tmp_node2 = w, node.parent
-                    node.parent.rotate('left')
-                    view.draw_recolor_text(tmp_node1, 'black')
-                    view.draw_recolor_text(tmp_node2, 'red')
-                    r.wait(view.long_animation_time)
-                    view.draw_node(tmp_node1, view.canvas_now)
-                    view.draw_node(tmp_node2, view.canvas_now)
-                    view.canvas_now.delete('recolor_txt')
-                    w = node.parent.right
-                if type(w) is not AVLTLeaf and w.left.color == 'black' and w.right.color == 'black':
-                    w.color = 'red'
-                    view.draw_recolor_text(w, 'red')
-                    r.wait(view.long_animation_time)
-                    view.draw_node(w, view.canvas_now)
-                    view.canvas_now.delete('recolor_txt')
-                    node = node.parent
-                elif type(w) is not AVLTLeaf and w.right.color == 'black':
-                    w.left.color = 'black'
-                    w.color = 'red'
-                    tmp_node1, tmp_node2 = w.left, w
-                    w.rotate('right')
-                    view.draw_recolor_text(tmp_node1, 'black')
-                    view.draw_recolor_text(tmp_node2, 'red')
-                    r.wait(view.long_animation_time)
-                    view.draw_node(tmp_node1, view.canvas_now)
-                    view.draw_node(tmp_node2, view.canvas_now)
-                    view.canvas_now.delete('recolor_txt')
-                    w = node.parent.right
-                if node is not self.tree.root:
-                    w.color = node.parent.color
-                    node.parent.color = 'black'
-                    w.right.color = 'black'
-                    tmp_node1, tmp_node2, tmp_node3 = w, node.parent, w.right
-                    if node.parent is not self.tree.root or \
-                            node.parent is self.tree.root and type(node) is AVLTLeaf:
-                        node.parent.rotate('left')
-                    view.draw_recolor_text(tmp_node1, node.parent.color)
-                    view.draw_recolor_text(tmp_node2, 'black')
-                    view.draw_recolor_text(tmp_node3, 'black')
-                    r.wait(view.long_animation_time)
-                    view.draw_node(tmp_node1, view.canvas_now)
-                    view.draw_node(tmp_node2, view.canvas_now)
-                    view.draw_node(tmp_node3, view.canvas_now)
-                    view.canvas_now.delete('recolor_txt')
-                    node = self.tree.root
-            else:
-                w = node.parent.left
-                if type(w) is not AVLTLeaf and w.color == 'red':
-                    w.color = 'black'
-                    node.parent.color = 'red'
-                    tmp_node1, tmp_node2 = w, node.parent
-                    node.parent.rotate('right')
-                    view.draw_recolor_text(tmp_node1, 'black')
-                    view.draw_recolor_text(tmp_node2, 'red')
-                    r.wait(view.long_animation_time)
-                    view.draw_node(tmp_node1, view.canvas_now)
-                    view.draw_node(tmp_node2, view.canvas_now)
-                    view.canvas_now.delete('recolor_txt')
-                    w = node.parent.left
-                if type(w) is not AVLTLeaf and w.right.color == 'black' and w.left.color == 'black':
-                    w.color = 'red'
-                    view.draw_recolor_text(w, 'red')
-                    r.wait(view.long_animation_time)
-                    view.draw_node(w, view.canvas_now)
-                    view.canvas_now.delete('recolor_txt')
-                    node = node.parent
-                elif type(w) is not AVLTLeaf and w.left.color == 'black':
-                    w.right.color = 'black'
-                    w.color = 'red'
-                    tmp_node1, tmp_node2 = w.right, w
-                    w.rotate('left')
-                    view.draw_recolor_text(tmp_node1, 'black')
-                    view.draw_recolor_text(tmp_node2, 'red')
-                    r.wait(view.long_animation_time)
-                    view.draw_node(tmp_node1, view.canvas_now)
-                    view.draw_node(tmp_node2, view.canvas_now)
-                    view.canvas_now.delete('recolor_txt')
-                    w = node.parent.left
-                if node is not self.tree.root:
-                    w.color = node.parent.color
-                    node.parent.color = 'black'
-                    w.left.color = 'black'
-                    tmp_node1, tmp_node2, tmp_node3 = w, node.parent, w.left
-                    if node.parent is not self.tree.root or \
-                            node.parent is self.tree.root and type(node) is AVLTLeaf:
-                        node.parent.rotate('right')
-                    view.draw_recolor_text(tmp_node1, node.parent.color)
-                    view.draw_recolor_text(tmp_node2, 'black')
-                    view.draw_recolor_text(tmp_node3, 'black')
-                    r.wait(view.long_animation_time)
-                    view.draw_node(tmp_node1, view.canvas_now)
-                    view.draw_node(tmp_node2, view.canvas_now)
-                    view.draw_node(tmp_node3, view.canvas_now)
-                    view.canvas_now.delete('recolor_txt')
-                    node = self.tree.root
-        node.color = 'black'
+        self.height = 1 + max(self.left.get_height(), self.right.get_height())
+        balance = self.get_balance()
+        if balance > 1 and type(self.left) is AVLTNode and self.left.get_balance() >= 0:
+            self.rotate('right')
+
+        if balance < -1 and type(self.right) is AVLTNode and self.right.get_balance() <= 0:
+            self.rotate('left')
+
+        if balance > 1 and type(self.left) is AVLTNode and self.left.get_balance() < 0:
+            self.left.rotate('left')
+            self.rotate('right')
+        # Case 4 - Right Left
+        if balance < -1 and type(self.right) is AVLTNode and self.right.get_balance() > 0:
+            self.right.rotate('right')
+            self.rotate('left')
+        if self.parent is not None:
+            self.parent.fix_delete()
 
     def rotate(self, side):
         """
@@ -540,23 +453,11 @@ class AVLTNode(model.AnimatedObject, model.Node):
             self.parent['right' if side == 'left' else 'left'] = y
         y[side] = self
         self.parent = y
+        self.height = 1 + max(self.left.get_height(), self.right.get_height())
+        y.height = 1 + max(y.left.get_height(), y.right.get_height())
         self.tree.root.update_positions()
         view.animate(y)
         return y
-
-    def subtree_minimum(self):
-        """
-        Finds the node with minimal value in the given subtree starting in self
-        :return: the node with minimal value
-        """
-        subtree = self
-        view = self.tree.view
-        while type(subtree.left) is not AVLTLeaf:
-            view.draw_exp_text(subtree, f'{subtree.value} has a left child ')
-            view.move_object(r.hint_frame, subtree.x, subtree.y, subtree.left.x, subtree.left.y)
-            subtree = subtree.left
-        view.draw_exp_text(subtree, f'Minimum found: {subtree.value}')
-        return subtree
 
     def __getitem__(self, item):
         """

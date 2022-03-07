@@ -47,15 +47,15 @@ class RBTView(view.View):
             self.draw_line(canvas, obj, obj.left)
         self.draw_object(obj, canvas)
 
-    def draw_object(self, node, canvas):
+    def draw_object(self, obj, canvas):
         """
         Draws the node
-        :param node: node to be drawn
+        :param obj: node to be drawn
         :param canvas: canvas on which the node will be drawn
         :return: returns nothing
         """
-        if type(node) is rbt.RBTNode:
-            canvas.create_oval(node.x - self.node_width // 2, node.y - self.node_height // 2,
-                               node.x + self.node_width // 2,
-                               node.y + self.node_height // 2, fill=node.color, tags=node.tag())
-            canvas.create_text(node.x, node.y, fill='white', text=node.value, tags=node.tag())
+        if type(obj) is rbt.RBTNode:
+            canvas.create_oval(obj.x - self.node_width // 2, obj.y - self.node_height // 2,
+                               obj.x + self.node_width // 2,
+                               obj.y + self.node_height // 2, fill=obj.color, tags=obj.tag())
+            canvas.create_text(obj.x, obj.y, fill='white', text=obj.value, tags=obj.tag())
