@@ -1,6 +1,6 @@
 import tkinter as tk
 
-import bt.bt_model as bt
+import bpt.bpt_model as bpt
 import mvc_base.view as view
 
 
@@ -16,7 +16,7 @@ class BTView(view.View):
             new_value = max_degree_value.get()
             if self.current_max_degree != new_value:
                 self.current_max_degree = new_value
-                controller.tree = bt.BTree(new_value, self)
+                controller.tree = bpt.BTree(new_value, self)
                 self.clear()
 
         max_degree_value = tk.IntVar(value=self.current_max_degree)
@@ -34,7 +34,7 @@ class BTView(view.View):
         :param canvas: canvas on which node will be drawn
         :return: returns nothing
         """
-        if type(node) is bt.BTNode:
+        if type(node) is bpt.BPTNode:
             canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill='black', text=node.id,
                                tags=node.tag())
             for v in node.values:
@@ -42,6 +42,15 @@ class BTView(view.View):
             if not node.is_leaf:
                 for c in node.children:
                     self.draw_tree(c, canvas)
+        if node is node.tree.root:
+            left = node
+            while not left.is_leaf:
+                left = left.children[0]
+            right = node
+            while not right.is_leaf:
+                right = right.children[-1]
+            self.draw_line(canvas, left.values[0], right, from_side=tk.SE, to_side=tk.SW, fill='blue')
+            self.canvas_now.tag_lower('Line')
 
     def draw_object_with_children_lines(self, obj, canvas):
         """
@@ -66,7 +75,7 @@ class BTView(view.View):
         :param canvas: canvas on which the node will be drawn
         :return: returns nothing
         """
-        if type(node) is bt.BTValue:
+        if type(node) is bpt.BPTValue:
             canvas.create_rectangle(node.x - self.node_width // 2, node.y - self.node_height // 2,
                                     node.x + self.node_width // 2, node.y + self.node_height // 2, fill='green',
                                     tags=node.tag())

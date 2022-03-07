@@ -4,7 +4,7 @@ import core.root as r
 import mvc_base.model as model
 
 
-class BTree(model.Tree):
+class BPTree(model.Tree):
 
     def __init__(self, view, max_degree):
         super().__init__(view)
@@ -14,9 +14,9 @@ class BTree(model.Tree):
 
     def insert_value(self, value):
         if self.root is None:
-            self.root = BTNode(self, True, self.view.width // 2, self.view.y_space)
+            self.root = BPTNode(self, True, self.view.width // 2, self.view.y_space)
             self.view.explanation.append(f'Tree is empty')
-            self.root.values.append(BTValue(value, self.root))
+            self.root.values.append(BPTValue(value, self.root))
             self.view.explanation.append(f'Added value {value} in node [{self.root.id}]')
         else:
             view = self.view
@@ -28,7 +28,7 @@ class BTree(model.Tree):
                                              fill='grey', tags=r.grey_node)
             view.canvas_now.create_text(self.root.x, self.root.y - view.y_above, fill='white',
                                         text=value, tags=r.grey_node)
-            self.root.insert_value(BTValue(value, None, self.root.x, self.root.y - view.y_above))
+            self.root.insert_value(BPTValue(value, None, self.root.x, self.root.y - view.y_above))
         self.root.update_positions(True)
 
     def delete_value(self, value):
@@ -47,7 +47,7 @@ class BTree(model.Tree):
 
     def clear(self):
         self.root = None
-        BTNode.class_node_id = 64
+        BPTNode.class_node_id = 64
 
     def update_positions(self, static=False, width=None):
         if self.root is not None:
@@ -57,7 +57,7 @@ class BTree(model.Tree):
         self.root.print_node()
 
 
-class BTValue(model.AnimatedObject):
+class BPTValue(model.AnimatedObject):
 
     def __init__(self, value, parent_node, x=0, y=0):
         super().__init__(x, y, parent_node)
@@ -83,17 +83,17 @@ class BTValue(model.AnimatedObject):
         return f'Value{hash(self)}'
 
 
-class BTNode(model.AnimatedObject, model.Node):
+class BPTNode(model.AnimatedObject, model.Node):
     class_node_id = 64
 
     @staticmethod
     def get_id():
-        BTNode.class_node_id += 1
-        if BTNode.class_node_id == ord('['):
-            BTNode.class_node_id = ord('a')
-        elif BTNode.class_node_id == ord('{'):
-            BTNode.class_node_id = ord('A')
-        return chr(BTNode.class_node_id)
+        BPTNode.class_node_id += 1
+        if BPTNode.class_node_id == ord('['):
+            BPTNode.class_node_id = ord('a')
+        elif BPTNode.class_node_id == ord('{'):
+            BPTNode.class_node_id = ord('A')
+        return chr(BPTNode.class_node_id)
 
     def __init__(self, tree, is_leaf, x, y):
         model.AnimatedObject.__init__(self, x, y, None)
@@ -101,7 +101,7 @@ class BTNode(model.AnimatedObject, model.Node):
         self.is_leaf = is_leaf
         self.values = []
         self.children = []
-        self.id = BTNode.get_id()
+        self.id = BPTNode.get_id()
 
     def tick(self, view, x_unit, y_unit):
         view.canvas_now.move(self.tag(), x_unit, y_unit)
@@ -161,8 +161,7 @@ class BTNode(model.AnimatedObject, model.Node):
             self.children[i].insert_value(value)
         if len(self.values) == self.tree.max_degree:
             self.tree.view.canvas_now.delete(r.hint_frame)
-            self.tree.view.draw_exp_text(self,
-                                         f'Number of values in [{self.id}] == max b-tree degree. Start fixing')
+            self.tree.view.draw_exp_text(self, f'Number of values in [{self.id}] == max b-tree degree. Start fixing')
             self.fix_insert()
 
     def delete_value(self, value):
@@ -195,7 +194,7 @@ class BTNode(model.AnimatedObject, model.Node):
             else:
                 self.tree.view.draw_exp_text(self,
                                              f'Merge nodes [{self.children[i].id}] and [{self.children[i + 1].id}]')
-                self.children[i].values.append(BTValue(value, self.children[i]))
+                self.children[i].values.append(BPTValue(value, self.children[i]))
                 for v in self.children[i + 1].values:
                     v.parent = self.children[i]
                     self.children[i].values.append(v)
@@ -360,7 +359,7 @@ class BTNode(model.AnimatedObject, model.Node):
         :param full_node: children of self
         :return: returns nothing
         """
-        new_node = BTNode(self.tree, full_node.is_leaf, self.x, self.y)
+        new_node = BPTNode(self.tree, full_node.is_leaf, self.x, self.y)
         md = self.tree.max_degree
         split_point = (md + 1) // 2
         # Rewrite values: full_node to new_node
@@ -384,6 +383,12 @@ class BTNode(model.AnimatedObject, model.Node):
         # Move one value from full_node to self
         self.values.insert(i, full_node.values[len(full_node.values) - 1])
         self.values[i].parent = self
+        # b+tree
+        if full_node.is_leaf:
+            tmp = BPTValue(full_node.values[len(full_node.values) - 1].value, new_node, full_node.values[len(full_node.values) - 1].x, full_node.values[len(full_node.values) - 1].y)
+            self.tree.view.draw_object(tmp, self.tree.view.canvas_now)
+            new_node.values.insert(0, tmp)
+        # b+tree end
         full_node.values.pop(len(full_node.values) - 1)
         self.tree.root.update_positions()
         self.tree.view.animate(self.tree.root)
@@ -403,7 +408,7 @@ class BTNode(model.AnimatedObject, model.Node):
             self.parent.split_child(self.parent.children.index(self), self)
         else:
             self.tree.view.draw_exp_text(self, f'Root has too much values. Create new root and split old one')
-            s = BTNode(self.tree, False, self.tree.view.width // 2, self.tree.view.y_space)
+            s = BPTNode(self.tree, False, self.tree.view.width // 2, self.tree.view.y_space)
             s.children.insert(0, self.tree.root)
             self.tree.root.parent = s
             self.tree.root = s
@@ -531,27 +536,3 @@ class BTNode(model.AnimatedObject, model.Node):
                                        self.children[-1].values[-1].y)
             self.tree.view.canvas_now.delete(r.hint_frame)
             return self.children[-1].predecessor()
-
-# Code below was used to test b-tree (model) behaviour before the addition of GUI/View
-# if __name__ == '__main__':
-#     t = BTree(3)
-#     numbers = [5, 4, 1, 9, 6, 3, 6, 8, 3, 1, 2, 5, 7]
-#     to_delete = [14, 1, 8, 4, 9, 3]
-#
-#     for _ in range(1, 15):
-#         t.insert_value(_)
-#     t.print_tree()
-#
-#     print('Deletion')
-#     for _ in to_delete:
-#         print('---')
-#         t.delete_value(_)
-#         t.print_tree()
-#
-#     w = BTree(3)
-#     for _ in [1, 2, 3]:
-#         w.insert_value(_)
-#     w.print_tree()
-#     print('---')
-#     w.delete_value(2)
-#     w.print_tree()

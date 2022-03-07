@@ -14,8 +14,8 @@ class View(abc.ABC):
         self.y_above = 30
         self.node_width = node_width
         self.node_height = node_height
-        self.long_animation_time = 1500
-        self.short_animation_time = 500
+        self.long_animation_time = 150
+        self.short_animation_time = 50
         self.animation_unit = 10
         self.layout = 'double'
         self.columns_to_skip = columns_to_skip
@@ -216,7 +216,7 @@ class View(abc.ABC):
             x_mod -= self.node_width // 2
         return x_mod, y_mod
 
-    def draw_line(self, canvas, node1, node2, from_side=tk.CENTER, to_side=tk.CENTER):
+    def draw_line(self, canvas, node1, node2, from_side=tk.CENTER, to_side=tk.CENTER, fill='black'):
         """
         Draws a line between two nodes
         :param canvas: canvas to draw on
@@ -232,7 +232,7 @@ class View(abc.ABC):
             try:
                 canvas.create_line(node1.x + from_mod[0], node1.y + from_mod[1], node2.x + to_mod[0],
                                    node2.y + to_mod[1],
-                                   fill='black', tags=[f'Line{hash(node1)}', 'Line'])
+                                   fill=fill, tags=[f'Line{hash(node1)}', 'Line'])
             except AttributeError as e:
                 print(e)
 

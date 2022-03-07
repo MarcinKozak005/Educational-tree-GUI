@@ -11,6 +11,6 @@ view = v.BTView(
     current_max_degree=initial_max_degree
 )
 
-tree = bt.BTree(view, initial_max_degree)
+tree = bt.BPTree(view, initial_max_degree)
 controller = c.Controller(tree, view)
 frame = view.create_GUI(controller)
