@@ -1,6 +1,6 @@
 import tkinter as tk
 
-import btree.bt_model as btree
+import bt.bt_model as bt
 import mvc_base.view as view
 
 
@@ -16,7 +16,7 @@ class BTView(view.View):
             new_value = max_degree_value.get()
             if self.current_max_degree != new_value:
                 self.current_max_degree = new_value
-                controller.tree = btree.BTree(new_value, self)
+                controller.tree = bt.BTree(new_value, self)
                 self.clear()
 
         max_degree_value = tk.IntVar(value=self.current_max_degree)
@@ -34,7 +34,7 @@ class BTView(view.View):
         :param canvas: canvas on which node will be drawn
         :return: returns nothing
         """
-        if type(node) is btree.BTNode:
+        if type(node) is bt.BTNode:
             canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill='black', text=node.id,
                                tags=node.tag())
             for v in node.values:
@@ -66,7 +66,7 @@ class BTView(view.View):
         :param canvas: canvas on which the node will be drawn
         :return: returns nothing
         """
-        if type(node) is btree.BTValue:
+        if type(node) is bt.BTValue:
             canvas.create_rectangle(node.x - self.node_width // 2, node.y - self.node_height // 2,
                                     node.x + self.node_width // 2, node.y + self.node_height // 2, fill='green',
                                     tags=node.tag())

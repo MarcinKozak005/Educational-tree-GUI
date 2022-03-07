@@ -1,7 +1,7 @@
 import tkinter as tk
 
 import core.root as r
-import btree.main as bt
+import bt.main as bt
 import rbt.main as rbt
 import avlt.main as avlt
 
