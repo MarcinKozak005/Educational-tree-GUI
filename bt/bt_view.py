@@ -16,7 +16,7 @@ class BTView(view.View):
             new_value = max_degree_value.get()
             if self.current_max_degree != new_value:
                 self.current_max_degree = new_value
-                controller.tree = bt.BTree(new_value, self)
+                controller.tree = bt.BTree(self, new_value)
                 self.clear()
 
         max_degree_value = tk.IntVar(value=self.current_max_degree)

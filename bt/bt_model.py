@@ -1,5 +1,5 @@
 import tkinter as tk
-
+import math
 import core.root as r
 import mvc_base.model as model
 
@@ -131,10 +131,10 @@ class BTNode(model.AnimatedObject, model.Node):
             self.tree.view.draw_exp_text(self.values[i],
                                          f'[{self.id}]: {value.value} < {self.values[i].value}, insert to previous',
                                          False)
-            self.tree.view.hint_frame.move(self.values[i].x - self.tree.view.node_width//2, self.values[i].y, True)
+            self.tree.view.hint_frame.move(self.values[i].x - self.tree.view.node_width // 2, self.values[i].y, True)
         else:
             self.tree.view.draw_exp_text(self, f'No next value', False)
-            self.tree.view.hint_frame.move(self.values[-1].x + self.tree.view.node_width//2, self.values[-1].y, True)
+            self.tree.view.hint_frame.move(self.values[-1].x + self.tree.view.node_width // 2, self.values[-1].y, True)
         if self.is_leaf:
             self.values.insert(i, value)
             value.x = self.x
@@ -166,6 +166,7 @@ class BTNode(model.AnimatedObject, model.Node):
             self.fix_insert()
 
     def delete_value(self, value):
+        min_val_degree = math.ceil(self.tree.max_degree / 2) - 1
         tmp = [self.values[i].value for i in range(len(self.values))]
         if self.is_leaf and value in tmp:
             i = tmp.index(value)
@@ -174,18 +175,18 @@ class BTNode(model.AnimatedObject, model.Node):
             self.fix_delete()
         elif value in tmp:
             i = tmp.index(value)
-            if len(self.children[i].values) > 1:
+            if len(self.children[i].values) > min_val_degree:
                 self.tree.view.draw_exp_text(self.children[i],
-                                             f'Node [{self.children[i].id}] has > 1 values. Looking for the '
+                                             f'Node [{self.children[i].id}] has > {min_val_degree} values. Looking for the '
                                              f'predecessor of {value}')
                 self.tree.view.erase(self.values[i].tag())
                 self.tree.view.erase(f'Line{hash(self.values[i])}')
                 self.values[i], to_fix = self.children[i].predecessor()
                 self.values[i].parent = self
                 to_fix.fix_delete()
-            elif len(self.children[i + 1].values) > 1:
+            elif len(self.children[i + 1].values) > min_val_degree:
                 self.tree.view.draw_exp_text(self.children[i],
-                                             f'Node [{self.children[i + 1].id}] has > 1 values. Looking for the '
+                                             f'Node [{self.children[i + 1].id}] has > {min_val_degree} values. Looking for the '
                                              f'successor of {value}')
                 self.tree.view.erase(self.values[i].tag())
                 self.tree.view.erase(f'Line{hash(self.values[i])}')
@@ -257,7 +258,7 @@ class BTNode(model.AnimatedObject, model.Node):
                                              False)
             if i != 0:
                 self.tree.view.hint_frame.move(self.values[i - 1].x,
-                                           self.values[i - 1].y, True)
+                                               self.values[i - 1].y, True)
                 # ASDself.tree.view.move_object(r.hint_frame, self.values[i - 1].x + self.tree.view.node_width,
                 #                            self.values[i - 1].y, self.values[i - 1].x,
                 #                            self.values[i - 1].y, True)
@@ -348,7 +349,7 @@ class BTNode(model.AnimatedObject, model.Node):
             self.tree.view.draw_exp_text(self,
                                          f'Node [{self.id}] is not a leaf, search for successor in a first child')
             self.tree.view.hint_frame.move(self.children[0].values[0].x,
-                                       self.children[0].values[0].y, True)
+                                           self.children[0].values[0].y, True)
             # ASDself.tree.view.move_object(r.hint_frame, first.x, first.y, self.children[0].values[0].x,
             #                            self.children[0].values[0].y, True)
             self.tree.view.erase(r.hint_frame)
@@ -422,9 +423,10 @@ class BTNode(model.AnimatedObject, model.Node):
         Fixes the tree after the deletion operation.
         :return: returns nothing
         """
+        min_val_degree = math.ceil(self.tree.max_degree / 2) - 1
         prev = self.parent
-        if not self.values:
-            self.tree.view.draw_exp_text(self, f'Node [{self.id}] has no values')
+        if len(self.values) < min_val_degree:
+            self.tree.view.draw_exp_text(self, f'Node [{self.id}] has not enought values')
             if self is self.tree.root and len(self.children) > 0:
                 self.tree.view.draw_exp_text(self,
                                              f'Node [{self.id}] is a root.'
@@ -440,7 +442,7 @@ class BTNode(model.AnimatedObject, model.Node):
                 self.tree.root = None
                 return
             i = prev.children.index(self)
-            if i - 1 >= 0 and len(prev.children[i - 1].values) > 1:
+            if i - 1 >= 0 and len(prev.children[i - 1].values) > min_val_degree:
                 self.tree.view.draw_exp_text(self,
                                              f'Rewrite value {prev.values[i - 1].value} '
                                              f'from [{prev.id}] to [{self.id}]')
@@ -460,7 +462,7 @@ class BTNode(model.AnimatedObject, model.Node):
                     self.children.insert(0, prev.children[i - 1].children[-1])
                     prev.children[i - 1].children[-1].parent = self
                     prev.children[i - 1].children.pop()
-            elif i + 1 < len(prev.children) and len(prev.children[i + 1].values) > 1:
+            elif i + 1 < len(prev.children) and len(prev.children[i + 1].values) > min_val_degree:
                 self.tree.view.draw_exp_text(self,
                                              f'Rewrite value {prev.values[i].value} '
                                              f'from [{prev.id}] to [{self.id}]')
@@ -480,32 +482,44 @@ class BTNode(model.AnimatedObject, model.Node):
                     self.children.append(prev.children[i + 1].children[0])
                     prev.children[i + 1].children[0].parent = self
                     prev.children[i + 1].children.pop(0)
-            elif i - 1 >= 0 and len(prev.children[i - 1].values) == 1:
+            elif i - 1 >= 0 and len(prev.children[i - 1].values) == min_val_degree:
                 self.tree.view.draw_exp_text(prev,
                                              f'Rewrite value {prev.values[i - 1].value} '
                                              f'from [{prev.id}] to [{prev.children[i - 1].id}]')
-                self.tree.view.draw_exp_text(prev,
+                self.tree.view.draw_exp_text(self, f'Rewrite values from [{self.id}] to [{prev.children[i - 1].id}]')
+                self.tree.view.draw_exp_text(self,
                                              f'Delete [{self.id}] node')
                 prev.children[i - 1].values.append(prev.values[i - 1])
                 prev.values[i - 1].parent = prev.children[i - 1]
+                # Unnecessary?
                 for n in self.children:
                     n.parent = prev.children[i - 1]
                 prev.children[i - 1].children.extend(self.children)
+                # End unnecessary
+                for v in self.values:
+                    v.parent = prev.children[i - 1]
+                    prev.children[i - 1].values.append(v)
                 prev.values.pop(i - 1)
                 prev.children.pop(i)
-            elif i + 1 < len(prev.children) and len(prev.children[i + 1].values) == 1:
+            elif i + 1 < len(prev.children) and len(prev.children[i + 1].values) == min_val_degree:
                 self.tree.view.draw_exp_text(prev,
                                              f'Rewrite value {prev.values[i].value} '
                                              f'from [{prev.id}] to [{self.id}]')
-                self.tree.view.draw_exp_text(prev,
+                self.tree.view.draw_exp_text(self, f'Rewrite values from [{self.id}] to [{prev.children[i + 1].id}]')
+                self.tree.view.draw_exp_text(self,
                                              f'Delete [{prev.children[i + 1].id}] node')
                 prev.children[i + 1].values.insert(0, prev.values[i])
                 prev.values[i].parent = prev.children[i + 1]
                 # self.values.append(prev.values[i])
                 # prev.values[i].parent = self
+                # Unnecessary?
                 for n in prev.children[i + 1].children:
                     n.parent = self
                 prev.children[i + 1].children.extend(self.children)
+                # End unnecessary
+                for v in reversed(self.values):
+                    v.parent = prev.children[i + 1]
+                    prev.children[i + 1].values.insert(0, v)
                 prev.values.pop(i)
                 prev.children.pop(i)
                 # self.children.extend(prev.children[i + 1].children)
@@ -536,7 +550,7 @@ class BTNode(model.AnimatedObject, model.Node):
         else:
             self.tree.view.draw_exp_text(self,
                                          f'Node [{self.id}] is not a leaf, search for predecessor in last child')
-            self.tree.view.hint_frame.move(self.children[-1].values[-1].x,self.children[-1].values[-1].y)
+            self.tree.view.hint_frame.move(self.children[-1].values[-1].x, self.children[-1].values[-1].y)
             # ASDself.tree.view.move_object(r.hint_frame, last.x, last.y, self.children[-1].values[-1].x,
             #                            self.children[-1].values[-1].y)
             self.tree.view.erase(r.hint_frame)
