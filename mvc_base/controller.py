@@ -57,7 +57,7 @@ class Controller:
             view.width, view.height = 1400, 600
             view.canvas_now.config(width=view.width, height=view.height)
             view.view_button.config(text='Show previous state and explanation: OFF')
-            view.canvas_now.delete('all')
+            view.erase('all')
             if self.tree.root is not None:
                 self.tree.root.update_positions(True, view.width)
             view.draw_tree(self.tree.root, view.canvas_now)
@@ -73,7 +73,7 @@ class Controller:
             view.width, view.height = 1000, 300
             view.canvas_now.config(width=view.width, height=view.height)
             view.view_button.config(text='Show previous state and explanation: ON')
-            view.canvas_now.delete('all')
+            view.erase('all')
             if self.tree.root is not None:
                 self.tree.root.update_positions(True, view.width)
             view.draw_tree(self.tree.root, view.canvas_now)
