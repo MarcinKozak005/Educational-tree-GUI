@@ -5,11 +5,6 @@ import mvc_base.model as model
 class RBTree(model.Tree):
 
     def insert_value(self, value):
-        """
-        Inserts value into the tree (into self.root)
-        :param value: value being inserted
-        :return: returns nothing
-        """
         if self.root is None:
             self.root = RBTNode(value, self.view.width // 2, self.view.y_space, self, 0, self.view.width)
             self.root.color = 'black'
@@ -19,52 +14,24 @@ class RBTree(model.Tree):
             self.root.insert_value(value)
 
     def delete_value(self, value):
-        """
-        Deletes the value from the tree
-        :param value: value to be deleted
-        :return: returns nothing
-        """
         if self.root is None:
             self.view.explanation.append(f'Tree is empty. Impossible to delete form empty tree')
         else:
             self.root.delete_value(value)
 
     def search_value(self, value):
-        """
-        Looks for the value in the tree. Shows the process in the GUI
-        :param value: value to be found
-        :return: returns nothing
-        """
         if self.root is None:
             self.view.explanation.append(f'Tree is empty. Value cannot be found')
         else:
             self.root.search_value(value)
 
     def search_value_no_GUI(self, value):
-        """
-        Looks for the value in the tree.
-        :param value: value to be found
-        :return: found node or None
-        """
         return self.root.search_value_no_GUI(value)
 
     def clear(self):
-        """
-        Resets self.root
-        :return: returns nothing
-        """
         self.root = None
 
-    def update_positions(self, static=False, width=None):
-        if self.root is not None:
-            self.root.update_positions(static, width)
 
-    def print_tree(self):
-        """
-        Prints tree to the terminal
-        :return: returns nothing
-        """
-        self.root.print_node()
 
 
 class RBTLeaf:
@@ -274,12 +241,6 @@ class RBTNode(model.AnimatedObject, model.Node):
         return curr
 
     def update_positions(self, static=False, width=None):
-        """
-        Updates the node's positions
-        :param static: True means there will be no animation, False means there will be an animation
-        :param width: width of canvas for updating positions
-        :return: returns nothing
-        """
         view = self.tree.view
         if self.parent is not None:
             unit = (self.parent.r_edge - self.parent.l_edge) / 4
@@ -305,10 +266,6 @@ class RBTNode(model.AnimatedObject, model.Node):
         self.right.update_positions(static)
 
     def successors(self):
-        """
-        Get the list of all successor nodes (children, children of children etc)
-        :return: list of successors
-        """
         result = []
         result += self.left.successors()
         result += self.right.successors()

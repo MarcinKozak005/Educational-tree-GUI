@@ -47,15 +47,11 @@ class BPTree(model.Tree):
         return self.root.search_value_no_GUI(value)
 
     def clear(self):
+        """ Additionally resets BPTNode.class_node_id """
         self.root = None
         BPTNode.class_node_id = 64
 
-    def update_positions(self, static=False, width=None):
-        if self.root is not None:
-            self.root.update_positions(static, width)
 
-    def print_tree(self):
-        self.root.print_node()
 
 
 class BPTValue(model.AnimatedObject):
@@ -305,12 +301,6 @@ class BPTNode(model.AnimatedObject, model.Node):
             return self.children[i].search_value_no_GUI(value)
 
     def update_positions(self, static=False, width=None):
-        """
-        Updates the node's positions
-        :param static: True means there will be no animation, False means there will be an animation
-        :param width: width of canvas for updating positions
-        :return: returns nothing
-        """
         view = self.tree.view
         if self.parent is not None:
             unit = (self.parent.r_edge - self.parent.l_edge) / (2 * len(self.parent.children))
@@ -341,7 +331,6 @@ class BPTNode(model.AnimatedObject, model.Node):
                 c.update_positions(static)
 
     def successors(self):
-        # Nodes and values
         result = []
         for c in self.children:
             result += c.successors()

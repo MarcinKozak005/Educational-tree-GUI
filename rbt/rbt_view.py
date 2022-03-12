@@ -23,24 +23,12 @@ class RBTView(view.View):
             self.canvas_now.tag_lower(txt_bg)
 
     def draw_tree(self, node, canvas):
-        """
-        Draws node and it's left/right subtrees
-        :param node: node to draw
-        :param canvas: canvas on which node will be drawn
-        :return: returns nothing
-        """
         if type(node) is not rbt.RBTLeaf and node is not None:
             self.draw_object_with_children_lines(node, canvas)
             self.draw_tree(node.left, canvas)
             self.draw_tree(node.right, canvas)
 
     def draw_object_with_children_lines(self, obj, canvas):
-        """
-        Draws node with children lines
-        :param node: node to draw
-        :param canvas: canvas on which node will be drawn
-        :return: returns nothing
-        """
         if type(obj.right) is not rbt.RBTLeaf:
             self.draw_line(canvas, obj, obj.right)
         if type(obj.left) is not rbt.RBTLeaf:
@@ -48,12 +36,6 @@ class RBTView(view.View):
         self.draw_object(obj, canvas)
 
     def draw_object(self, obj, canvas):
-        """
-        Draws the node
-        :param obj: node to be drawn
-        :param canvas: canvas on which the node will be drawn
-        :return: returns nothing
-        """
         if type(obj) is rbt.RBTNode:
             canvas.create_oval(obj.x - self.node_width // 2, obj.y - self.node_height // 2,
                                obj.x + self.node_width // 2,

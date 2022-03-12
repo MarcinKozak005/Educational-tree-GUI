@@ -10,6 +10,7 @@ class BTView(view.View):
         self.current_max_degree = current_max_degree
 
     def create_GUI(self, controller):
+        """Adds max_degree selection"""
         frame = super().create_GUI(controller)
 
         def selector_change(*_):
@@ -28,12 +29,6 @@ class BTView(view.View):
         return frame
 
     def draw_tree(self, node, canvas):
-        """
-        Draws node and it's left/right subtrees
-        :param node: node to draw
-        :param canvas: canvas on which node will be drawn
-        :return: returns nothing
-        """
         if type(node) is bt.BTNode:
             canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill='black', text=node.id,
                                tags=node.tag())
@@ -44,12 +39,6 @@ class BTView(view.View):
                     self.draw_tree(c, canvas)
 
     def draw_object_with_children_lines(self, obj, canvas):
-        """
-        Draws node with children lines
-        :param obj: object
-        :param canvas: canvas on which node will be drawn
-        :return: returns nothing
-        """
         value = obj
         node = value.parent
         if not node.is_leaf:
@@ -60,12 +49,6 @@ class BTView(view.View):
         self.draw_object(value, canvas)
 
     def draw_object(self, node, canvas):
-        """
-        Draws the node
-        :param node: node to be drawn
-        :param canvas: canvas on which the node will be drawn
-        :return: returns nothing
-        """
         if type(node) is bt.BTValue:
             canvas.create_rectangle(node.x - self.node_width // 2, node.y - self.node_height // 2,
                                     node.x + self.node_width // 2, node.y + self.node_height // 2, fill='green',
