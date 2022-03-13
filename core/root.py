@@ -1,4 +1,4 @@
-# Root frame file.
+# Root (Main window) frame file. Contains miscellaneous functions/classes/constants
 
 import tkinter as tk
 from enum import Enum
@@ -19,6 +19,7 @@ class Action(Enum):
     search = 3
 
 
+# General constants
 hint_frame = 'hint_frame'
 grey_node = 'grey_node'
 exp_txt = 'exp_txt'

@@ -8,6 +8,7 @@ def validate_input(val):
 
 
 class Controller:
+    """Controller component of MVC design pattern"""
     def __init__(self, tree, view):
         self.tree = tree
         self.view = view

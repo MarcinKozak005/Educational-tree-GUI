@@ -1,8 +1,9 @@
+# Contains base classes for model components of MVC design pattern
 import abc
 
 
 class Tree(abc.ABC):
-
+    """Base class for all trees"""
     def __init__(self, view):
         self.root = None
         self.view = view
@@ -67,6 +68,7 @@ class Tree(abc.ABC):
 
 
 class AnimatedObject(abc.ABC):
+    """Base class for all animated objects"""
     def __init__(self, x, y, parent):
         self.parent = parent
         self.x = x
@@ -90,7 +92,8 @@ class AnimatedObject(abc.ABC):
         pass
 
 
-class Node:
+class Node(abc.ABC):
+    """Base class for node like structures"""
     def __init__(self, tree, l_edge, r_edge):
         self.tree = tree
         # For visualization: space between l_edge and r_edge is where all node's children will be placed
@@ -137,4 +140,9 @@ class Node:
 
     @abc.abstractmethod
     def print_node(self, indent):
+        """
+        Prints the node to the terminal
+        :param indent: equivalent to the height on which the node lies in the tree
+        :return: returns nothing
+        """
         pass

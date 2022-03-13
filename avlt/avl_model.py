@@ -302,11 +302,6 @@ class AVLTNode(model.AnimatedObject, model.Node):
         return y
 
     def print_node(self, indent=0):
-        """
-        Prints the node to the terminal
-        :param i: indent - equivalent to the height on which the node lies in the tree
-        :return: returns nothing
-        """
         print(' ' * indent + f'{self.value}')
         indent += 1
         self.left.print_node(indent)

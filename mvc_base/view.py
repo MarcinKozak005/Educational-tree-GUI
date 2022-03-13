@@ -6,6 +6,7 @@ import core.root as r
 
 
 class View(abc.ABC):
+    """View component of MVC design pattern"""
     def __init__(self, node_width, node_height, columns_to_skip):
         self.explanation = Explanation()
         self.hint_frame = HintFrame(self)
