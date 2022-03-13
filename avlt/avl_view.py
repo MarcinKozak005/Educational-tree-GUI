@@ -23,7 +23,8 @@ class AVLView(view.View):
     def draw_object(self, obj, canvas):
         if type(obj) is avlt.AVLTNode:
             canvas.create_oval(obj.x - self.node_width // 2, obj.y - self.node_height // 2,
-                               obj.x + self.node_width // 2,
-                               obj.y + self.node_height // 2, fill='green', tags=obj.tag())
+                               obj.x + self.node_width // 2, obj.y + self.node_height // 2,
+                               fill='green', tags=obj.tag())
             canvas.create_text(obj.x, obj.y, fill='white', text=obj.value, tags=obj.tag())
-            canvas.create_text(obj.x-self.node_width//2, obj.y-self.node_height//2, fill='black', text=obj.height, tags=obj.tag())
+            canvas.create_text(obj.x-self.node_width//2, obj.y-self.node_height//2,
+                               fill='black', text=obj.height, tags=obj.tag())

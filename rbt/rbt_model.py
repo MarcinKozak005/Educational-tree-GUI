@@ -40,8 +40,8 @@ class RBTree(model.Tree):
 
 class RBTLeaf:
     color = black
-    right = None
     left = None
+    right = None
 
     def __init__(self):
         pass
@@ -305,7 +305,7 @@ class RBTNode(model.AnimatedObject, model.Node):
 
     def subtree_insert_value(self, value):
         """
-        Looks for the place to insert new value
+        Looks for the place to insert a new value
         :param value: value to be inserted
         :return: reference to the inserted node
         """
