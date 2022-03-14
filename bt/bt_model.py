@@ -262,8 +262,7 @@ class BTNode(model.AnimatedObject, model.Node):
             self.r_edge = view.width if width is None else width
         # Values
         for i in range(len(self.values)):
-            self.values[i].x_next = \
-                self.x_next - len(self.values) * self.tree.view.node_width // 2 + \
+            self.values[i].x_next = self.x_next - len(self.values) * self.tree.view.node_width // 2 + \
                 self.tree.view.node_width // 2 + i * self.tree.view.node_width
             self.values[i].y_next = self.y_next
         if static:

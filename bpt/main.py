@@ -4,7 +4,7 @@ import mvc_base.controller as c
 
 initial_max_degree = 3
 
-view = v.BTView(
+view = v.BPTView(
     node_width=24,
     node_height=18,
     columns_to_skip=2,

@@ -495,7 +495,7 @@ class RBTNode(model.AnimatedObject, model.Node):
                     view.draw_object(tmp_node1, view.canvas_now)
                     view.draw_object(tmp_node2, view.canvas_now)
                     view.draw_object(tmp_node3, view.canvas_now)
-                    view.canvas_now.delete('recolor_txt')
+                    view.erase('recolor_txt')
                     node = self.tree.root
         node.color = black
 
