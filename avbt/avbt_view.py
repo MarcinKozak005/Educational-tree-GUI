@@ -52,3 +52,5 @@ class AVBTView(view.View):
                                     node.x + self.node_width // 2, node.y + self.node_height // 2,
                                     fill='green', tags=node.tag())
             canvas.create_text(node.x, node.y, fill='white', text=node.value, tags=node.tag())
+            canvas.create_text(node.x, node.y + self.node_height, fill='black', text=f'[{node.counter}]',
+                               font=(None, 8), tags=node.tag())

@@ -17,7 +17,7 @@ class AVBTree(model.Tree):
         if self.root is None:
             self.root = AVBTNode(self, True, self.view.width // 2, self.view.y_space)
             self.view.explanation.append(f'Tree is empty')
-            self.root.values.append(BTValue(value, self.root))
+            self.root.values.append(AVBTValue(value, self.root))
             self.view.explanation.append(f'Added value {value} in node [{self.root.id}]')
         else:
             view = self.view
@@ -29,7 +29,7 @@ class AVBTree(model.Tree):
                                              fill='grey', tags=r.grey_node)
             view.canvas_now.create_text(self.root.x, self.root.y - view.y_above, fill='white',
                                         text=value, tags=r.grey_node)
-            self.root.insert_value(BTValue(value, None, self.root.x, self.root.y - view.y_above))
+            self.root.insert_value(AVBTValue(value, None, self.root.x, self.root.y - view.y_above))
         self.root.update_positions(True)
 
     def delete_value(self, value):
@@ -53,11 +53,12 @@ class AVBTree(model.Tree):
         AVBTNode.class_node_id = ord('@')
 
 
-class BTValue(model.AnimatedObject):
+class AVBTValue(model.AnimatedObject):
 
     def __init__(self, value, parent_node, x=0, y=0):
         super().__init__(x, y, parent_node)
         self.value = value
+        self.counter = 1
 
     def tick(self, view, x_un, y_un):
         view.erase(f'Line{hash(self)}')
@@ -121,13 +122,18 @@ class AVBTNode(model.AnimatedObject, model.Node):
                                False)
             view.hint_frame.move(self.values[i].x + view.node_width, self.values[i].y, True)
             i += 1
-        if i < len(self.values):
+
+        if i < len(self.values) and value.value == self.values[i].value:
+            self.values[i].counter += 1
+            return
+        elif i < len(self.values):
             view.draw_exp_text(self.values[i], f'[{self.id}]: {value.value} < {self.values[i].value}, '
                                                f'insert to previous', False)
             view.hint_frame.move(self.values[i].x - view.node_width // 2, self.values[i].y, True)
         else:
             view.draw_exp_text(self, f'No next value', False)
             view.hint_frame.move(self.values[-1].x + view.node_width // 2, self.values[-1].y, True)
+
         if self.is_leaf:
             self.values.insert(i, value)
             value.x = self.x
@@ -150,14 +156,21 @@ class AVBTNode(model.AnimatedObject, model.Node):
     def delete_value(self, value):
         min_val_degree = math.ceil(self.tree.max_degree / 2) - 1
         values = [self.values[i].value for i in range(len(self.values))]
+        counts = [self.values[i].counter for i in range(len(self.values))]
         view = self.tree.view
         if self.is_leaf and value in values:
             i = values.index(value)
-            removed_node = self.values.pop(i)
-            view.erase(removed_node.tag())
-            self.fix_delete()
+            if counts[i] > 1:
+                self.values[i].counter -= 1
+            else:
+                removed_node = self.values.pop(i)
+                view.erase(removed_node.tag())
+                self.fix_delete()
         elif value in values:
             i = values.index(value)
+            if counts[i] > 1:
+                self.values[i].counter -= 1
+                return
             if len(self.children[i].values) > min_val_degree:
                 view.draw_exp_text(self.children[i], f'Node [{self.children[i].id}] has > {min_val_degree} values. '
                                                      f'Looking for the predecessor of {value}')
@@ -176,7 +189,7 @@ class AVBTNode(model.AnimatedObject, model.Node):
                 to_fix.fix_delete()
             else:
                 view.draw_exp_text(self, f'Merge nodes [{self.children[i].id}] and [{self.children[i + 1].id}]')
-                self.children[i].values.append(BTValue(value, self.children[i]))
+                self.children[i].values.append(AVBTValue(value, self.children[i]))
                 for v in self.children[i + 1].values:
                     v.parent = self.children[i]
                     self.children[i].values.append(v)
