@@ -6,6 +6,7 @@ import core.root as r
 
 
 class View(abc.ABC):
+    """View component of MVC design pattern"""
     def __init__(self, node_width, node_height, columns_to_skip):
         self.explanation = Explanation()
         self.hint_frame = HintFrame(self)
@@ -33,66 +34,91 @@ class View(abc.ABC):
 
     @abc.abstractmethod
     def draw_tree(self, node, canvas):
+        """
+        Draws node and it's children and if applicable values
+        :param node: node to be drawn
+        :param canvas: canvas on which node will be drawn
+        :return: returns nothing
+        """
         pass
 
     @abc.abstractmethod
     def draw_object_with_children_lines(self, obj, canvas):
+        """
+        Draws object (node or value) with children lines
+        :param obj: object to be drawn
+        :param canvas: canvas on which object will be drawn
+        :return: returns nothing
+        """
         pass
 
     @abc.abstractmethod
     def draw_object(self, obj, canvas):
+        """
+        Draws the object (node or value)
+        :param obj: object to be drawn
+        :param canvas: canvas on which the object will be drawn
+        :return: returns nothing
+        """
         pass
 
-    def animate(self, node, time=False):
-        time = self.short_animation_time if time else self.long_animation_time
+    def animate(self, node, short_animation_time=False):
+        """
+        Performs the animation of elements (nodes and values)
+        :param node: node which and whose successors should be animated
+        :param short_animation_time: indicates which animation time should be used
+        :return: returns nothing
+        """
+        time = self.short_animation_time if short_animation_time else self.long_animation_time
         if node is not None:
             successors = node.successors()
             units = {}
-            tmp = time / self.animation_unit
+            counter = time / self.animation_unit
             for s in successors:
-                x_unit = (s.x_next - s.x) / tmp
-                y_unit = (s.y_next - s.y) / tmp
+                x_unit = (s.x_next - s.x) / counter
+                y_unit = (s.y_next - s.y) / counter
                 units[s] = (x_unit, y_unit)
-            while tmp > 0:
+            # Move each successor
+            while counter > 0:
                 for s in successors:
                     s.tick(self, units[s][0], units[s][1])
                 r.wait(self.animation_unit)
-                tmp -= 1
+                counter -= 1
 
     def draw_exp_text(self, node, exp_str, above=True):
         """
-        Draws explanation text exp_str above/below a given node
+        Draws explanation text above/below a given node
         :param node: node above/below which a exp_str will be drawn
         :param exp_str: string to draw
         :param above: if True -> exp_str will be above node, else below the node
         :return: returns nothing
         """
-        txt = self.canvas_now.create_text(node.x, node.y + (-1 if above else 1) * self.node_height,
-                                          fill='white',
-                                          text=exp_str,
-                                          tags=r.exp_txt)
-        txt_bg = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill="grey", tags=r.exp_txt)
-        self.canvas_now.tag_lower(txt_bg)
+        txt = self.canvas_now.create_text(node.x, node.y + (-1 if above else 1) * self.node_height, fill='white',
+                                          text=exp_str, tags=r.exp_txt)
+        txt_background = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill="grey", tags=r.exp_txt)
+        self.canvas_now.tag_lower(txt_background)
         r.wait(self.long_animation_time)
         self.erase(r.exp_txt)
         self.explanation.append(exp_str)
 
-    def move_object(self, obj, x1, y1, x2, y2, time=False):
+    def move_object(self, obj, x1, y1, x2, y2, short_animation_time=False):
         """
-        Moves object obj from (x1,y1) to (x2,y2)
+        Moves object obj by a distance (x2-x1, y2-y1)
+        obj does not have to be in (x1,y1) to be moved
         :param obj: object to move identifier
-        :param x1: initial x coordinate
-        :param y1: initial y coordinate
-        :param x2: final x coordinate
-        :param y2: final y coordinate
+        :param x1: first x coordinate
+        :param y1: first  y coordinate
+        :param x2: second x coordinate
+        :param y2: second y coordinate
         :return: returns nothing
         """
-        time = self.short_animation_time if time else self.long_animation_time
+        time = self.short_animation_time if short_animation_time else self.long_animation_time
         x_diff = x2 - x1
         y_diff = y2 - y1
         x_unit = x_diff / (time / self.animation_unit)
         y_unit = y_diff / (time / self.animation_unit)
         counter = time / self.animation_unit
+        # Move object
         while counter > 0:
             self.canvas_now.move(obj, x_unit, y_unit)
             r.wait(self.animation_unit)
@@ -117,14 +143,14 @@ class View(abc.ABC):
         self.explanation_label.config(text=self.explanation.string, wraplength=350)
         self.explanation.reset()
 
-    def set_buttons(self, value):
+    def set_buttons(self, state):
         """
         Enables/Disable buttons
-        :param value: if True -> enable buttons, else disable
+        :param state: if True -> enable buttons, else disable
         :return: returns nothing
         """
         for b in self.buttons:
-            b.config(state='normal' if value else 'disabled')
+            b.config(state='normal' if state else 'disabled')
 
     def create_GUI(self, controller):
         """
@@ -193,17 +219,23 @@ class View(abc.ABC):
 
         return frame
 
-    def side_modifier(self, side):
-        if side == tk.NE:
+    def calculate_anchor(self, anchor):
+        """
+        Translates tkinter anchor to x_mod and y_mod which represent given anchor
+        :param anchor: tkinter anchor
+        :return: tuple (x_mod,y_mod) of values how much x and y coordinate of node should be changed
+        to represent the anchor
+        """
+        if anchor == tk.NE:
             sides = [tk.N, tk.E]
-        elif side == tk.SE:
+        elif anchor == tk.SE:
             sides = [tk.S, tk.E]
-        elif side == tk.SW:
+        elif anchor == tk.SW:
             sides = [tk.S, tk.W]
-        elif side == tk.NW:
+        elif anchor == tk.NW:
             sides = [tk.N, tk.W]
         else:
-            sides = [side]
+            sides = [anchor]
 
         x_mod = 0
         y_mod = 0
@@ -223,49 +255,58 @@ class View(abc.ABC):
         :param canvas: canvas to draw on
         :param node1: from-node
         :param node2: to-node
-        :param from_side:
-        :param to_side:
+        :param from_side: tkinter anchor. Indicates from which side of node1 the line starts
+        :param to_side: tkinter anchor. Indicates to which side of node2 the line goes
+        :param fill: color of the line
         :return: returns nothing
         """
         if node1 is not None and node2 is not None:
-            from_mod = self.side_modifier(from_side)
-            to_mod = self.side_modifier(to_side)
+            from_mod = self.calculate_anchor(from_side)
+            to_mod = self.calculate_anchor(to_side)
             try:
-                canvas.create_line(node1.x + from_mod[0], node1.y + from_mod[1], node2.x + to_mod[0],
-                                   node2.y + to_mod[1],
+                canvas.create_line(node1.x + from_mod[0], node1.y + from_mod[1],
+                                   node2.x + to_mod[0], node2.y + to_mod[1],
                                    fill=fill, tags=[f'Line{hash(node1)}', 'Line'])
             except AttributeError as e:
                 print(e)
 
     def erase(self, tag):
+        """
+        Erases objects with 'tag" tag on the canvas_now
+        :param tag: string representing the tag
+        :return: returns nothing
+        """
         self.canvas_now.delete(tag)
 
 
 class HintFrame:
+    """
+    Class to operate on hint frame, which shows some operations such as search_value on the tree
+    """
     def __init__(self, view):
         self.view = view
         self.x = 0
         self.y = 0
 
     def draw(self, x=None, y=None):
+        """Draws hint frame in the given location"""
         x = x if x else self.x
         y = y if y else self.y
         self.x = x
         self.y = y
-        self.view.canvas_now.create_rectangle(x - self.view.node_width // 2,
-                                              y - self.view.node_height // 2,
-                                              x + self.view.node_width // 2,
-                                              y + self.view.node_height // 2,
+        self.view.canvas_now.create_rectangle(x - self.view.node_width // 2, y - self.view.node_height // 2,
+                                              x + self.view.node_width // 2, y + self.view.node_height // 2,
                                               outline='red', tags=r.hint_frame)
 
     def move(self, x, y, time=False):
+        """Moves the hint frame and updates it's coordinates"""
         self.view.move_object(r.hint_frame, self.x, self.y, x, y, time)
         self.x = x
         self.y = y
 
 
 class Explanation:
-
+    """Class responsible for showing the explanations next to the canvases"""
     def __init__(self):
         self.string = ''
         self.line = 1
@@ -276,7 +317,7 @@ class Explanation:
         :param text: text to be appended
         :return: returns nothing
         """
-        self.string += f'[{self.line}] {text}\n'
+        self.string += f'{self.line}) {text}\n'
         self.line += 1
 
     def reset(self):

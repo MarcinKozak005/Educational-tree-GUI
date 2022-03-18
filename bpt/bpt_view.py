@@ -4,19 +4,20 @@ import bpt.bpt_model as bpt
 import mvc_base.view as view
 
 
-class BTView(view.View):
+class BPTView(view.View):
     def __init__(self, node_width, node_height, columns_to_skip, current_max_degree):
         super().__init__(node_width, node_height, columns_to_skip)
         self.current_max_degree = current_max_degree
 
     def create_GUI(self, controller):
+        """Adds max_degree selection"""
         frame = super().create_GUI(controller)
 
         def selector_change(*_):
             new_value = max_degree_value.get()
             if self.current_max_degree != new_value:
                 self.current_max_degree = new_value
-                controller.tree = bpt.BTree(new_value, self)
+                controller.tree = bpt.BPTree(self, new_value)
                 self.clear()
 
         max_degree_value = tk.IntVar(value=self.current_max_degree)
@@ -24,16 +25,9 @@ class BTView(view.View):
         max_degree_value.trace('w', selector_change)
         tk.Label(self.controls_frame, text='Max tree degree:').grid(row=0, column=0)
         max_degree_menu.grid(row=0, column=1, padx=(0, 20))
-
         return frame
 
     def draw_tree(self, node, canvas):
-        """
-        Draws node and it's left/right subtrees
-        :param node: node to draw
-        :param canvas: canvas on which node will be drawn
-        :return: returns nothing
-        """
         if type(node) is bpt.BPTNode:
             canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill='black', text=node.id,
                                tags=node.tag())
@@ -42,6 +36,7 @@ class BTView(view.View):
             if not node.is_leaf:
                 for c in node.children:
                     self.draw_tree(c, canvas)
+        # Line connecting leaves
         if node is node.tree.root:
             left = node
             while not left.is_leaf:
@@ -53,30 +48,17 @@ class BTView(view.View):
             self.canvas_now.tag_lower('Line')
 
     def draw_object_with_children_lines(self, obj, canvas):
-        """
-        Draws node with children lines
-        :param obj: object
-        :param canvas: canvas on which node will be drawn
-        :return: returns nothing
-        """
-        value = obj
-        node = value.parent
-        if not node.is_leaf:
-            index = node.values.index(value)
-            self.draw_line(canvas, value, node.children[index], tk.SW, tk.N)
-            if index == len(node.values) - 1:
-                self.draw_line(canvas, value, node.children[index + 1], tk.SE, tk.N)
-        self.draw_object(value, canvas)
+        parent = obj.parent
+        if not parent.is_leaf:
+            index = parent.values.index(obj)
+            self.draw_line(canvas, obj, parent.children[index], tk.SW, tk.N)
+            if index == len(parent.values) - 1:
+                self.draw_line(canvas, obj, parent.children[index + 1], tk.SE, tk.N)
+        self.draw_object(obj, canvas)
 
     def draw_object(self, node, canvas):
-        """
-        Draws the node
-        :param node: node to be drawn
-        :param canvas: canvas on which the node will be drawn
-        :return: returns nothing
-        """
         if type(node) is bpt.BPTValue:
             canvas.create_rectangle(node.x - self.node_width // 2, node.y - self.node_height // 2,
-                                    node.x + self.node_width // 2, node.y + self.node_height // 2, fill='green',
-                                    tags=node.tag())
+                                    node.x + self.node_width // 2, node.y + self.node_height // 2,
+                                    fill='green', tags=node.tag())
             canvas.create_text(node.x, node.y, fill='white', text=node.value, tags=node.tag())

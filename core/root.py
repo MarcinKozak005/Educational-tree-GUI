@@ -1,3 +1,5 @@
+# Root (Main window) frame file. Contains miscellaneous functions/classes/constants
+
 import tkinter as tk
 from enum import Enum
 
@@ -11,16 +13,16 @@ def wait(time):
     frame.after(time)
 
 
-hint_frame = 'hint_frame'
-grey_node = 'grey_node'
-exp_txt = 'exp_txt'
-
-
 class Action(Enum):
     insert = 1
     delete = 2
     search = 3
 
+
+# General constants
+hint_frame = 'hint_frame'
+grey_node = 'grey_node'
+exp_txt = 'exp_txt'
 
 frame = tk.Tk()
 frame.state('zoomed')

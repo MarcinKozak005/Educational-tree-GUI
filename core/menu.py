@@ -1,13 +1,14 @@
+# Menu frame file
+
 import tkinter as tk
 
-import core.root as r
-import bt.main as bt
-import rbt.main as rbt
 import avlt.main as avlt
 import bpt.main as bpt
+import bt.main as bt
+import core.root as r
+import rbt.main as rbt
 
 frame = tk.Frame(r.frame)
-
 for f in (frame, rbt.frame, bt.frame, avlt.frame, bpt.frame):
     f.grid(row=0, column=0, sticky='nsew')
 

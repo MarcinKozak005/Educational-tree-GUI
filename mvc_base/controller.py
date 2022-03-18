@@ -8,6 +8,7 @@ def validate_input(val):
 
 
 class Controller:
+    """Controller component of MVC design pattern"""
     def __init__(self, tree, view):
         self.tree = tree
         self.view = view
@@ -27,14 +28,16 @@ class Controller:
         :param arg: arguments for the action call
         :return: returns nothing
         """
-        self.view.set_buttons(False)
+        view = self.view
+        view.set_buttons(False)
         if validate_input(arg):
             val = int(arg)
             if self.tree.root is not None and \
                     (func == r.Action.insert or (func == r.Action.delete and self.tree.search_value_no_GUI(val))):
-                self.view.canvas_prev.delete('all')
+                # Draw previous state on canvas_prev
+                view.canvas_prev.delete('all')
                 self.tree.root.update_positions(True, width=1000)
-                self.view.draw_tree(self.tree.root, self.view.canvas_prev)
+                view.draw_tree(self.tree.root, view.canvas_prev)
                 self.tree.root.update_positions(True)
             if func == r.Action.insert:
                 self.tree.insert_value(val)
@@ -42,13 +45,17 @@ class Controller:
                 self.tree.delete_value(val)
             elif func == r.Action.search:
                 self.tree.search_value(val)
-            self.view.prepare_view()
-            self.view.draw_tree(self.tree.root, self.view.canvas_now)
+            view.prepare_view()
+            view.draw_tree(self.tree.root, view.canvas_now)
         else:
-            self.view.info_label.config(text='Not a valid input (integer in range 0-999)')
-        self.view.set_buttons(True)
+            view.info_label.config(text='Not a valid input (integer in range 0-999)')
+        view.set_buttons(True)
 
     def change_layout(self):
+        """
+        Switches between two and single canvas layout
+        :return: returns nothing
+        """
         view = self.view
         if view.layout == 'double':
             view.canvas_prev.pack_forget()
