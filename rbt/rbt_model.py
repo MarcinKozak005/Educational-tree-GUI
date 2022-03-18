@@ -16,7 +16,22 @@ class RBTree(model.Tree):
             self.view.explanation.append(f'Tree is empty')
             self.view.explanation.append(f'Added node {value}[black]')
         else:
-            self.root.insert_value(value)
+            view = self.view
+            root = self.root
+            view.explanation.append(f'Tree is not empty, looking for insert place for {value}')
+            view.canvas_now.create_oval(root.x - view.node_width // 2, root.y - view.y_above - view.node_height // 2,
+                                        root.x + view.node_width // 2, root.y - view.y_above + view.node_height // 2,
+                                        fill='grey', tags=r.grey_node)
+            view.canvas_now.create_text(root.x, root.y - view.y_above, fill='white', text=value, tags=r.grey_node)
+            # More complicated than in different trees, since in RBT node.color changes in fixing process
+            newNode = root.insert_value(value)
+            view.draw_exp_text(newNode, f'Inserting {newNode.value}', False)
+            view.explanation.append(f'{value} inserted. Starting fixing')
+            view.draw_object_with_children_lines(newNode, view.canvas_now)
+            view.erase(r.grey_node)
+            view.draw_line(view.canvas_now, newNode, newNode.parent)
+            view.canvas_now.tag_lower(f'Line{hash(newNode)}')
+            newNode.fix_insert()
 
     def delete_value(self, value):
         if self.root is None:
@@ -86,25 +101,35 @@ class RBTNode(model.AnimatedObject, model.Node):
 
     def insert_value(self, value):
         """
-        Inserts value into the node
-        :param value: value to insert
-        :return: returns nothing
+        Looks for the place to insert a new value
+        :param value: value to be inserted
+        :return: reference to the inserted node
         """
         view = self.tree.view
-        root = self.tree.root
-        view.explanation.append(f'Tree is not empty, looking for insert place for {value}')
-        view.canvas_now.create_oval(root.x - view.node_width // 2, root.y - view.y_above - view.node_height // 2,
-                                    root.x + view.node_width // 2, root.y - view.y_above + view.node_height // 2,
-                                    fill='grey', tags=r.grey_node)
-        view.canvas_now.create_text(root.x, root.y - view.y_above, fill='white', text=value, tags=r.grey_node)
-        newNode = root.subtree_insert_value(value)
-        view.draw_exp_text(newNode, f'Inserting {newNode.value}', False)
-        view.explanation.append(f'{value} inserted. Starting fixing')
-        view.draw_object_with_children_lines(newNode, view.canvas_now)
-        view.erase(r.grey_node)
-        view.draw_line(view.canvas_now, newNode, newNode.parent)
-        view.canvas_now.tag_lower(f'Line{hash(newNode)}')
-        newNode.fix_insert()
+        unit = (self.r_edge - self.l_edge) / 4
+        if value >= self.value and type(self.right) is RBTNode:
+            view.draw_exp_text(self, f'{value} >= {self.value} --> choosing right subtree', False)
+            view.move_object(r.grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.right.x,
+                             self.right.y - view.node_height // 2 - view.y_above)
+            newNode = self.right.insert_value(value)
+        elif value >= self.value:
+            view.draw_exp_text(self, f'{value} >= {self.value} --> choosing right subtree', False)
+            newNode = RBTNode(value, self.x + unit, self.y + view.y_space, self.tree, self.x, self.r_edge, self)
+            self.right = newNode
+            view.move_object(r.grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.right.x,
+                             self.right.y - view.node_height // 2)
+        elif value < self.value and type(self.left) is RBTNode:
+            view.draw_exp_text(self, f'{value} < {self.value} --> choosing left subtree', False)
+            view.move_object(r.grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.left.x,
+                             self.left.y - view.node_height // 2 - view.y_above)
+            newNode = self.left.insert_value(value)
+        else:
+            view.draw_exp_text(self, f'{value} < {self.value} --> choosing left subtree', False)
+            newNode = RBTNode(value, self.x - unit, self.y + view.y_space, self.tree, self.l_edge, self.x, self)
+            self.left = newNode
+            view.move_object(r.grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.left.x,
+                             self.left.y - view.node_height // 2)
+        return newNode
 
     def delete_value(self, value):
         """
@@ -302,38 +327,6 @@ class RBTNode(model.AnimatedObject, model.Node):
         indent -= 1
 
     # RBNode specific methods below
-
-    def subtree_insert_value(self, value):
-        """
-        Looks for the place to insert a new value
-        :param value: value to be inserted
-        :return: reference to the inserted node
-        """
-        view = self.tree.view
-        unit = (self.r_edge - self.l_edge) / 4
-        if value >= self.value and type(self.right) is RBTNode:
-            view.draw_exp_text(self, f'{value} >= {self.value} --> choosing right subtree', False)
-            view.move_object(r.grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.right.x,
-                             self.right.y - view.node_height // 2 - view.y_above)
-            newNode = self.right.subtree_insert_value(value)
-        elif value >= self.value:
-            view.draw_exp_text(self, f'{value} >= {self.value} --> choosing right subtree', False)
-            newNode = RBTNode(value, self.x + unit, self.y + view.y_space, self.tree, self.x, self.r_edge, self)
-            self.right = newNode
-            view.move_object(r.grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.right.x,
-                             self.right.y - view.node_height // 2)
-        elif value < self.value and type(self.left) is RBTNode:
-            view.draw_exp_text(self, f'{value} < {self.value} --> choosing left subtree', False)
-            view.move_object(r.grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.left.x,
-                             self.left.y - view.node_height // 2 - view.y_above)
-            newNode = self.left.subtree_insert_value(value)
-        else:
-            view.draw_exp_text(self, f'{value} < {self.value} --> choosing left subtree', False)
-            newNode = RBTNode(value, self.x - unit, self.y + view.y_space, self.tree, self.l_edge, self.x, self)
-            self.left = newNode
-            view.move_object(r.grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.left.x,
-                             self.left.y - view.node_height // 2)
-        return newNode
 
     def fix_insert(self):
         """
