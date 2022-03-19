@@ -13,20 +13,19 @@ class RBTree(model.Tree):
         if self.root is None:
             self.root = RBTNode(value, self.view.width // 2, self.view.y_space, self, 0, self.view.width)
             self.root.color = black
-            self.view.explanation.append(f'Tree is empty')
-            self.view.explanation.append(f'Added node {value}[black]')
+            self.view.explanation.append(f'Tree is empty. Insert black node ({value})')
         else:
             view = self.view
             root = self.root
-            view.explanation.append(f'Tree is not empty, looking for insert place for {value}')
+            view.explanation.append(f'Tree is not empty. Find insert place for {value}')
             view.canvas_now.create_oval(root.x - view.node_width // 2, root.y - view.y_above - view.node_height // 2,
                                         root.x + view.node_width // 2, root.y - view.y_above + view.node_height // 2,
                                         fill='grey', tags=r.grey_node)
             view.canvas_now.create_text(root.x, root.y - view.y_above, fill='white', text=value, tags=r.grey_node)
             # More complicated than in different trees, since in RBT node.color changes in fixing process
             newNode = root.insert_value(value)
-            view.draw_exp_text(newNode, f'Inserting {newNode.value}', False)
-            view.explanation.append(f'{value} inserted. Starting fixing')
+            view.draw_exp_text(newNode, f'Insert red node ({newNode.value})', False)
+            view.explanation.append(f'Start fixing process')
             view.draw_object_with_children_lines(newNode, view.canvas_now)
             view.erase(r.grey_node)
             view.draw_line(view.canvas_now, newNode, newNode.parent)
@@ -35,7 +34,7 @@ class RBTree(model.Tree):
 
     def delete_value(self, value):
         if self.root is None:
-            self.view.explanation.append(f'Tree is empty. Impossible to delete form empty tree')
+            self.view.explanation.append(f'Tree is empty. Impossible to delete from an empty tree')
         else:
             self.root.delete_value(value)
 
@@ -89,10 +88,9 @@ class RBTNode(model.AnimatedObject, model.Node):
         self.y += y_unit
         view.draw_line(view.canvas_now, self, self.right)
         view.draw_line(view.canvas_now, self, self.left)
-        # Drawing self-self.parent line
-        if type(self.parent) is RBTNode and self.parent.right is self:
+        # Drawing self.parent-self and self.parent-sibling(self) lines
+        if type(self.parent) is RBTNode:
             view.draw_line(view.canvas_now, self.parent, self.parent.right)
-        elif type(self.parent) is RBTNode and self.parent.left is self:
             view.draw_line(view.canvas_now, self.parent, self.parent.left)
         view.canvas_now.tag_lower('Line')
 
@@ -107,24 +105,27 @@ class RBTNode(model.AnimatedObject, model.Node):
         """
         view = self.tree.view
         unit = (self.r_edge - self.l_edge) / 4
+        # Insert into appropriate subtree
         if value >= self.value and type(self.right) is RBTNode:
-            view.draw_exp_text(self, f'{value} >= {self.value} --> choosing right subtree', False)
+            view.draw_exp_text(self, f'{value} >= {self.value}, so insert into right subtree', False)
             view.move_object(r.grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.right.x,
                              self.right.y - view.node_height // 2 - view.y_above)
             newNode = self.right.insert_value(value)
+        # self.right is not a RBTNode
         elif value >= self.value:
-            view.draw_exp_text(self, f'{value} >= {self.value} --> choosing right subtree', False)
+            view.draw_exp_text(self, f'{value} >= {self.value}, so insert into right subtree', False)
             newNode = RBTNode(value, self.x + unit, self.y + view.y_space, self.tree, self.x, self.r_edge, self)
             self.right = newNode
             view.move_object(r.grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.right.x,
                              self.right.y - view.node_height // 2)
         elif value < self.value and type(self.left) is RBTNode:
-            view.draw_exp_text(self, f'{value} < {self.value} --> choosing left subtree', False)
+            view.draw_exp_text(self, f'{value} < {self.value}, so insert into left subtree', False)
             view.move_object(r.grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.left.x,
                              self.left.y - view.node_height // 2 - view.y_above)
             newNode = self.left.insert_value(value)
+        # self.left is not a RBTNode
         else:
-            view.draw_exp_text(self, f'{value} < {self.value} --> choosing left subtree', False)
+            view.draw_exp_text(self, f'{value} < {self.value}, so insert into left subtree', False)
             newNode = RBTNode(value, self.x - unit, self.y + view.y_space, self.tree, self.l_edge, self.x, self)
             self.left = newNode
             view.move_object(r.grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.left.x,
@@ -138,112 +139,101 @@ class RBTNode(model.AnimatedObject, model.Node):
         :return: returns nothing
         """
         view = self.tree.view
-        node = self.search_value(value, False)
-        if type(node) is not RBTNode:
-            view.info_label.config(text=f'There is no element \'{value}\' in the tree')
-            return
-        else:
-            # Delete from tree with only root node
-            if node is self.tree.root and type(node.left) is RBTLeaf and type(node.right) is RBTLeaf:
-                view.erase(r.hint_frame)
-                view.move_object(self.tree.root.tag(), self.tree.root.x, self.tree.root.y, self.tree.root.x,
-                                 -view.node_width)
-                self.tree.clear()
-                return
-            if type(node.left) is RBTLeaf or type(node.right) is RBTLeaf:
-                view.explanation.append(f'Right or left child of {node.value} is a leaf')
-                y = node
-            else:
-                view.draw_exp_text(node, f'Looking for the successor of {node.value}')
-                y = node.successor()
-            if type(y.left) is not RBTLeaf:
-                x = y.left
-            else:
-                x = y.right
-            x.parent = y.parent
-            if y.parent is None:
-                self.tree.root = x
-            elif y == y.parent.left:
-                y.parent.left = x
-            else:
-                y.parent.right = x
-            view.erase(f'Line{hash(y)}')
+        node = self.search_value(value)
+        # Delete from tree with only root node
+        if node is self.tree.root and type(node.left) is RBTLeaf and type(node.right) is RBTLeaf:
             view.erase(r.hint_frame)
-            self.tree.root.update_positions()
-            if y is not node:
-                view.explanation.append(f'Swap {node.value} with {y.value}')
-                view.canvas_now.create_oval(node.x - view.node_width // 2, node.y - view.node_height // 2,
-                                            node.x + view.node_width // 2, node.y + view.node_height // 2,
-                                            fill=node.color, tags='swap1')
-                view.canvas_now.create_oval(y.x - view.node_width // 2, y.y - view.node_height // 2,
-                                            y.x + view.node_width // 2, y.y + view.node_height // 2,
-                                            fill=y.color, tags=y.tag())
-                txt1 = view.canvas_now.create_text(node.x, node.y, fill='blue', text=node.value, tags=[y.tag(), 'txt1'])
-                txt2 = view.canvas_now.create_text(y.x, y.y, fill='blue', text=y.value, tags=['swap1', 'txt2'])
-                txt1_bg = view.canvas_now.create_rectangle(view.canvas_now.bbox(txt1), fill='white',
-                                                           tags=[y.tag(), 'txt1'])
-                txt2_bg = view.canvas_now.create_rectangle(view.canvas_now.bbox(txt2), fill='white',
-                                                           tags=['swap1', 'txt2'])
-                view.canvas_now.tag_lower(txt1_bg, txt1)
-                view.canvas_now.tag_lower(txt2_bg, txt2)
-                view.move_object('txt1', node.x, node.y, y.x, y.y)
-                view.move_object('txt2', y.x, y.y, node.x, node.y)
-                node.value = y.value
-                view.erase('swap1')
-                view.draw_object(node, view.canvas_now)
-            view.move_object(y.tag(), y.x, y.y, y.x, - view.node_height)
-            view.explanation.append(f'Remove {value} from tree')
-            if y.color == black:
-                self.fix_delete(x)
-                view.animate(self.tree.root)
-                view.draw_recolor_text(x, black)
-                r.wait(view.long_animation_time)
-                view.erase('recolor_txt')
-            view.explanation.append(f'Deletion finished')
-            if type(self.tree.root) is RBTLeaf:
-                self.tree.clear()
+            view.move_object(self.tree.root.tag(), self.tree.root.x, self.tree.root.y, self.tree.root.x,
+                             -view.node_width)
+            self.tree.clear()
+            return
+        if type(node.left) is RBTLeaf or type(node.right) is RBTLeaf:
+            view.explanation.append(f'Right or left child of ({node.value}) is a leaf')
+            y = node
+        else:
+            view.draw_exp_text(node, f'Find the successor of ({node.value})')
+            y = node.successor()
+        if type(y.left) is not RBTLeaf:
+            x = y.left
+        else:
+            x = y.right
+        x.parent = y.parent
+        if y.parent is None:
+            self.tree.root = x
+        elif y == y.parent.left:
+            y.parent.left = x
+        else:
+            y.parent.right = x
+        view.erase(f'Line{hash(y)}')
+        view.erase(r.hint_frame)
+        self.tree.root.update_positions()
+        # Swap values in two nodes: one holding value to delete and it's successor
+        if y is not node:
+            view.explanation.append(f'Swap {node.value} with {y.value}')
+            view.canvas_now.create_oval(node.x - view.node_width // 2, node.y - view.node_height // 2,
+                                        node.x + view.node_width // 2, node.y + view.node_height // 2,
+                                        fill=node.color, tags='swap1')
+            view.canvas_now.create_oval(y.x - view.node_width // 2, y.y - view.node_height // 2,
+                                        y.x + view.node_width // 2, y.y + view.node_height // 2,
+                                        fill=y.color, tags=y.tag())
+            txt1 = view.canvas_now.create_text(node.x, node.y, fill='blue', text=node.value, tags=[y.tag(), 'txt1'])
+            txt2 = view.canvas_now.create_text(y.x, y.y, fill='blue', text=y.value, tags=['swap1', 'txt2'])
+            txt1_bg = view.canvas_now.create_rectangle(view.canvas_now.bbox(txt1), fill='white', tags=[y.tag(), 'txt1'])
+            txt2_bg = view.canvas_now.create_rectangle(view.canvas_now.bbox(txt2), fill='white', tags=['swap1', 'txt2'])
+            view.canvas_now.tag_lower(txt1_bg, txt1)
+            view.canvas_now.tag_lower(txt2_bg, txt2)
+            view.move_object('txt1', node.x, node.y, y.x, y.y)
+            view.move_object('txt2', y.x, y.y, node.x, node.y)
+            node.value = y.value
+            view.erase('swap1')
+            view.draw_object(node, view.canvas_now)
+        view.move_object(y.tag(), y.x, y.y, y.x, - view.node_height)
+        view.explanation.append(f'Remove ({value}) from tree')
+        if y.color == black:
+            self.fix_delete(x)
+            view.animate(self.tree.root)
+            view.draw_recolor_text(x, black)
+            r.wait(view.long_animation_time)
+            view.erase('recolor_txt')
+        view.explanation.append(f'Deletion finished')
+        if type(self.tree.root) is RBTLeaf:
+            self.tree.clear()
 
-    def search_value(self, value, show_to_gui=True):
+    def search_value(self, value):
         """
         Searches for the value in the tree. Shows the process in the GUI
         :param value: value to be found
-        :param show_to_gui: if True labels will show info about search process
         :return: found node or None
         """
         view = self.tree.view
-        view.explanation.append(f'Looking for a node {value}')
+        view.explanation.append(f'Search for a node with value {value}')
         curr = self.tree.root
         view.hint_frame.draw(curr.x, curr.y)
         while type(curr) is not RBTLeaf and curr.value != value:
             if curr.value > value and type(curr.left) is RBTNode:
-                view.draw_exp_text(curr, f'{value} < {curr.value}. Choosing left subtree')
+                view.draw_exp_text(curr, f'{value} < {curr.value}, so search in left subtree')
                 view.hint_frame.move(curr.left.x, curr.left.y)
                 curr = curr.left
             elif curr.value > value:
-                view.draw_exp_text(curr, f'{value} < {curr.value}. Choosing left subtree')
+                view.draw_exp_text(curr, f'{value} < {curr.value}, so search in left subtree')
                 unit = (curr.r_edge - curr.l_edge) / 4
                 view.hint_frame.move(curr.x - unit, curr.y + view.y_space)
                 view.draw_exp_text(RBTNode(None, curr.x - unit, curr.y + view.y_space, self.tree), 'Element not found')
                 view.erase(r.hint_frame)
                 return None
             elif curr.value <= value and type(curr.right) is RBTNode:
-                view.draw_exp_text(curr, f'{value} >= {curr.value}. Choosing right subtree')
+                view.draw_exp_text(curr, f'{value} >= {curr.value}, so search in right subtree')
                 view.hint_frame.move(curr.right.x, curr.right.y)
                 curr = curr.right
             elif curr.value <= value:
-                view.draw_exp_text(curr, f'{value} >= {curr.value}. Choosing right subtree')
+                view.draw_exp_text(curr, f'{value} >= {curr.value}, so search in right subtree')
                 unit = (curr.r_edge - curr.l_edge) / 4
                 view.hint_frame.move(curr.x + unit, curr.y + view.y_space)
                 view.draw_exp_text(RBTNode(None, curr.x + unit, curr.y + view.y_space, self.tree), 'Element not found')
                 view.erase(r.hint_frame)
                 return None
-        view.draw_exp_text(curr, f'{curr.value} found')
-        if show_to_gui:
-            view.info_label.config(
-                text=f'Elem \'{value}\' found' if type(curr) is not RBTLeaf else f'Elem \'{value}\' not found')
-            view.erase(r.hint_frame)
-        else:
-            return curr
+        view.draw_exp_text(curr, f'Node ({curr.value}) found')
+        return curr
 
     def search_value_no_GUI(self, value):
         """
@@ -306,18 +296,9 @@ class RBTNode(model.AnimatedObject, model.Node):
         if type(self.right) is RBTNode:
             self.right: RBTNode
             view.hint_frame.move(self.right.x, self.right.y)
-            view.draw_exp_text(self.right, f'Looking for the minimum of {self.right.value}')
+            view.draw_exp_text(self.right, f'Find the minimum of ({self.right.value}) subtree')
             minimum = self.right.subtree_minimum()
             return minimum
-        # successor is above the node
-        else:
-            parent = self.parent
-            while type(parent) is RBTNode and self is parent.right:
-                current = parent
-                parent = current.parent
-            if type(parent) is RBTNode:
-                view.explanation.append(f'{parent.value}')
-            return parent
 
     def print_node(self, indent=0):
         print(' ' * indent + f'{self.value}')
@@ -326,7 +307,7 @@ class RBTNode(model.AnimatedObject, model.Node):
         self.right.print_node(indent)
         indent -= 1
 
-    # RBNode specific methods below
+    # RBTNode specific methods below
 
     def fix_insert(self):
         """
@@ -499,7 +480,7 @@ class RBTNode(model.AnimatedObject, model.Node):
         :return: returns nothing
         """
         view = self.tree.view
-        view.draw_exp_text(self, f'{side}-rotate on {self.value}')
+        view.draw_exp_text(self, f'{side[0].upper() + side[1:]}-rotate on ({self.value}) node')
         y = self[right if side == left else left]
         self[right if side == left else left] = y[side]
         if type(y[side]) is not RBTLeaf:
@@ -524,10 +505,10 @@ class RBTNode(model.AnimatedObject, model.Node):
         subtree = self
         view = self.tree.view
         while type(subtree.left) is not RBTLeaf:
-            view.draw_exp_text(subtree, f'{subtree.value} has a left child ')
+            view.draw_exp_text(subtree, f'Check ({subtree.value}) node left child ')
             view.hint_frame.move(subtree.left.x, subtree.left.y)
             subtree = subtree.left
-        view.draw_exp_text(subtree, f'Minimum found: {subtree.value}')
+        view.draw_exp_text(subtree, f'Minimum value found: {subtree.value}')
         return subtree
 
     def __getitem__(self, item):

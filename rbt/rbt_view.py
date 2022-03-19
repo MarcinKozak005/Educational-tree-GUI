@@ -17,7 +17,7 @@ class RBTView(view.View):
             txt = self.canvas_now.create_text(node.x, node.y - self.node_height, fill='white',
                                               text=f'Change color to {to_color}', tags='recolor_txt')
             txt_bg = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill='grey', tags='recolor_txt')
-            self.explanation.append(f'Change color of {node.value} to {to_color}')
+            self.explanation.append(f'Change color of ({node.value}) to {to_color}')
             self.canvas_now.tag_lower(txt_bg)
 
     def draw_tree(self, node, canvas):
