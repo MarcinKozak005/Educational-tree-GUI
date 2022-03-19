@@ -299,6 +299,15 @@ class RBTNode(model.AnimatedObject, model.Node):
             view.draw_exp_text(self.right, f'Find the minimum of ({self.right.value}) subtree')
             minimum = self.right.subtree_minimum()
             return minimum
+        # successor is above the node
+        else:
+            parent = self.parent
+            while type(parent) is RBTNode and self is parent.right:
+                current = parent
+                parent = current.parent
+            if type(parent) is RBTNode:
+                view.explanation.append(f'{parent.value}')
+            return parent
 
     def print_node(self, indent=0):
         print(' ' * indent + f'{self.value}')
