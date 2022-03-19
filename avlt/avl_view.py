@@ -1,5 +1,6 @@
 import mvc_base.view as view
 import avlt.avl_model as avlt
+import mvc_base.model_double_child as mdc
 
 
 class AVLView(view.View):
@@ -8,15 +9,15 @@ class AVLView(view.View):
         super().__init__(node_width, node_height, columns_to_skip)
 
     def draw_tree(self, node, canvas):
-        if type(node) is not avlt.AVLTLeaf and node is not None:
+        if type(node) is not mdc.DCLeaf and node is not None:
             self.draw_object_with_children_lines(node, canvas)
             self.draw_tree(node.left, canvas)
             self.draw_tree(node.right, canvas)
 
     def draw_object_with_children_lines(self, obj, canvas):
-        if type(obj.right) is not avlt.AVLTLeaf:
+        if type(obj.right) is not mdc.DCLeaf:
             self.draw_line(canvas, obj, obj.right)
-        if type(obj.left) is not avlt.AVLTLeaf:
+        if type(obj.left) is not mdc.DCLeaf:
             self.draw_line(canvas, obj, obj.left)
         self.draw_object(obj, canvas)
 

@@ -3,6 +3,7 @@ import tkinter as tk
 
 import core.menu as m
 import core.root as r
+from core.constants import hint_frame, exp_txt
 
 
 class View(abc.ABC):
@@ -94,11 +95,11 @@ class View(abc.ABC):
         :return: returns nothing
         """
         txt = self.canvas_now.create_text(node.x, node.y + (-1 if above else 1) * self.node_height, fill='white',
-                                          text=exp_str, tags=r.exp_txt)
-        txt_background = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill="grey", tags=r.exp_txt)
+                                          text=exp_str, tags=exp_txt)
+        txt_background = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill="grey", tags=exp_txt)
         self.canvas_now.tag_lower(txt_background)
         r.wait(self.long_animation_time)
-        self.erase(r.exp_txt)
+        self.erase(exp_txt)
         self.explanation.append(exp_str)
 
     def move_object(self, obj, x1, y1, x2, y2, short_animation_time=False):
@@ -296,11 +297,11 @@ class HintFrame:
         self.y = y
         self.view.canvas_now.create_rectangle(x - self.view.node_width // 2, y - self.view.node_height // 2,
                                               x + self.view.node_width // 2, y + self.view.node_height // 2,
-                                              outline='red', tags=r.hint_frame)
+                                              outline='red', tags=hint_frame)
 
     def move(self, x, y, time=False):
         """Moves the hint frame and updates it's coordinates"""
-        self.view.move_object(r.hint_frame, self.x, self.y, x, y, time)
+        self.view.move_object(hint_frame, self.x, self.y, x, y, time)
         self.x = x
         self.y = y
 

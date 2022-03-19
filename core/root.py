@@ -1,4 +1,4 @@
-# Root (Main window) frame file. Contains miscellaneous functions/classes/constants
+# Root (Main window) frame file. Contains miscellaneous functions and classes
 
 import tkinter as tk
 from enum import Enum
@@ -18,11 +18,6 @@ class Action(Enum):
     delete = 2
     search = 3
 
-
-# General constants
-hint_frame = 'hint_frame'
-grey_node = 'grey_node'
-exp_txt = 'exp_txt'
 
 frame = tk.Tk()
 frame.state('zoomed')

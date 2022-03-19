@@ -1,3 +1,4 @@
+import mvc_base.model_double_child as mdc
 import mvc_base.view as view
 import rbt.rbt_model as rbt
 
@@ -21,15 +22,15 @@ class RBTView(view.View):
             self.canvas_now.tag_lower(txt_bg)
 
     def draw_tree(self, node, canvas):
-        if type(node) is not rbt.RBTLeaf and node is not None:
+        if type(node) is not mdc.DCLeaf and node is not None:
             self.draw_object_with_children_lines(node, canvas)
             self.draw_tree(node.left, canvas)
             self.draw_tree(node.right, canvas)
 
     def draw_object_with_children_lines(self, obj, canvas):
-        if type(obj.right) is not rbt.RBTLeaf:
+        if type(obj.right) is not mdc.DCLeaf:
             self.draw_line(canvas, obj, obj.right)
-        if type(obj.left) is not rbt.RBTLeaf:
+        if type(obj.left) is not mdc.DCLeaf:
             self.draw_line(canvas, obj, obj.left)
         self.draw_object(obj, canvas)
 
