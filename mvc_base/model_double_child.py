@@ -150,7 +150,7 @@ class DCNode(model.AnimatedObject, model.Node):
         if node is self.tree.root and type(node.left) is DCLeaf and type(node.right) is DCLeaf:
             view.erase(hint_frame)
             view.move_object(self.tree.root.tag(), self.tree.root.x, self.tree.root.y, self.tree.root.x,
-                             -view.node_width)
+                             -view.node_height)
             self.tree.clear()
             return
         if type(node.left) is DCLeaf or type(node.right) is DCLeaf:

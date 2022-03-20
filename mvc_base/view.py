@@ -79,6 +79,9 @@ class View(abc.ABC):
                 x_unit = (s.x_next - s.x) / counter
                 y_unit = (s.y_next - s.y) / counter
                 units[s] = (x_unit, y_unit)
+            # Skip waiting if units are too small
+            if all(abs(x) < 0.00001 and abs(y) < 0.00001 for (x, y) in units.values()):
+                return
             # Move each successor
             while counter > 0:
                 for s in successors:
