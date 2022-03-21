@@ -79,7 +79,7 @@ class BTValue(model.AnimatedObject):
 
 
 class BTNode(model.AnimatedObject, model.Node):
-    class_node_id = ord('@')
+    class_node_id = ord('@')  # distinguishes nodes by using letters
 
     @staticmethod
     def get_id():
@@ -115,25 +115,27 @@ class BTNode(model.AnimatedObject, model.Node):
         i = 0
         view = self.tree.view
         view.hint_frame.draw(self.values[0].x, self.values[0].y)
+        # Search for a spot to insert new value
         while i < len(self.values) and value.value > self.values[i].value:
             view.draw_exp_text(self.values[i], f'[{self.id}]: {value.value} > {self.values[i].value}, check next value',
                                False)
             view.hint_frame.move(self.values[i].x + view.node_width, self.values[i].y, True)
             i += 1
+        # Show end-search reason
         if i < len(self.values):
             view.draw_exp_text(self.values[i], f'[{self.id}]: {value.value} < {self.values[i].value}, '
-                                               f'insert to preceding child', False)
+                                               f'insert before {self.values[i].value}', False)
             view.hint_frame.move(self.values[i].x - view.node_width // 2, self.values[i].y, True)
         else:
             view.draw_exp_text(self, f'No next value', False)
             view.hint_frame.move(self.values[-1].x + view.node_width // 2, self.values[-1].y, True)
+        # Insert value
         if self.is_leaf:
             self.values.insert(i, value)
             value.x = self.x
             value.y = self.y - view.y_above
             self.values[i].parent = self
-            view.draw_exp_text(self, f'Node [{self.id}] is a leaf. Insert {value.value} in the node [{self.id}]',
-                               False)
+            view.draw_exp_text(self, f'Node [{self.id}] is a leaf. Insert {value.value} in the node [{self.id}]', False)
             self.tree.update_positions()
             view.animate(self)
         else:
@@ -141,6 +143,7 @@ class BTNode(model.AnimatedObject, model.Node):
             view.erase(hint_frame)
             view.move_object(grey_node, self.x, self.y, self.children[i].x, self.children[i].y)
             self.children[i].insert_value(value)
+        # Fix b-tree constraints
         if len(self.values) == self.tree.max_degree:
             view.erase(hint_frame)
             view.draw_exp_text(self, f'Number of values in [{self.id}] == max_b-tree_degree. Start fixing process')
@@ -169,8 +172,8 @@ class BTNode(model.AnimatedObject, model.Node):
                 view.draw_exp_text(to_fix, f'Value {self.values[i].value} goes to node {self.id}')
                 view.erase(f'Line{hash(removed_node)}')
                 to_fix.fix_delete()
-            elif len(self.children[i + 1].values) > min_val_degree and self.children[i+1].is_leaf \
-                    or not self.children[i+1].is_leaf:
+            elif len(self.children[i + 1].values) > min_val_degree and self.children[i + 1].is_leaf \
+                    or not self.children[i + 1].is_leaf:
                 removed_node = self.values[i]
                 view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
                 view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
@@ -199,6 +202,7 @@ class BTNode(model.AnimatedObject, model.Node):
                 view.animate(self.tree.root)
                 self.children[i].delete_value(value)
                 self.fix_delete()
+        # Search for a value to delete
         else:
             i = 0
             while i < len(self.values) and value > self.values[i].value:
@@ -233,13 +237,17 @@ class BTNode(model.AnimatedObject, model.Node):
             return None
         # Search in child
         else:
+            # Show appropriate explanation string
             if i < len(self.values):
-                view.draw_exp_text(self.values[i], f'[{self.id}]: {value} < {self.values[i].value}, '
-                                                   f'search in [{self.children[i].id}]', False)
+                view.draw_exp_text(self.values[i], f'[{self.id}]: {value} < {self.values[i].value}', False)
             else:
-                view.draw_exp_text(self, f'[{self.id}] No next value. Search in [{self.children[i].id}]', False)
+                view.draw_exp_text(self, f'[{self.id}] No next value.', False)
             if i != 0:
-                view.hint_frame.move(self.values[i - 1].x, self.values[i - 1].y, True)
+                view.hint_frame.move(self.values[i - 1].x + view.node_width//2, self.values[i - 1].y, True)
+                view.draw_exp_text(self, f'Search in [{self.children[i].id}]', False)
+            else:
+                view.hint_frame.move(self.values[0].x - view.node_width//2, self.values[0].y, True)
+                view.draw_exp_text(self, f'Search in [{self.children[0].id}]', False)
             view.hint_frame.move(self.children[i].values[0].x, self.children[i].values[0].y)
             return self.children[i].search_value(value)
 
@@ -324,9 +332,9 @@ class BTNode(model.AnimatedObject, model.Node):
 
     def split_child(self, i, full_node):
         """
-        Splits full_node (i-th children of self) into self and new_node (new child of self with values >)
+        Splits full_node (i-th child of self) into self and new_node (new child of self with values >)
         :param i: position of full_node in self.children
-        :param full_node: children of self
+        :param full_node: child of self
         :return: returns nothing
         """
         new_node = BTNode(self.tree, full_node.is_leaf, self.x, self.y)
@@ -344,7 +352,7 @@ class BTNode(model.AnimatedObject, model.Node):
         new_node.y = new_node.values[0].y
         if not full_node.is_leaf:
             # Rewrite children: full_node to new_node
-            for j in range(0, split_point):
+            for j in range(0, len(new_node.values) + 1):
                 if split_point < len(full_node.children):
                     new_node.children.insert(j, full_node.children[split_point])
                     full_node.children[split_point].parent = new_node
@@ -449,6 +457,7 @@ class BTNode(model.AnimatedObject, model.Node):
                     v.parent = prev.children[i - 1]
                     prev.children[i - 1].values.append(v)
                 view.draw_exp_text(self, f'Delete [{self.id}] node')
+                view.erase(self.tag())
                 prev.values.pop(i - 1)
                 prev.children.pop(i)
             elif i + 1 < len(prev.children) and len(prev.children[i + 1].values) == min_val_degree:
@@ -464,6 +473,7 @@ class BTNode(model.AnimatedObject, model.Node):
                     v.parent = prev.children[i + 1]
                     prev.children[i + 1].values.insert(0, v)
                 view.draw_exp_text(self, f'Delete [{self.id}] node')
+                view.erase(self.tag())
                 prev.values.pop(i)
                 prev.children.pop(i)
             else:
