@@ -1,4 +1,4 @@
-# Root (Main window) frame file. Contains miscellaneous functions/classes/constants
+# Root (Main window) frame file. Contains miscellaneous functions and classes
 
 import tkinter as tk
 from enum import Enum
@@ -19,12 +19,8 @@ class Action(Enum):
     search = 3
 
 
-# General constants
-hint_frame = 'hint_frame'
-grey_node = 'grey_node'
-exp_txt = 'exp_txt'
-
 frame = tk.Tk()
+frame.title('Educational tree GUI')
 frame.state('zoomed')
 frame.rowconfigure(0, weight=1)
 frame.columnconfigure(0, weight=1)

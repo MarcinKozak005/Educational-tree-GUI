@@ -1,8 +1,8 @@
 import math
 import tkinter as tk
 
-import core.root as r
 import mvc_base.model as model
+from core.constants import white, grey_node, hint_frame
 
 
 class AVBPTree(model.Tree):
@@ -16,26 +16,26 @@ class AVBPTree(model.Tree):
     def insert_value(self, value):
         if self.root is None:
             self.root = AVBPTNode(self, True, self.view.width // 2, self.view.y_space)
-            self.view.explanation.append(f'Tree is empty')
+            self.view.explanation.append(f'Tree is empty. Create node [{self.root.id}] with value {value}')
             self.root.values.append(AVBPTValue(value, self.root))
-            self.view.explanation.append(f'Added value {value} in node [{self.root.id}]')
         else:
             view = self.view
-            view.explanation.append(f'Tree is not empty, looking for insert place for {value}')
+            view.explanation.append(f'Tree is not empty. Find insert place for {value}')
             view.canvas_now.create_rectangle(self.root.x - view.node_width // 2,
                                              self.root.y - view.node_height // 2 - view.y_above,
                                              self.root.x + view.node_width // 2,
                                              self.root.y + view.node_height // 2 - view.y_above,
-                                             fill='grey', tags=r.grey_node)
-            view.canvas_now.create_text(self.root.x, self.root.y - view.y_above, fill='white',
-                                        text=value, tags=r.grey_node)
+                                             fill='grey', tags=grey_node)
+            view.canvas_now.create_text(self.root.x, self.root.y - view.y_above, fill=white,
+                                        text=value, tags=grey_node)
             self.root.insert_value(AVBPTValue(value, None, self.root.x, self.root.y - view.y_above))
         self.root.update_positions(True)
 
     def delete_value(self, value):
-        search_result = self.root.search_value(value)
-        if search_result:
-            self.root.delete_value(value)
+        if self.root is not None:
+            search_result = self.root.search_value(value)
+            if search_result:
+                self.root.delete_value(value)
 
     def search_value(self, value):
         if self.root is None:
@@ -60,14 +60,14 @@ class AVBPTValue(model.AnimatedObject):
         self.value = value
         self.counter = 1
 
-    def tick(self, view, x_un, y_un):
+    def tick(self, view, x_unit, y_unit):
         view.erase(f'Line{hash(self)}')
         if view.canvas_now.find_withtag(self.tag()):
-            view.canvas_now.move(self.tag(), x_un, y_un)
+            view.canvas_now.move(self.tag(), x_unit, y_unit)
         else:
-            view.canvas_now.move(r.grey_node, x_un, y_un)
-        self.x += x_un
-        self.y += y_un
+            view.canvas_now.move(grey_node, x_unit, y_unit)
+        self.x += x_unit
+        self.y += y_unit
         index = self.parent.values.index(self)
         if not self.parent.is_leaf:
             if index < len(self.parent.children):
@@ -81,7 +81,7 @@ class AVBPTValue(model.AnimatedObject):
 
 
 class AVBPTNode(model.AnimatedObject, model.Node):
-    class_node_id = ord('@')
+    class_node_id = ord('@')  # distinguishes nodes by using letters
 
     @staticmethod
     def get_id():
@@ -117,40 +117,44 @@ class AVBPTNode(model.AnimatedObject, model.Node):
         i = 0
         view = self.tree.view
         view.hint_frame.draw(self.values[0].x, self.values[0].y)
+        # Search for a spot to insert new value
         while i < len(self.values) and value.value > self.values[i].value:
             view.draw_exp_text(self.values[i], f'[{self.id}]: {value.value} > {self.values[i].value}, check next value',
                                False)
             view.hint_frame.move(self.values[i].x + view.node_width, self.values[i].y, True)
             i += 1
-
+        # Value is already present in the tree
         if i < len(self.values) and value.value == self.values[i].value:
+            view.draw_exp_text(self,
+                               f'Increase counter of value ({self.values[i].value}) to {self.values[i].counter + 1}',
+                               False)
             self.values[i].counter += 1
             return
         elif i < len(self.values):
             view.draw_exp_text(self.values[i], f'[{self.id}]: {value.value} < {self.values[i].value}, '
-                                               f'insert to previous', False)
+                                               f'insert before {self.values[i].value}', False)
             view.hint_frame.move(self.values[i].x - view.node_width // 2, self.values[i].y, True)
         else:
             view.draw_exp_text(self, f'No next value', False)
             view.hint_frame.move(self.values[-1].x + view.node_width // 2, self.values[-1].y, True)
-
+        # Insert value
         if self.is_leaf:
             self.values.insert(i, value)
             value.x = self.x
             value.y = self.y - view.y_above
             self.values[i].parent = self
-            view.draw_exp_text(self, f'Node [{self.id}] is a leaf. Inserting {value.value} in the node [{self.id}]',
-                               False)
+            view.draw_exp_text(self, f'Node [{self.id}] is a leaf. Insert {value.value} in the node [{self.id}]', False)
             self.tree.update_positions()
             view.animate(self)
         else:
-            view.draw_exp_text(self, f'Insert value to a children node [{self.children[i].id}] of [{self.id}]', False)
-            view.erase(r.hint_frame)
-            view.move_object(r.grey_node, self.x, self.y, self.children[i].x, self.children[i].y)
+            view.draw_exp_text(self, f'Insert value to a child node [{self.children[i].id}] of [{self.id}]', False)
+            view.erase(hint_frame)
+            view.move_object(grey_node, self.x, self.y, self.children[i].x, self.children[i].y)
             self.children[i].insert_value(value)
+        # Fix AVB+tree constraints
         if len(self.values) == self.tree.max_degree:
-            view.erase(r.hint_frame)
-            view.draw_exp_text(self, f'Number of values in [{self.id}] == max b-tree degree. Start fixing')
+            view.erase(hint_frame)
+            view.draw_exp_text(self, f'Number of values in [{self.id}] == max_tree_degree. Start fixing process')
             self.fix_insert()
 
     def delete_value(self, value):
@@ -161,47 +165,61 @@ class AVBPTNode(model.AnimatedObject, model.Node):
         if self.is_leaf and value in values:
             i = values.index(value)
             if counts[i] > 1:
+                view.draw_exp_text(self.values[i], f'Reduce value counter by 1 to {self.values[i].counter - 1}')
                 self.values[i].counter -= 1
             else:
                 removed_node = self.values.pop(i)
-                view.erase(removed_node.tag())
+                view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
+                view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
                 self.fix_delete()
         elif value in values:
             i = values.index(value)
             if counts[i] > 1:
+                view.draw_exp_text(self.values[i], f'Reduce value counter by 1 to {self.values[i].counter - 1}')
                 self.values[i].counter -= 1
                 return
-            if len(self.children[i].values) > min_val_degree:
-                view.draw_exp_text(self.children[i], f'Node [{self.children[i].id}] has > {min_val_degree} values. '
-                                                     f'Looking for the predecessor of {value}')
-                view.erase(self.values[i].tag())
-                view.erase(f'Line{hash(self.values[i])}')
+            if len(self.children[i].values) > min_val_degree and self.children[i].is_leaf \
+                    or not self.children[i].is_leaf:
+                removed_node = self.values[i]
+                view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
+                view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
+                view.draw_exp_text(self.children[i], f'Find predecessor of {value} in [{self.children[i].id}] node')
                 self.values[i], to_fix = self.children[i].predecessor()
                 self.values[i].parent = self
+                view.draw_exp_text(to_fix, f'Value {self.values[i].value} goes to node {self.id}')
+                view.erase(f'Line{hash(removed_node)}')
                 to_fix.fix_delete()
-            elif len(self.children[i + 1].values) > min_val_degree:
-                view.draw_exp_text(self.children[i], f'Node [{self.children[i + 1].id}] has > {min_val_degree} values.'
-                                                     f'Looking for the successor of {value}')
-                view.erase(self.values[i].tag())
-                view.erase(f'Line{hash(self.values[i])}')
+            elif len(self.children[i + 1].values) > min_val_degree and self.children[i + 1].is_leaf \
+                    or not self.children[i + 1].is_leaf:
+                removed_node = self.values[i]
+                view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
+                view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
+                view.draw_exp_text(self.children[i + 1],
+                                   f'Find successor of {value} in [{self.children[i + 1].id}] node')
                 self.values[i], to_fix = self.children[i + 1].successor()
                 self.values[i].parent = self
+                view.draw_exp_text(to_fix, f'Value {self.values[i].value} goes to node {self.id}')
+                view.erase(f'Line{hash(removed_node)}')
                 to_fix.fix_delete()
             else:
-                view.draw_exp_text(self, f'Merge nodes [{self.children[i].id}] and [{self.children[i + 1].id}]')
-                self.children[i].values.append(AVBPTValue(value, self.children[i]))
+                view.draw_exp_text(self, f'Merge node [{self.children[i].id}] value {self.values[i].value} '
+                                         f'and node [{self.children[i + 1].id}]')
+                self.children[i].values.append(self.values[i])
+                self.values[i].parent = self.children[i]
                 for v in self.children[i + 1].values:
                     v.parent = self.children[i]
                     self.children[i].values.append(v)
                 self.children[i].children.extend(self.children[i + 1].children)
                 for c in self.children[i + 1].children:
                     c.parent = self.children[i]
-                view.erase(self.values[i].tag())
                 view.erase(f'Line{hash(self.values[i])}')
                 self.values.pop(i)
                 self.children.pop(i + 1)
+                self.tree.update_positions()
+                view.animate(self.tree.root)
                 self.children[i].delete_value(value)
                 self.fix_delete()
+        # Search for a value to delete
         else:
             i = 0
             while i < len(self.values) and value > self.values[i].value:
@@ -217,29 +235,36 @@ class AVBPTNode(model.AnimatedObject, model.Node):
         i = 0
         view = self.tree.view
         view.hint_frame.draw(self.values[0].x, self.values[0].y)
+        # Find first not smaller value in node
         while i < len(self.values) and value > self.values[i].value:
             view.draw_exp_text(self.values[i], f'[{self.id}]: {value} > {self.values[i].value}, check next value',
                                False)
             view.hint_frame.move(self.values[i].x + view.node_width, self.values[i].y, True)
             i += 1
+        # The value is found
         if i < len(self.values) and value == self.values[i].value:
-            view.draw_exp_text(self, f'Value found in node [{self.id}]')
-            view.erase(r.hint_frame)
+            view.draw_exp_text(self, f'Value {value} found in node [{self.id}] in place {i}')
+            view.erase(hint_frame)
             return self, i
+        # Not found strings
         if self.is_leaf:
-            view.draw_exp_text(self, f'Value not found')
-            view.erase(r.hint_frame)
+            exp_string = f'No more values.' if i >= len(self.values) else f'{value} < {self.values[i].value}.'
+            view.draw_exp_text(self, f'[{self.id}]: {exp_string}  [{self.id}] is a leaf. Value {value} not found')
+            view.erase(hint_frame)
             return None
+        # Search in child
         else:
+            # Show appropriate explanation string
             if i < len(self.values):
-                view.draw_exp_text(self.values[i], f'[{self.id}]: {value} < {self.values[i].value}, '
-                                                   f'search in [{self.children[i].id}]', False)
+                view.draw_exp_text(self.values[i], f'[{self.id}]: {value} < {self.values[i].value}', False)
             else:
-                view.draw_exp_text(self, f'No next value', False)
-                view.draw_exp_text(self, f'Search value in a children node [{self.children[i].id}] of [{self.id}]',
-                                   False)
+                view.draw_exp_text(self, f'[{self.id}] No next value.', False)
             if i != 0:
-                view.hint_frame.move(self.values[i - 1].x, self.values[i - 1].y, True)
+                view.hint_frame.move(self.values[i - 1].x + view.node_width // 2, self.values[i - 1].y, True)
+                view.draw_exp_text(self, f'Search in [{self.children[i].id}]', False)
+            else:
+                view.hint_frame.move(self.values[0].x - view.node_width // 2, self.values[0].y, True)
+                view.draw_exp_text(self, f'Search in [{self.children[0].id}]', False)
             view.hint_frame.move(self.children[i].values[0].x, self.children[i].values[0].y)
             return self.children[i].search_value(value)
 
@@ -276,7 +301,7 @@ class AVBPTNode(model.AnimatedObject, model.Node):
         # Values
         for i in range(len(self.values)):
             self.values[i].x_next = self.x_next - len(self.values) * self.tree.view.node_width // 2 + \
-                self.tree.view.node_width // 2 + i * self.tree.view.node_width
+                                    self.tree.view.node_width // 2 + i * self.tree.view.node_width
             self.values[i].y_next = self.y_next
         if static:
             self.x = self.x_next
@@ -306,12 +331,13 @@ class AVBPTNode(model.AnimatedObject, model.Node):
         view = self.tree.view
         view.hint_frame.draw(first.x, first.y)
         if self.is_leaf:
-            view.draw_exp_text(self, f'Node [{self.id}] is a leaf, first value is a successor')
+            view.draw_exp_text(self, f'Node [{self.id}] is a leaf, so first value is a successor')
+            view.erase(hint_frame)
             return self.values.pop(0), self
         else:
-            view.draw_exp_text(self, f'Node [{self.id}] is not a leaf, search for successor in a first child')
+            view.draw_exp_text(self, f'Node [{self.id}] is not a leaf. Search for successor in a first child')
             view.hint_frame.move(self.children[0].values[0].x, self.children[0].values[0].y, True)
-            view.erase(r.hint_frame)
+            view.erase(hint_frame)
             return self.children[0].successor()
 
     def print_node(self, indent=0):
@@ -323,9 +349,9 @@ class AVBPTNode(model.AnimatedObject, model.Node):
 
     def split_child(self, i, full_node):
         """
-        Splits full_node (i-th children of self) into self and new_node (new child of self with values >)
+        Splits full_node (i-th child of self) into self and new_node (new child of self with values >)
         :param i: position of full_node in self.children
-        :param full_node: children of self
+        :param full_node: child of self
         :return: returns nothing
         """
         new_node = AVBPTNode(self.tree, full_node.is_leaf, self.x, self.y)
@@ -343,7 +369,7 @@ class AVBPTNode(model.AnimatedObject, model.Node):
         new_node.y = new_node.values[0].y
         if not full_node.is_leaf:
             # Rewrite children: full_node to new_node
-            for j in range(0, split_point):
+            for j in range(0, len(new_node.values) + 1):
                 if split_point < len(full_node.children):
                     new_node.children.insert(j, full_node.children[split_point])
                     full_node.children[split_point].parent = new_node
@@ -356,9 +382,10 @@ class AVBPTNode(model.AnimatedObject, model.Node):
         full_node.values.pop(len(full_node.values) - 1)
         self.tree.root.update_positions()
         view.animate(self.tree.root)
-        view.draw_exp_text(full_node, f'Values < {self.values[0].value} stays in [{full_node.id}] node')
-        view.draw_exp_text(new_node, f'Values > {self.values[0].value} makes new node [{new_node.id}]')
-        view.draw_exp_text(self, f'Nodes [{full_node.id}] and [{new_node.id}] become a children of [{self.id}]')
+        view.draw_exp_text(full_node, f'Values < {self.values[0].value} stay in [{full_node.id}] node')
+        view.draw_exp_text(new_node, f'Values > {self.values[0].value} make new node [{new_node.id}]')
+        view.draw_exp_text(self, f'Nodes [{full_node.id}] and [{new_node.id}] become '
+                                 f'left and right children of [{self.id}]')
 
     def fix_insert(self):
         """
@@ -383,21 +410,26 @@ class AVBPTNode(model.AnimatedObject, model.Node):
         min_val_degree = math.ceil(self.tree.max_degree / 2) - 1
         prev = self.parent
         view = self.tree.view
+        self.tree.update_positions()
+        view.animate(self.tree.root)
+        # Node validates the tree constraints
         if len(self.values) < min_val_degree:
             view.draw_exp_text(self, f'Node [{self.id}] has not enough values')
-            if self is self.tree.root and len(self.children) > 0:
-                view.draw_exp_text(self, f'Node [{self.id}] is a root.'
+            # Cases with root
+            if self is self.tree.root and len(self.values) == 0 and len(self.children) > 0:
+                view.draw_exp_text(self, f'Node [{self.id}] is a root. '
                                          f'New root is first child of [{self.id}]: [{self.children[0].id}]')
                 self.tree.root = self.children[0]
                 self.children[0].parent = None
                 self.tree.root.update_positions()
                 view.animate(self.tree.root)
                 return
-            elif self is self.tree.root and len(self.children) == 0:
+            elif self is self.tree.root and len(self.values) == 0 and len(self.children) == 0:
                 view.draw_exp_text(self, f'Node [{self.id}] is a root. Root has no children. Tree is empty')
-                self.tree.root = None
+                self.tree.clear()
                 return
             i = prev.children.index(self)
+            # Cases with node
             if i - 1 >= 0 and len(prev.children[i - 1].values) > min_val_degree:
                 view.draw_exp_text(self, f'Rewrite value {prev.values[i - 1].value} from [{prev.id}] to [{self.id}]')
                 self.values.insert(0, prev.values[i - 1])
@@ -435,41 +467,38 @@ class AVBPTNode(model.AnimatedObject, model.Node):
             elif i - 1 >= 0 and len(prev.children[i - 1].values) == min_val_degree:
                 view.draw_exp_text(prev, f'Rewrite value {prev.values[i - 1].value} '
                                          f'from [{prev.id}] to [{prev.children[i - 1].id}]')
-                view.draw_exp_text(self, f'Rewrite values from [{self.id}] to [{prev.children[i - 1].id}]')
-                view.draw_exp_text(self, f'Delete [{self.id}] node')
                 prev.children[i - 1].values.append(prev.values[i - 1])
                 prev.values[i - 1].parent = prev.children[i - 1]
-                # Unnecessary?
+                view.draw_exp_text(self, f'Rewrite values and children from [{self.id}] to [{prev.children[i - 1].id}]')
                 for n in self.children:
                     n.parent = prev.children[i - 1]
                 prev.children[i - 1].children.extend(self.children)
-                # End unnecessary
                 for v in self.values:
                     v.parent = prev.children[i - 1]
                     prev.children[i - 1].values.append(v)
+                view.draw_exp_text(self, f'Delete [{self.id}] node')
+                view.erase(self.tag())
                 prev.values.pop(i - 1)
                 prev.children.pop(i)
             elif i + 1 < len(prev.children) and len(prev.children[i + 1].values) == min_val_degree:
-                view.draw_exp_text(prev, f'Rewrite value {prev.values[i].value} from [{prev.id}] to [{self.id}]')
-                view.draw_exp_text(self, f'Rewrite values from [{self.id}] to [{prev.children[i + 1].id}]')
-                view.draw_exp_text(self, f'Delete [{prev.children[i + 1].id}] node')
+                view.draw_exp_text(prev, f'Rewrite value {prev.values[i].value} '
+                                         f'from [{prev.id}] to [{prev.children[i + 1].id}]')
                 prev.children[i + 1].values.insert(0, prev.values[i])
                 prev.values[i].parent = prev.children[i + 1]
-                # Unnecessary?
-                for n in prev.children[i + 1].children:
-                    n.parent = self
-                prev.children[i + 1].children.extend(self.children)
-                # End unnecessary
+                view.draw_exp_text(self, f'Rewrite values and children from [{self.id}] to [{prev.children[i + 1].id}]')
+                for c in reversed(self.children):
+                    prev.children[i + 1].children.insert(0, c)
+                    c.parent = prev.children[i + 1]
                 for v in reversed(self.values):
                     v.parent = prev.children[i + 1]
                     prev.children[i + 1].values.insert(0, v)
+                view.draw_exp_text(self, f'Delete [{self.id}] node')
+                view.erase(self.tag())
                 prev.values.pop(i)
                 prev.children.pop(i)
             else:
                 return
             prev.fix_delete()
-        self.tree.update_positions()
-        view.animate(self.tree.root)
 
     def predecessor(self):
         """
@@ -478,14 +507,16 @@ class AVBPTNode(model.AnimatedObject, model.Node):
         :return: predecessor, node from which predecessor was deleted
         """
         last = self.values[-1]
-        self.tree.view.hint_frame.draw(last.x, last.y)
+        view = self.tree.view
+        view.hint_frame.draw(last.x, last.y)
         if self.is_leaf:
-            self.tree.view.draw_exp_text(self, f'Node [{self.id}] is a leaf, last value is a predecessor')
+            view.draw_exp_text(self, f'Node [{self.id}] is a leaf, last value is a predecessor')
+            view.erase(hint_frame)
             return self.values.pop(-1), self
         else:
-            self.tree.view.draw_exp_text(self, f'Node [{self.id}] is not a leaf, search for predecessor in last child')
-            self.tree.view.hint_frame.move(self.children[-1].values[-1].x, self.children[-1].values[-1].y)
-            self.tree.view.erase(r.hint_frame)
+            view.draw_exp_text(self, f'Node [{self.id}] is not a leaf. Search for a predecessor in last child')
+            view.hint_frame.move(self.children[-1].values[-1].x, self.children[-1].values[-1].y)
+            view.erase(hint_frame)
             return self.children[-1].predecessor()
 
     def in_order(self):
@@ -496,6 +527,5 @@ class AVBPTNode(model.AnimatedObject, model.Node):
             for i in range(len(self.values)):
                 result += self.children[i].in_order()
                 result.append(self.values[i])
-            result += self.children[i+1].in_order()
+            result += self.children[i + 1].in_order()
             return result
-
