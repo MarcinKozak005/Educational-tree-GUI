@@ -3,7 +3,7 @@ import tkinter as tk
 
 import core.menu as m
 import core.root as r
-from core.constants import hint_frame, exp_txt
+from core.constants import hint_frame, exp_txt, white, black, light_green
 
 
 class View(abc.ABC):
@@ -25,7 +25,7 @@ class View(abc.ABC):
         self.canvas_now = None
         self.canvas_prev = None
         self.info_label = None
-        self.explanation_label = None
+        self.explanation_text = None
         self.buttons = []
         self.prev_label = None
         self.now_label = None
@@ -97,7 +97,7 @@ class View(abc.ABC):
         :param above: if True -> exp_str will be above node, else below the node
         :return: returns nothing
         """
-        txt = self.canvas_now.create_text(node.x, node.y + (-1 if above else 1) * self.node_height, fill='white',
+        txt = self.canvas_now.create_text(node.x, node.y + (-1 if above else 1) * self.node_height, fill=white,
                                           text=exp_str, tags=exp_txt)
         txt_background = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill="grey", tags=exp_txt)
         self.canvas_now.tag_lower(txt_background)
@@ -135,7 +135,7 @@ class View(abc.ABC):
         """
         self.canvas_prev.delete('all')
         self.erase('all')
-        self.explanation_label.config(text='')
+        self.explanation_text.delete(0.0, 'end')
 
     def prepare_view(self):
         """
@@ -144,7 +144,10 @@ class View(abc.ABC):
         """
         self.info_label.config(text='')
         self.erase('all')
-        self.explanation_label.config(text=self.explanation.string, wraplength=350)
+        self.explanation_text.config(state='normal')
+        self.explanation_text.delete(0.0, 'end')
+        self.explanation_text.insert('end', self.explanation.string)
+        self.explanation_text.config(state='disabled')
         self.explanation.reset()
 
     def set_buttons(self, state):
@@ -156,17 +159,18 @@ class View(abc.ABC):
         for b in self.buttons:
             b.config(state='normal' if state else 'disabled')
 
-    def create_GUI(self, controller):
+    def create_GUI(self, controller, text):
         """
         Creates a GUI with buttons triggering model methods with the use of controller
         :param controller: controller to call model methods and to access the model
+        :param text: String to be shown above all GUI elements
         :return: returns main tk.Frame with all GUI widgets
         """
 
         frame = tk.Frame(r.frame)
 
         main_subframe = tk.Frame(frame)
-        tk.Label(main_subframe, text='RedBlack Tree', bg='red', height=2).pack(fill='x')
+        tk.Label(main_subframe, text=text, bg=light_green, height=2).pack(fill='x')
         main_subframe.pack(fill='x')
 
         self.controls_frame = tk.Frame(frame)
@@ -186,11 +190,11 @@ class View(abc.ABC):
         self.info_label = tk.Label(self.controls_frame)
         cts = self.columns_to_skip
         insert_field.grid(row=0, column=cts)
-        insert_button.grid(row=0, column=cts + 1, padx=(0, 20))
+        insert_button.grid(row=0, column=cts + 1, padx=(5, 20))
         delete_field.grid(row=0, column=cts + 2)
-        delete_button.grid(row=0, column=cts + 3, padx=(0, 20))
+        delete_button.grid(row=0, column=cts + 3, padx=(5, 20))
         find_field.grid(row=0, column=cts + 4)
-        find_button.grid(row=0, column=cts + 5)
+        find_button.grid(row=0, column=cts + 5, padx=(5, 0))
         self.view_button.grid(row=0, column=cts + 6, padx=(20, 20))
         clear_button.grid(row=0, column=cts + 7)
         back_button.grid(row=0, column=cts + 8, padx=(40, 0))
@@ -199,19 +203,24 @@ class View(abc.ABC):
 
         visualization_frame = tk.Frame(frame)
         self.explanation_frame = tk.Frame(visualization_frame)
-        explanation_title_lab = tk.Label(self.explanation_frame)
-        self.explanation_label = tk.Label(self.explanation_frame)
-        self.explanation_label.config(text='', justify=tk.LEFT, width=50, anchor=tk.W)
-        explanation_title_lab.config(text='Explanation', font=15)
-        explanation_title_lab.pack()
-        self.explanation_label.pack()
+        explanation_title_label = tk.Label(self.explanation_frame)
+        explanation_label = tk.Label(self.explanation_frame)
+        self.explanation_text = tk.Text(explanation_label, font='TkDefaultFont',
+                                        width=70, height=42, bg=frame.cget('bg'))
+        explanation_scrollbar = tk.Scrollbar(explanation_label, command=self.explanation_text.yview)
+        self.explanation_text.config(yscrollcommand=explanation_scrollbar.set, state='disabled')
+        explanation_title_label.config(text='Explanation', font=15)
+        explanation_title_label.grid(row=0, column=0)
+        explanation_label.grid(row=1, column=0)
+        self.explanation_text.grid(row=1, column=1)
+        explanation_scrollbar.grid(row=1, column=0, sticky=tk.NSEW)
         self.explanation_frame.grid(row=0, column=0, sticky='NS')
 
         canvas_frame = tk.Frame(visualization_frame)
         self.prev_label = tk.Label(canvas_frame, text='Previous state of the tree:')
-        self.canvas_prev = tk.Canvas(canvas_frame, width=self.width, height=self.height, bg='white')
+        self.canvas_prev = tk.Canvas(canvas_frame, width=self.width, height=self.height, bg=white)
         self.now_label = tk.Label(canvas_frame, text='Current state of the tree:')
-        self.canvas_now = tk.Canvas(canvas_frame, width=self.width, height=self.height, bg='white')
+        self.canvas_now = tk.Canvas(canvas_frame, width=self.width, height=self.height, bg=white)
         self.prev_label.pack(pady=(5, 0))
         self.canvas_prev.pack()
         self.now_label.pack(pady=(5, 0))
@@ -253,7 +262,7 @@ class View(abc.ABC):
             x_mod -= self.node_width // 2
         return x_mod, y_mod
 
-    def draw_line(self, canvas, node1, node2, from_side=tk.CENTER, to_side=tk.CENTER, fill='black'):
+    def draw_line(self, canvas, node1, node2, from_side=tk.CENTER, to_side=tk.CENTER, fill=black):
         """
         Draws a line between two nodes
         :param canvas: canvas to draw on

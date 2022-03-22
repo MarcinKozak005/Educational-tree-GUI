@@ -10,4 +10,4 @@ view = v.RBTView(
 
 tree = rbt.RBTree(view)
 controller = c.Controller(tree, view)
-frame = view.create_GUI(controller)
+frame = view.create_GUI(controller, 'Red-black tree')

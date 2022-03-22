@@ -2,7 +2,7 @@ import math
 import tkinter as tk
 
 import mvc_base.model as model
-from core.constants import grey_node, hint_frame
+from core.constants import white, grey_node, hint_frame
 
 
 class AVBTree(model.Tree):
@@ -26,15 +26,16 @@ class AVBTree(model.Tree):
                                              self.root.x + view.node_width // 2,
                                              self.root.y + view.node_height // 2 - view.y_above,
                                              fill='grey', tags=grey_node)
-            view.canvas_now.create_text(self.root.x, self.root.y - view.y_above, fill='white',
+            view.canvas_now.create_text(self.root.x, self.root.y - view.y_above, fill=white,
                                         text=value, tags=grey_node)
             self.root.insert_value(AVBTValue(value, None, self.root.x, self.root.y - view.y_above))
         self.root.update_positions(True)
 
     def delete_value(self, value):
-        search_result = self.root.search_value(value)
-        if search_result:
-            self.root.delete_value(value)
+        if self.root is not None:
+            search_result = self.root.search_value(value)
+            if search_result:
+                self.root.delete_value(value)
 
     def search_value(self, value):
         if self.root is None:
@@ -59,14 +60,14 @@ class AVBTValue(model.AnimatedObject):
         self.value = value
         self.counter = 1
 
-    def tick(self, view, x_un, y_un):
+    def tick(self, view, x_unit, y_unit):
         view.erase(f'Line{hash(self)}')
         if view.canvas_now.find_withtag(self.tag()):
-            view.canvas_now.move(self.tag(), x_un, y_un)
+            view.canvas_now.move(self.tag(), x_unit, y_unit)
         else:
-            view.canvas_now.move(grey_node, x_un, y_un)
-        self.x += x_un
-        self.y += y_un
+            view.canvas_now.move(grey_node, x_unit, y_unit)
+        self.x += x_unit
+        self.y += y_unit
         index = self.parent.values.index(self)
         if not self.parent.is_leaf:
             if index < len(self.parent.children):

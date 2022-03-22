@@ -20,6 +20,7 @@ class Action(Enum):
 
 
 frame = tk.Tk()
+frame.title('Educational tree GUI')
 frame.state('zoomed')
 frame.rowconfigure(0, weight=1)
 frame.columnconfigure(0, weight=1)

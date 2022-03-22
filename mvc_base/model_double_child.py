@@ -2,7 +2,7 @@
 import abc
 
 import mvc_base.model as model
-from core.constants import left, right, black, grey_node, hint_frame
+from core.constants import left, right, white, black, grey_node, hint_frame
 
 
 class DCTree(model.Tree, abc.ABC):
@@ -38,7 +38,7 @@ class DCTree(model.Tree, abc.ABC):
         view.canvas_now.create_oval(root.x - view.node_width // 2, root.y - view.y_above - view.node_height // 2,
                                     root.x + view.node_width // 2, root.y - view.y_above + view.node_height // 2,
                                     fill='grey', tags=grey_node)
-        view.canvas_now.create_text(root.x, root.y - view.y_above, fill='white', text=value, tags=grey_node)
+        view.canvas_now.create_text(root.x, root.y - view.y_above, fill=white, text=value, tags=grey_node)
         newNode = root.insert_value(value)
         view.explanation.append(f'Start node-fixing process')
         view.draw_object_with_children_lines(newNode, view.canvas_now)
@@ -146,6 +146,8 @@ class DCNode(model.AnimatedObject, model.Node):
         """
         view = self.tree.view
         node = self.search_value(value)
+        if node is None:
+            return None, None
         # Delete from tree with only root node
         if node is self.tree.root and type(node.left) is DCLeaf and type(node.right) is DCLeaf:
             view.erase(hint_frame)
@@ -182,10 +184,10 @@ class DCNode(model.AnimatedObject, model.Node):
             view.canvas_now.create_oval(y.x - view.node_width // 2, y.y - view.node_height // 2,
                                         y.x + view.node_width // 2, y.y + view.node_height // 2,
                                         fill=y.color, tags=y.tag())
-            txt1 = view.canvas_now.create_text(node.x, node.y, fill='blue', text=node.value, tags=[y.tag(), 'txt1'])
-            txt2 = view.canvas_now.create_text(y.x, y.y, fill='blue', text=y.value, tags=['swap1', 'txt2'])
-            txt1_bg = view.canvas_now.create_rectangle(view.canvas_now.bbox(txt1), fill='white', tags=[y.tag(), 'txt1'])
-            txt2_bg = view.canvas_now.create_rectangle(view.canvas_now.bbox(txt2), fill='white', tags=['swap1', 'txt2'])
+            txt1 = view.canvas_now.create_text(node.x, node.y, fill=black, text=node.value, tags=[y.tag(), 'txt1'])
+            txt2 = view.canvas_now.create_text(y.x, y.y, fill=black, text=y.value, tags=['swap1', 'txt2'])
+            txt1_bg = view.canvas_now.create_rectangle(view.canvas_now.bbox(txt1), fill=white, tags=[y.tag(), 'txt1'])
+            txt2_bg = view.canvas_now.create_rectangle(view.canvas_now.bbox(txt2), fill=white, tags=['swap1', 'txt2'])
             view.canvas_now.tag_lower(txt1_bg, txt1)
             view.canvas_now.tag_lower(txt2_bg, txt2)
             view.move_object('txt1', node.x, node.y, y.x, y.y)

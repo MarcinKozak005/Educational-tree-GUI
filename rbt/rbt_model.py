@@ -13,7 +13,7 @@ class RBTNode(mdc.DCNode):
     def delete_value(self, value):
         view = self.tree.view
         x, y = super().delete_value(value)
-        if y.color == black:
+        if y is not None and x is not None and y.color == black:
             self.fix_delete(x)
             view.animate(self.tree.root)
             view.draw_recolor_text(x, black)
@@ -81,9 +81,8 @@ class RBTNode(mdc.DCNode):
             view.draw_recolor_text(self.tree.root, black)
             r.wait(view.long_animation_time)
         self.tree.root.color = black
-        view.explanation.append(f'Fixing finished')
 
-    def fix_delete(self, node=None):
+    def fix_delete(self, node=None):  # node=None to suppress warning
         """
         Fixes the red-black tree constraints in node subtree after the deletion process
         :node: node to start fixing process

@@ -1,9 +1,10 @@
 import mvc_base.model_double_child as mdc
 from core.constants import left, right
+from core.constants import green
 
 
 class AVLTNode(mdc.DCNode):
-    color = 'green'
+    color = green
 
     def __init__(self, value, x, y, tree, l_edge=None, r_edge=None, parent=None):
         super().__init__(value, x, y, tree, l_edge, r_edge, parent)

@@ -1,6 +1,7 @@
 import mvc_base.view as view
 import avlt.avl_model as avlt
 import mvc_base.model_double_child as mdc
+from core.constants import green, white, black
 
 
 class AVLView(view.View):
@@ -25,7 +26,7 @@ class AVLView(view.View):
         if type(obj) is avlt.AVLTNode:
             canvas.create_oval(obj.x - self.node_width // 2, obj.y - self.node_height // 2,
                                obj.x + self.node_width // 2, obj.y + self.node_height // 2,
-                               fill='green', tags=obj.tag())
-            canvas.create_text(obj.x, obj.y, fill='white', text=obj.value, tags=obj.tag())
+                               fill=green, tags=obj.tag())
+            canvas.create_text(obj.x, obj.y, fill=white, text=obj.value, tags=obj.tag())
             canvas.create_text(obj.x-self.node_width//2, obj.y-self.node_height//2,
-                               fill='black', text=obj.height, tags=obj.tag())
+                               fill=black, text=obj.height, tags=obj.tag())

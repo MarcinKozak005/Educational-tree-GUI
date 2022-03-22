@@ -13,4 +13,4 @@ view = v.AVBTView(
 
 tree = avbt.AVBTree(view, initial_max_degree)
 controller = c.Controller(tree, view)
-frame = view.create_GUI(controller)
+frame = view.create_GUI(controller, 'AVB-tree')
