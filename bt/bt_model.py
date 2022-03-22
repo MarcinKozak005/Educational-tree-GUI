@@ -116,8 +116,9 @@ class BTNode(model.AnimatedObject, model.Node):
         view = self.tree.view
         view.hint_frame.draw(self.values[0].x, self.values[0].y)
         # Search for a spot to insert new value
-        while i < len(self.values) and value.value > self.values[i].value:
-            view.draw_exp_text(self.values[i], f'[{self.id}]: {value.value} > {self.values[i].value}, check next value',
+        while i < len(self.values) and value.value >= self.values[i].value:
+            view.draw_exp_text(self.values[i],
+                               f'[{self.id}]: {value.value} >= {self.values[i].value}, check next value',
                                False)
             view.hint_frame.move(self.values[i].x + view.node_width, self.values[i].y, True)
             i += 1
@@ -243,10 +244,10 @@ class BTNode(model.AnimatedObject, model.Node):
             else:
                 view.draw_exp_text(self, f'[{self.id}] No next value.', False)
             if i != 0:
-                view.hint_frame.move(self.values[i - 1].x + view.node_width//2, self.values[i - 1].y, True)
+                view.hint_frame.move(self.values[i - 1].x + view.node_width // 2, self.values[i - 1].y, True)
                 view.draw_exp_text(self, f'Search in [{self.children[i].id}]', False)
             else:
-                view.hint_frame.move(self.values[0].x - view.node_width//2, self.values[0].y, True)
+                view.hint_frame.move(self.values[0].x - view.node_width // 2, self.values[0].y, True)
                 view.draw_exp_text(self, f'Search in [{self.children[0].id}]', False)
             view.hint_frame.move(self.children[i].values[0].x, self.children[i].values[0].y)
             return self.children[i].search_value(value)
@@ -395,9 +396,11 @@ class BTNode(model.AnimatedObject, model.Node):
         view = self.tree.view
         self.tree.update_positions()
         view.animate(self.tree.root)
+        # Node validates the tree constraints
         if len(self.values) < min_val_degree:
             view.draw_exp_text(self, f'Node [{self.id}] has not enough values')
-            if self is self.tree.root and len(self.children) > 0:
+            # Cases with root
+            if self is self.tree.root and len(self.values) == 0 and len(self.children) > 0:
                 view.draw_exp_text(self, f'Node [{self.id}] is a root. '
                                          f'New root is first child of [{self.id}]: [{self.children[0].id}]')
                 self.tree.root = self.children[0]
@@ -405,11 +408,12 @@ class BTNode(model.AnimatedObject, model.Node):
                 self.tree.root.update_positions()
                 view.animate(self.tree.root)
                 return
-            elif self is self.tree.root and len(self.children) == 0:
+            elif self is self.tree.root and len(self.values) == 0 and len(self.children) == 0:
                 view.draw_exp_text(self, f'Node [{self.id}] is a root. Root has no children. Tree is empty')
-                self.tree.root = None
+                self.tree.clear()
                 return
             i = prev.children.index(self)
+            # Cases with node
             if i - 1 >= 0 and len(prev.children[i - 1].values) > min_val_degree:
                 view.draw_exp_text(self, f'Rewrite value {prev.values[i - 1].value} from [{prev.id}] to [{self.id}]')
                 self.values.insert(0, prev.values[i - 1])
