@@ -147,7 +147,7 @@ class BPTNode(model.AnimatedObject, model.Node):
         # Fix b-tree constraints
         if len(self.values) == self.tree.max_degree:
             view.erase(hint_frame)
-            view.draw_exp_text(self, f'Number of values in [{self.id}] == max_b-tree_degree. Start fixing process')
+            view.draw_exp_text(self, f'Number of values in [{self.id}] == max_tree_degree. Start fixing process')
             self.fix_insert()
 
     def delete_value(self, value):
