@@ -13,7 +13,7 @@ class AVBTree(model.Tree):
             raise ValueError
         self.max_degree = max_degree
 
-    def insert_value(self, value):
+    def insert_value(self, value):  # POT
         if self.root is None:
             self.root = AVBTNode(self, True, self.view.width // 2, self.view.y_space)
             self.view.explanation.append(f'Tree is empty. Create node [{self.root.id}] with value {value}')
@@ -125,7 +125,9 @@ class AVBTNode(model.AnimatedObject, model.Node):
             i += 1
         # Value is already present in the tree
         if i < len(self.values) and value.value == self.values[i].value:
-            view.draw_exp_text(self, f'Increase counter of value ({self.values[i].value}) to {self.values[i].counter + 1}', False)
+            view.draw_exp_text(self,
+                               f'Increase counter of value ({self.values[i].value}) to {self.values[i].counter + 1}',
+                               False)
             self.values[i].counter += 1
             return
         elif i < len(self.values):
@@ -163,7 +165,7 @@ class AVBTNode(model.AnimatedObject, model.Node):
         if self.is_leaf and value in values:
             i = values.index(value)
             if counts[i] > 1:
-                view.draw_exp_text(self.values[i], f'Reduce value counter by 1 to {self.values[i].counter-1}')
+                view.draw_exp_text(self.values[i], f'Reduce value counter by 1 to {self.values[i].counter - 1}')
                 self.values[i].counter -= 1
             else:
                 removed_node = self.values.pop(i)
