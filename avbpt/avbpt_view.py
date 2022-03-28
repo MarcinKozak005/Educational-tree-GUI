@@ -40,7 +40,7 @@ class AVBPTView(view.View):
             if not node.is_leaf:
                 for c in node.children:
                     self.draw_tree(c, canvas)
-        if node is node.tree.root:
+        if node is not None and node is node.tree.root:
             in_order_list = node.in_order()
             for i in range(len(in_order_list) - 1):
                 self.draw_line(canvas, in_order_list[i], in_order_list[i + 1], tk.SE, tk.SW, fill='blue')

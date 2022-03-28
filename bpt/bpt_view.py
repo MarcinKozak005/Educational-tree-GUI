@@ -41,7 +41,7 @@ class BPTView(view.View):
                 for c in node.children:
                     self.draw_tree(c, canvas)
         # Line connecting leaves
-        if node is node.tree.root:
+        if node is not None and node is node.tree.root:
             left = node
             while not left.is_leaf:
                 left = left.children[0]
