@@ -1,24 +1,75 @@
+import abc
 import math
 
-import mvc_base.model_balanced as mb
+import mvc_base.model_multi_child as mc
 from core.constants import hint_frame
 
 
-class BTNode(mb.BalNode):
-    class_node_id = ord('@')  # distinguishes nodes by using letters
+class AggValue(mc.MCValue):
+
+    def __init__(self, value, parent_node, x=0, y=0):
+        super().__init__(value, parent_node, x, y)
+        self.counter = 1
+
+
+class AggTree(mc.MCTree, abc.ABC):
+    value_class = AggValue
+
+
+class AggNode(mc.MCNode):
+
+    def insert_value(self, value):
+        """
+        Inserts value in the node or calls insert on child node to which the value should be inserted
+        :param value: value to insert
+        :return: returns nothing
+        """
+        i = 0
+        view = self.tree.view
+        view.hint_frame.draw(self.values[0].x, self.values[0].y)
+        # Search for a spot to insert new value
+        while i < len(self.values) and value.value > self.values[i].value:
+            view.draw_exp_text(self.values[i], f'[{self.id}]: {value.value} > {self.values[i].value}, check next value',
+                               False)
+            view.hint_frame.move(self.values[i].x + view.node_width, self.values[i].y, True)
+            i += 1
+        # Value is already present in the tree
+        if i < len(self.values) and value.value == self.values[i].value:
+            view.draw_exp_text(self,
+                               f'Increase counter of value ({self.values[i].value}) to {self.values[i].counter + 1}',
+                               False)
+            self.values[i].counter += 1
+            return
+        elif i < len(self.values):
+            view.draw_exp_text(self.values[i], f'[{self.id}]: {value.value} < {self.values[i].value}, '
+                                               f'insert before {self.values[i].value}', False)
+            view.hint_frame.move(self.values[i].x - view.node_width // 2, self.values[i].y, True)
+        else:
+            view.draw_exp_text(self, f'No next value', False)
+            view.hint_frame.move(self.values[-1].x + view.node_width // 2, self.values[-1].y, True)
+        self.insert_and_fix(value, i)
 
     def delete_value(self, value):
         min_val_degree = math.ceil(self.tree.max_degree / 2) - 1
         values = [self.values[i].value for i in range(len(self.values))]
+        counts = [self.values[i].counter for i in range(len(self.values))]
         view = self.tree.view
         if self.is_leaf and value in values:
             i = values.index(value)
-            removed_node = self.values.pop(i)
-            view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
-            view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
-            self.fix_delete()
+            if counts[i] > 1:
+                view.draw_exp_text(self.values[i], f'Reduce value counter by 1 to {self.values[i].counter - 1}')
+                self.values[i].counter -= 1
+            else:
+                removed_node = self.values.pop(i)
+                view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
+                view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
+                self.fix_delete()
         elif value in values:
             i = values.index(value)
+            if counts[i] > 1:
+                view.draw_exp_text(self.values[i], f'Reduce value counter by 1 to {self.values[i].counter - 1}')
+                self.values[i].counter -= 1
+                return
             if len(self.children[i].values) > min_val_degree and self.children[i].is_leaf \
                     or not self.children[i].is_leaf:
                 removed_node = self.values[i]
@@ -128,6 +179,11 @@ class BTNode(mb.BalNode):
             view.erase(hint_frame)
             return self.children[0].successor()
 
+    def print_node(self, indent=0):
+        print('\t' * indent + f'{self.values}')
+        for c in self.children:
+            c.print_node(indent + 1)
+
     # BNode specific methods below
 
     def split_child(self, i, full_node):
@@ -137,7 +193,7 @@ class BTNode(mb.BalNode):
         :param full_node: child of self
         :return: returns nothing
         """
-        new_node = BTNode(self.tree, full_node.is_leaf, self.x, self.y)
+        new_node = self.tree.node_class(self.tree, full_node.is_leaf, self.x, self.y)
         md = self.tree.max_degree
         view = self.tree.view
         split_point = (md + 1) // 2
@@ -267,7 +323,3 @@ class BTNode(mb.BalNode):
             else:
                 return
             prev.fix_delete()
-
-
-class BTree(mb.BalTree):
-    node_class = BTNode

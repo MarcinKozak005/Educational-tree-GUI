@@ -1,6 +1,7 @@
 import tkinter as tk
 
 import bpt.bpt_model as bpt
+import mvc_base.model_balanced as mb
 import mvc_base.view as view
 from core.constants import green, white, black
 
@@ -40,7 +41,7 @@ class BPTView(view.View):
                 for c in node.children:
                     self.draw_tree(c, canvas)
         # Line connecting leaves
-        if node is node.tree.root:
+        if node is not None and node is node.tree.root:
             left = node
             while not left.is_leaf:
                 left = left.children[0]
@@ -60,7 +61,7 @@ class BPTView(view.View):
         self.draw_object(obj, canvas)
 
     def draw_object(self, node, canvas):
-        if type(node) is bpt.BPTValue:
+        if type(node) is mb.BalValue:
             canvas.create_rectangle(node.x - self.node_width // 2, node.y - self.node_height // 2,
                                     node.x + self.node_width // 2, node.y + self.node_height // 2,
                                     fill=green, tags=node.tag())

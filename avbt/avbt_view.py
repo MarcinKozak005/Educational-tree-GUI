@@ -1,6 +1,7 @@
 import tkinter as tk
 
 import avbt.avbt_model as avbt
+import mvc_base.model_aggregated as ma
 import mvc_base.view as view
 from core.constants import green, white, black
 
@@ -50,7 +51,7 @@ class AVBTView(view.View):
         self.draw_object(obj, canvas)
 
     def draw_object(self, node, canvas):
-        if type(node) is avbt.AVBTValue:
+        if type(node) is ma.AggValue:
             canvas.create_rectangle(node.x - self.node_width // 2, node.y - self.node_height // 2,
                                     node.x + self.node_width // 2, node.y + self.node_height // 2,
                                     fill=green, tags=node.tag())

@@ -1,6 +1,7 @@
 import tkinter as tk
 
 import avbpt.avbpt_model as avbpt
+import mvc_base.model_aggregated as ma
 import mvc_base.view as view
 from core.constants import green, white, black
 
@@ -39,7 +40,7 @@ class AVBPTView(view.View):
             if not node.is_leaf:
                 for c in node.children:
                     self.draw_tree(c, canvas)
-        if node is node.tree.root:
+        if node is not None and node is node.tree.root:
             in_order_list = node.in_order()
             for i in range(len(in_order_list) - 1):
                 self.draw_line(canvas, in_order_list[i], in_order_list[i + 1], tk.SE, tk.SW, fill='blue')
@@ -54,7 +55,7 @@ class AVBPTView(view.View):
         self.draw_object(obj, canvas)
 
     def draw_object(self, node, canvas):
-        if type(node) is avbpt.AVBPTValue:
+        if type(node) is ma.AggValue:
             canvas.create_rectangle(node.x - self.node_width // 2, node.y - self.node_height // 2,
                                     node.x + self.node_width // 2, node.y + self.node_height // 2,
                                     fill=green, tags=node.tag())

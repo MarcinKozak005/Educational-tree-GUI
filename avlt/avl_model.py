@@ -1,6 +1,6 @@
 import mvc_base.model_double_child as mdc
-from core.constants import left, right
 from core.constants import green
+from core.constants import left, right
 
 
 class AVLTNode(mdc.DCNode):
@@ -20,6 +20,7 @@ class AVLTNode(mdc.DCNode):
         return newNode
 
     def delete_value(self, value):
+        super().delete_value(value)
         self.fix_delete()
         self.tree.view.animate(self.tree.root)
         self.tree.view.explanation.append(f'Deletion finished')
