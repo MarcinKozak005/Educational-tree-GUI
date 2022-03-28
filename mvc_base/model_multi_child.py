@@ -61,6 +61,18 @@ class MCTree(model.Tree):
         self.root = None
         self.node_class.class_node_id = ord('@')
 
+    def min(self):
+        pass
+
+    def max(self):
+        pass
+
+    def mean(self):
+        pass
+
+    def median(self):
+        pass
+
 
 class MCValue(model.AnimatedObject):
 
@@ -166,6 +178,18 @@ class MCNode(model.AnimatedObject, model.Node, abc.ABC):
         result.append(self)
         result += self.values
         return result
+
+    def min(self):
+        pass
+
+    def max(self):
+        pass
+
+    def mean(self):
+        pass
+
+    def median(self):
+        pass
 
     def fix_insert(self):
         """

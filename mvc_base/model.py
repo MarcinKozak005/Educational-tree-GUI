@@ -52,6 +52,26 @@ class Tree(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
+    def min(self):
+        """:return: Returns minimal element in the tree"""
+        pass
+
+    @abc.abstractmethod
+    def max(self):
+        """:return: Returns maximal element in the tree"""
+        pass
+
+    @abc.abstractmethod
+    def mean(self):
+        """:return: Returns mean value of the tree elements"""
+        pass
+
+    @abc.abstractmethod
+    def median(self):
+        """:return: Returns median value of the tree elements"""
+        pass
+
     def update_positions(self, static=False, width=None):
         if self.root is not None:
             self.root.update_positions(static, width)
@@ -145,4 +165,24 @@ class Node(abc.ABC):
         :param indent: equivalent to the height on which the node lies in the tree
         :return: returns nothing
         """
+        pass
+
+    @abc.abstractmethod
+    def min(self):
+        """:return: Returns minimal element in the tree"""
+        pass
+
+    @abc.abstractmethod
+    def max(self):
+        """:return: Returns maximal element in the tree"""
+        pass
+
+    @abc.abstractmethod
+    def mean(self):
+        """:return: Returns mean value of the tree elements"""
+        pass
+
+    @abc.abstractmethod
+    def median(self):
+        """:return: Returns median value of the tree elements"""
         pass

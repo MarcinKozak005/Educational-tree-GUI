@@ -29,6 +29,18 @@ class DCTree(model.Tree, abc.ABC):
     def clear(self):
         self.root = None
 
+    def min(self):
+        pass
+
+    def max(self):
+        pass
+
+    def mean(self):
+        pass
+
+    def median(self):
+        pass
+
     # DCTree specific methods
 
     def insert_value_helper(self, value):
@@ -318,6 +330,18 @@ class DCNode(model.AnimatedObject, model.Node):
         self.left.print_node(indent)
         self.right.print_node(indent)
         indent -= 1
+
+    def min(self):
+        pass
+
+    def max(self):
+        pass
+
+    def mean(self):
+        pass
+
+    def median(self):
+        pass
 
     # DCNode specific methods
 

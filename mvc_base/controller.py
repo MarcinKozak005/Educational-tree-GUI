@@ -45,6 +45,14 @@ class Controller:
                 self.tree.delete_value(val)
             elif func == r.Action.search:
                 self.tree.search_value(val)
+            elif func == r.Action.min:
+                self.tree.min()
+            elif func == r.Action.max:
+                self.tree.max()
+            elif func == r.Action.mean:
+                self.tree.mean()
+            elif func == r.Action.median:
+                self.tree.median()
             view.prepare_view()
             view.draw_tree(self.tree.root, view.canvas_now)
         else:
