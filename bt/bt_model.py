@@ -372,7 +372,7 @@ class BTree(mb.BalTree):
             self.view.explanation.append(f'Tree is empty. Impossible to calculate median of an empty tree')
         else:
             self.view.explanation.append(f'Calculate the median of the tree - traverse tree in order')
-            self.view.hint_frame.draw(self.root.x, self.root.y)
+            self.view.hint_frame.draw(self.root.values[0].x, self.root.values[0].y)
             tab = self.root.median([])
             self.view.draw_exp_text(self.root,
                                     f'Whole tree traversed. Values = {tab}. Median = {statistics.median(tab)}')
