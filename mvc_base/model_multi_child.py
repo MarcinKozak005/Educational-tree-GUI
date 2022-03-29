@@ -22,7 +22,7 @@ class MCTree(model.Tree):
             raise ValueError
         self.max_degree = max_degree
 
-    def insert_value(self, value):  # POT
+    def insert_value(self, value):
         if self.root is None:
             self.root = self.node_class(self, True, self.view.width // 2, self.view.y_space)
             self.view.explanation.append(f'Tree is empty. Create node [{self.root.id}] with value {value}')
@@ -61,15 +61,19 @@ class MCTree(model.Tree):
         self.root = None
         self.node_class.class_node_id = ord('@')
 
+    @abc.abstractmethod
     def min(self):
         pass
 
+    @abc.abstractmethod
     def max(self):
         pass
 
+    @abc.abstractmethod
     def mean(self):
         pass
 
+    @abc.abstractmethod
     def median(self):
         pass
 
@@ -179,15 +183,19 @@ class MCNode(model.AnimatedObject, model.Node, abc.ABC):
         result += self.values
         return result
 
+    @abc.abstractmethod
     def min(self):
         pass
 
+    @abc.abstractmethod
     def max(self):
         pass
 
+    @abc.abstractmethod
     def mean(self):
         pass
 
+    @abc.abstractmethod
     def median(self):
         pass
 

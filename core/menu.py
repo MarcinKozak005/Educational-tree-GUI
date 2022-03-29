@@ -22,4 +22,3 @@ tk.Button(frame, width=15, height=2, text='B-tree', command=lambda: r.show_frame
 tk.Button(frame, width=15, height=2, text='B+tree', command=lambda: r.show_frame(bpt.frame)).pack()
 tk.Button(frame, width=15, height=2, text='AVB-tree', command=lambda: r.show_frame(avbt.frame)).pack()
 tk.Button(frame, width=15, height=2, text='AVB+tree', command=lambda: r.show_frame(avbpt.frame)).pack()
-
