@@ -8,6 +8,7 @@ from core.constants import hint_frame, exp_txt, white, black
 
 class View(abc.ABC):
     """View component of MVC design pattern"""
+
     def __init__(self, node_width, node_height, columns_to_skip):
         self.explanation = Explanation()
         self.hint_frame = HintFrame(self)
@@ -187,11 +188,12 @@ class View(abc.ABC):
         self.view_button = tk.Button(self.controls_frame, text='Show previous state and explanation: ON',
                                      command=lambda: controller.change_layout())
         operations_label = tk.Label(self.controls_frame, text='Operations:')
-        min_button = tk.Button(self.controls_frame, text='Min', command=lambda: controller.perform(r.Action.min, 0))
-        max_button = tk.Button(self.controls_frame, text='Max', command=lambda: controller.perform(r.Action.max, 0))
-        mean_button = tk.Button(self.controls_frame, text='Mean', command=lambda: controller.perform(r.Action.mean, 0))
+        min_button = tk.Button(self.controls_frame, text='Min', command=lambda: controller.perform(r.Action.min, '0'))
+        max_button = tk.Button(self.controls_frame, text='Max', command=lambda: controller.perform(r.Action.max, '0'))
+        mean_button = tk.Button(self.controls_frame, text='Mean',
+                                command=lambda: controller.perform(r.Action.mean, '0'))
         median_button = tk.Button(self.controls_frame, text='Median',
-                                  command=lambda: controller.perform(r.Action.median, 0))
+                                  command=lambda: controller.perform(r.Action.median, '0'))
         back_button = tk.Button(self.controls_frame, text='Back to menu', command=lambda: r.show_frame(m.frame))
         self.info_label = tk.Label(self.controls_frame)
         cts = self.columns_to_skip
@@ -239,7 +241,8 @@ class View(abc.ABC):
         canvas_frame.grid(row=0, column=1)
         visualization_frame.pack()
 
-        self.buttons = [insert_button, delete_button, find_button, clear_button, self.view_button]
+        self.buttons = [insert_button, delete_button, find_button, clear_button, self.view_button,
+                        min_button, max_button, mean_button, median_button]
 
         return frame
 
@@ -307,6 +310,7 @@ class HintFrame:
     """
     Class to operate on hint frame, which shows some operations such as search_value on the tree
     """
+
     def __init__(self, view):
         self.view = view
         self.x = 0
@@ -331,6 +335,7 @@ class HintFrame:
 
 class Explanation:
     """Class responsible for showing the explanations next to the canvases"""
+
     def __init__(self):
         self.string = ''
         self.line = 1

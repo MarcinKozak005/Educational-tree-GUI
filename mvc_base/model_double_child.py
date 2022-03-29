@@ -1,5 +1,6 @@
 # Contains base classes for model components with maximum of two child nodes - Double Child
 import abc
+import statistics
 
 import mvc_base.model as model
 from core.constants import left, right, white, black, grey_node, hint_frame
@@ -30,16 +31,36 @@ class DCTree(model.Tree, abc.ABC):
         self.root = None
 
     def min(self):
-        pass
+        if self.root is None:
+            self.view.explanation.append(f'Tree is empty. Impossible to calculate min of an empty tree')
+        else:
+            self.root.min()
 
     def max(self):
-        pass
+        if self.root is None:
+            self.view.explanation.append(f'Tree is empty. Impossible to calculate max of an empty tree')
+        else:
+            self.root.max()
 
     def mean(self):
-        pass
+        if self.root is None:
+            self.view.explanation.append(f'Tree is empty. Impossible to calculate mean of an empty tree')
+        else:
+            self.view.explanation.append(f'Calculate the mean value of the tree - traverse tree in order')
+            self.view.hint_frame.draw(self.root.x, self.root.y)
+            val_sum, counter = self.root.mean(0, 0)
+            self.view.draw_exp_text(self.root, f'Whole tree traversed. '
+                                               f'Mean = {val_sum}/{counter} = {val_sum / counter}')
 
     def median(self):
-        pass
+        if self.root is None:
+            self.view.explanation.append(f'Tree is empty. Impossible to calculate median of an empty tree')
+        else:
+            self.view.explanation.append(f'Calculate the median of the tree - traverse tree in order')
+            self.view.hint_frame.draw(self.root.x, self.root.y)
+            tab = self.root.median([])
+            self.view.draw_exp_text(self.root,
+                                    f'Whole tree traversed. Values = {tab}. Median = {statistics.median(tab)}')
 
     # DCTree specific methods
 
@@ -332,16 +353,63 @@ class DCNode(model.AnimatedObject, model.Node):
         indent -= 1
 
     def min(self):
-        pass
+        view = self.tree.view
+        view.explanation.append(f'Search the minimal value of the tree')
+        curr = self.tree.root
+        view.hint_frame.draw(curr.x, curr.y)
+        while type(curr.left) is not DCLeaf:
+            view.draw_exp_text(curr, f'Node [{curr.value}] has left child. Search from min there')
+            view.hint_frame.move(curr.left.x, curr.left.y)
+            curr = curr.left
+        view.draw_exp_text(curr, f'Node [{curr.value}] has no left child. It\'s the min value of the tree')
 
     def max(self):
-        pass
+        view = self.tree.view
+        view.explanation.append(f'Search the maximal value of the tree')
+        curr = self.tree.root
+        view.hint_frame.draw(curr.x, curr.y)
+        while type(curr.right) is not DCLeaf:
+            view.draw_exp_text(curr, f'Node [{curr.value}] has right child. Search from max there')
+            view.hint_frame.move(curr.right.x, curr.right.y)
+            curr = curr.right
+        view.draw_exp_text(curr, f'Node [{curr.value}] has no right child. It\'s the max value of the tree')
 
-    def mean(self):
-        pass
+    def mean(self, val_sum=None, counter=None):
+        view = self.tree.view
+        if type(self.left) is not DCLeaf:
+            view.draw_exp_text(self, f'Go to left child of node [{self.value}]')
+            view.hint_frame.move(self.left.x, self.left.y)
+            val_sum, counter = self.left.mean(val_sum, counter)
+            view.draw_exp_text(self, f'Go to parent node [{self.value}]')
+            view.hint_frame.move(self.x, self.y)
+        view.draw_exp_text(self, f'Add {self.value} to sum {val_sum} and increase counter {counter} by 1')
+        val_sum += self.value
+        counter += 1
+        if type(self.right) is not DCLeaf:
+            view.draw_exp_text(self, f'Go to right child of node [{self.value}]')
+            view.hint_frame.move(self.right.x, self.right.y)
+            val_sum, counter = self.right.mean(val_sum, counter)
+            view.draw_exp_text(self, f'Go to parent node [{self.value}]')
+            view.hint_frame.move(self.x, self.y)
+        return val_sum, counter
 
-    def median(self):
-        pass
+    def median(self, tab=None):
+        view = self.tree.view
+        if type(self.left) is not DCLeaf:
+            view.draw_exp_text(self, f'Go to left child of node [{self.value}]')
+            view.hint_frame.move(self.left.x, self.left.y)
+            tab = (self.left.median(tab))
+            view.draw_exp_text(self, f'Go to parent node [{self.value}]')
+            view.hint_frame.move(self.x, self.y)
+        view.draw_exp_text(self, f'Append {self.value} to tab {tab}')
+        tab.append(self.value)
+        if type(self.right) is not DCLeaf:
+            view.draw_exp_text(self, f'Go to right child of node [{self.value}]')
+            view.hint_frame.move(self.right.x, self.right.y)
+            tab = (self.right.median(tab))
+            view.draw_exp_text(self, f'Go to parent node [{self.value}]')
+            view.hint_frame.move(self.x, self.y)
+        return tab
 
     # DCNode specific methods
 
