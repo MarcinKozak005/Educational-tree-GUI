@@ -6,10 +6,6 @@ from core.constants import grey_node, white, hint_frame
 
 
 class MCTree(model.Tree):
-    @property
-    @abc.abstractmethod
-    def node_class(self):
-        pass
 
     @property
     @abc.abstractmethod
@@ -22,7 +18,7 @@ class MCTree(model.Tree):
             raise ValueError
         self.max_degree = max_degree
 
-    def insert_value(self, value):  # POT
+    def insert_value(self, value):
         if self.root is None:
             self.root = self.node_class(self, True, self.view.width // 2, self.view.y_space)
             self.view.explanation.append(f'Tree is empty. Create node [{self.root.id}] with value {value}')
@@ -60,6 +56,26 @@ class MCTree(model.Tree):
         """ Additionally resets self.node_class.class_node_id """
         self.root = None
         self.node_class.class_node_id = ord('@')
+
+    def min(self):
+        if self.root is None:
+            self.view.explanation.append(f'Tree is empty. Impossible to calculate min of an empty tree')
+        else:
+            self.root.min()
+
+    def max(self):
+        if self.root is None:
+            self.view.explanation.append(f'Tree is empty. Impossible to calculate max of an empty tree')
+        else:
+            self.root.max()
+
+    @abc.abstractmethod
+    def mean(self):
+        pass
+
+    @abc.abstractmethod
+    def median(self):
+        pass
 
 
 class MCValue(model.AnimatedObject):
@@ -166,6 +182,22 @@ class MCNode(model.AnimatedObject, model.Node, abc.ABC):
         result.append(self)
         result += self.values
         return result
+
+    @abc.abstractmethod
+    def min(self):
+        pass
+
+    @abc.abstractmethod
+    def max(self):
+        pass
+
+    @abc.abstractmethod
+    def mean(self, val_sum, counter):
+        pass
+
+    @abc.abstractmethod
+    def median(self, tab):
+        pass
 
     def fix_insert(self):
         """

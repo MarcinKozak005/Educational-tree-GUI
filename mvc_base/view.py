@@ -3,11 +3,12 @@ import tkinter as tk
 
 import core.menu as m
 import core.root as r
-from core.constants import hint_frame, exp_txt, white, black, light_green
+from core.constants import hint_frame, exp_txt, white, black
 
 
 class View(abc.ABC):
     """View component of MVC design pattern"""
+
     def __init__(self, node_width, node_height, columns_to_skip):
         self.explanation = Explanation()
         self.hint_frame = HintFrame(self)
@@ -109,6 +110,7 @@ class View(abc.ABC):
         """
         Moves object obj by a distance (x2-x1, y2-y1)
         obj does not have to be in (x1,y1) to be moved
+        :param short_animation_time: boolean, if True a shorter animation time will be used
         :param obj: object to move identifier
         :param x1: first x coordinate
         :param y1: first  y coordinate
@@ -170,7 +172,7 @@ class View(abc.ABC):
         frame = tk.Frame(r.frame)
 
         main_subframe = tk.Frame(frame)
-        tk.Label(main_subframe, text=text, bg=light_green, height=2).pack(fill='x')
+        tk.Label(main_subframe, text=text, font=(20,), pady=7).pack()
         main_subframe.pack(fill='x')
 
         self.controls_frame = tk.Frame(frame)
@@ -186,6 +188,13 @@ class View(abc.ABC):
         clear_button = tk.Button(self.controls_frame, text='Clear tree', command=lambda: controller.clear())
         self.view_button = tk.Button(self.controls_frame, text='Show previous state and explanation: ON',
                                      command=lambda: controller.change_layout())
+        operations_label = tk.Label(self.controls_frame, text='Operations:')
+        min_button = tk.Button(self.controls_frame, text='Min', command=lambda: controller.perform(r.Action.min, '0'))
+        max_button = tk.Button(self.controls_frame, text='Max', command=lambda: controller.perform(r.Action.max, '0'))
+        mean_button = tk.Button(self.controls_frame, text='Mean',
+                                command=lambda: controller.perform(r.Action.mean, '0'))
+        median_button = tk.Button(self.controls_frame, text='Median',
+                                  command=lambda: controller.perform(r.Action.median, '0'))
         back_button = tk.Button(self.controls_frame, text='Back to menu', command=lambda: r.show_frame(m.frame))
         self.info_label = tk.Label(self.controls_frame)
         cts = self.columns_to_skip
@@ -194,11 +203,16 @@ class View(abc.ABC):
         delete_field.grid(row=0, column=cts + 2)
         delete_button.grid(row=0, column=cts + 3, padx=(5, 20))
         find_field.grid(row=0, column=cts + 4)
-        find_button.grid(row=0, column=cts + 5, padx=(5, 0))
-        self.view_button.grid(row=0, column=cts + 6, padx=(20, 20))
-        clear_button.grid(row=0, column=cts + 7)
-        back_button.grid(row=0, column=cts + 8, padx=(40, 0))
-        self.info_label.grid(row=1, columnspan=6, sticky='WE')
+        find_button.grid(row=0, column=cts + 5, padx=(5, 20))
+        operations_label.grid(row=0, column=cts + 6, padx=(5, 0))
+        min_button.grid(row=0, column=cts + 7, padx=(5, 0))
+        max_button.grid(row=0, column=cts + 8, padx=(5, 0))
+        mean_button.grid(row=0, column=cts + 9, padx=(5, 0))
+        median_button.grid(row=0, column=cts + 10, padx=(5, 0))
+        clear_button.grid(row=0, column=cts + 11, padx=(20, 0))
+        self.view_button.grid(row=0, column=cts + 12, padx=(20, 20))
+        back_button.grid(row=0, column=cts + 13, padx=(40, 0))
+        self.info_label.grid(row=1, columnspan=14, sticky='WE')
         self.controls_frame.pack()
 
         visualization_frame = tk.Frame(frame)
@@ -209,7 +223,7 @@ class View(abc.ABC):
                                         width=70, height=42, bg=frame.cget('bg'))
         explanation_scrollbar = tk.Scrollbar(explanation_label, command=self.explanation_text.yview)
         self.explanation_text.config(yscrollcommand=explanation_scrollbar.set, state='disabled')
-        explanation_title_label.config(text='Explanation', font=15)
+        explanation_title_label.config(text=f'{text} explanation', font=15)
         explanation_title_label.grid(row=0, column=0)
         explanation_label.grid(row=1, column=0)
         self.explanation_text.grid(row=1, column=1)
@@ -217,9 +231,9 @@ class View(abc.ABC):
         self.explanation_frame.grid(row=0, column=0, sticky='NS')
 
         canvas_frame = tk.Frame(visualization_frame)
-        self.prev_label = tk.Label(canvas_frame, text='Previous state of the tree:')
+        self.prev_label = tk.Label(canvas_frame, text=f'Previous state of the {text}:')
         self.canvas_prev = tk.Canvas(canvas_frame, width=self.width, height=self.height, bg=white)
-        self.now_label = tk.Label(canvas_frame, text='Current state of the tree:')
+        self.now_label = tk.Label(canvas_frame, text=f'Current state of the {text}:')
         self.canvas_now = tk.Canvas(canvas_frame, width=self.width, height=self.height, bg=white)
         self.prev_label.pack(pady=(5, 0))
         self.canvas_prev.pack()
@@ -228,7 +242,8 @@ class View(abc.ABC):
         canvas_frame.grid(row=0, column=1)
         visualization_frame.pack()
 
-        self.buttons = [insert_button, delete_button, find_button, clear_button, self.view_button]
+        self.buttons = [insert_button, delete_button, find_button, clear_button, self.view_button,
+                        min_button, max_button, mean_button, median_button]
 
         return frame
 
@@ -296,6 +311,7 @@ class HintFrame:
     """
     Class to operate on hint frame, which shows some operations such as search_value on the tree
     """
+
     def __init__(self, view):
         self.view = view
         self.x = 0
@@ -320,6 +336,7 @@ class HintFrame:
 
 class Explanation:
     """Class responsible for showing the explanations next to the canvases"""
+
     def __init__(self):
         self.string = ''
         self.line = 1

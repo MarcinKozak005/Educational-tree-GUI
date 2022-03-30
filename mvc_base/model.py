@@ -4,9 +4,15 @@ import abc
 
 class Tree(abc.ABC):
     """Base class for all trees"""
+
     def __init__(self, view):
         self.root = None
         self.view = view
+
+    @property
+    @abc.abstractmethod
+    def node_class(self):
+        pass
 
     @abc.abstractmethod
     def insert_value(self, value):
@@ -50,6 +56,26 @@ class Tree(abc.ABC):
         Resets tree attributes
         :return: returns nothing
         """
+        pass
+
+    @abc.abstractmethod
+    def min(self):
+        """:return: Returns minimal element in the tree"""
+        pass
+
+    @abc.abstractmethod
+    def max(self):
+        """:return: Returns maximal element in the tree"""
+        pass
+
+    @abc.abstractmethod
+    def mean(self):
+        """:return: Returns mean value of the tree elements"""
+        pass
+
+    @abc.abstractmethod
+    def median(self):
+        """:return: Returns median value of the tree elements"""
         pass
 
     def update_positions(self, static=False, width=None):
@@ -145,4 +171,24 @@ class Node(abc.ABC):
         :param indent: equivalent to the height on which the node lies in the tree
         :return: returns nothing
         """
+        pass
+
+    @abc.abstractmethod
+    def min(self):
+        """:return: Returns minimal element in the tree"""
+        pass
+
+    @abc.abstractmethod
+    def max(self):
+        """:return: Returns maximal element in the tree"""
+        pass
+
+    @abc.abstractmethod
+    def mean(self, val_sum, counter):
+        """:return: Returns mean value of the tree elements"""
+        pass
+
+    @abc.abstractmethod
+    def median(self, tab):
+        """:return: Returns median value of the tree elements"""
         pass

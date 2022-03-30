@@ -1,4 +1,5 @@
 import math
+import statistics
 
 import mvc_base.model_balanced as mb
 from core.constants import hint_frame
@@ -128,7 +129,7 @@ class BTNode(mb.BalNode):
             view.erase(hint_frame)
             return self.children[0].successor()
 
-    # BNode specific methods below
+    # BTNode specific methods below
 
     def split_child(self, i, full_node):
         """
@@ -268,6 +269,98 @@ class BTNode(mb.BalNode):
                 return
             prev.fix_delete()
 
+    def min(self):
+        view = self.tree.view
+        view.explanation.append(f'Search the minimal value of the tree')
+        curr = self.tree.root
+        view.hint_frame.draw(curr.values[0].x, curr.values[0].y)
+        while not curr.is_leaf:
+            view.draw_exp_text(curr, f'Node [{curr.id}] has children. Search for min in the first child')
+            view.hint_frame.move(curr.children[0].values[0].x, curr.children[0].values[0].y)
+            curr = curr.children[0]
+        view.draw_exp_text(curr, f'Node [{curr.id}] has no children. '
+                                 f'The min value is it\'s first value {curr.values[0].value}')
+
+    def max(self):
+        view = self.tree.view
+        view.explanation.append(f'Search the maximal value of the tree')
+        curr = self.tree.root
+        view.hint_frame.draw(curr.values[-1].x, curr.values[-1].y)
+        while not curr.is_leaf:
+            view.draw_exp_text(curr, f'Node [{curr.id}] has children. Search for max in the last child')
+            view.hint_frame.move(curr.children[-1].values[-1].x, curr.children[-1].values[-1].y)
+            curr = curr.children[-1]
+        view.draw_exp_text(curr, f'Node [{curr.id}] has no children. '
+                                 f'The max value is it\'s last value {curr.values[-1].value}')
+
+    def mean(self, val_sum, counter):
+        view = self.tree.view
+        length = len(self.values)
+        for i in range(length):
+            if not self.is_leaf:
+                view.draw_exp_text(self, f'Go to {i}. child of node [{self.id}]: node [{self.children[i].id}]')
+                view.hint_frame.move(self.children[i].values[0].x, self.children[i].values[0].y)
+                val_sum, counter = self.children[i].mean(val_sum, counter)
+            if i != 0:
+                view.hint_frame.move(self.values[i].x, self.values[i].y)
+            view.draw_exp_text(self, f'Add {self.values[i].value} to sum {val_sum} '
+                                     f'and increase counter {counter} by 1')
+            val_sum += self.values[i].value
+            counter += 1
+        if not self.is_leaf:
+            view.draw_exp_text(self, f'Go to {length}. child of node [{self.id}]: node [{self.children[length].id}]')
+            view.hint_frame.move(self.children[length].values[0].x, self.children[length].values[0].y)
+            val_sum, counter = self.children[length].mean(val_sum, counter)
+        if self.parent is not None:
+            pos_in_parent = self.parent.children.index(self) if self.parent.children.index(self) != len(
+                self.parent.children) - 1 \
+                else len(self.parent.children) - 2
+            view.hint_frame.move(self.parent.values[pos_in_parent].x, self.parent.values[pos_in_parent].y)
+        return val_sum, counter
+
+    def median(self, tab):
+        view = self.tree.view
+        length = len(self.values)
+        for i in range(length):
+            if not self.is_leaf:
+                view.draw_exp_text(self, f'Go to {i}. child of node [{self.id}]: node [{self.children[i].id}]')
+                view.hint_frame.move(self.children[i].values[0].x, self.children[i].values[0].y)
+                tab = self.children[i].median(tab)
+            if i != 0:
+                view.hint_frame.move(self.values[i].x, self.values[i].y)
+            view.draw_exp_text(self, f'Append {self.values[i].value} to tab {tab}')
+            tab.append(self.values[i].value)
+        if not self.is_leaf:
+            view.draw_exp_text(self, f'Go to {length}. child of node [{self.id}]: node [{self.children[length].id}]')
+            view.hint_frame.move(self.children[length].values[0].x, self.children[length].values[0].y)
+            tab = self.children[length].median(tab)
+        if self.parent is not None:
+            pos_in_parent = self.parent.children.index(self) if self.parent.children.index(self) != len(
+                self.parent.children) - 1 \
+                else len(self.parent.children) - 2
+            view.hint_frame.move(self.parent.values[pos_in_parent].x, self.parent.values[pos_in_parent].y)
+        return tab
+
 
 class BTree(mb.BalTree):
     node_class = BTNode
+
+    def mean(self):
+        if self.root is None:
+            self.view.explanation.append(f'Tree is empty. Impossible to calculate mean of an empty tree')
+        else:
+            self.view.explanation.append(f'Calculate the mean value of the tree - traverse tree in order')
+            self.view.hint_frame.draw(self.root.values[0].x, self.root.values[0].y)
+            val_sum, counter = self.root.mean(0, 0)
+            self.view.draw_exp_text(self.root, f'Whole tree traversed. '
+                                               f'Mean = {val_sum}/{counter} = {val_sum / counter}')
+
+    def median(self):
+        if self.root is None:
+            self.view.explanation.append(f'Tree is empty. Impossible to calculate median of an empty tree')
+        else:
+            self.view.explanation.append(f'Calculate the median of the tree - traverse tree in order')
+            self.view.hint_frame.draw(self.root.values[0].x, self.root.values[0].y)
+            tab = self.root.median([])
+            self.view.draw_exp_text(self.root,
+                                    f'Whole tree traversed. Values = {tab}. Median = {statistics.median(tab)}')

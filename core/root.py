@@ -17,6 +17,10 @@ class Action(Enum):
     insert = 1
     delete = 2
     search = 3
+    min = 4
+    max = 5
+    mean = 6
+    median = 7
 
 
 frame = tk.Tk()
