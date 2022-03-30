@@ -16,7 +16,7 @@ class AggTree(mc.MCTree, abc.ABC):
     value_class = AggValue
 
 
-class AggNode(mc.MCNode):
+class AggNode(mc.MCNode, abc.ABC):
 
     def insert_value(self, value):
         """
@@ -184,7 +184,7 @@ class AggNode(mc.MCNode):
         for c in self.children:
             c.print_node(indent + 1)
 
-    # BNode specific methods below
+    # AggNode specific methods below
 
     def split_child(self, i, full_node):
         """

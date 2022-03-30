@@ -129,7 +129,7 @@ class BTNode(mb.BalNode):
             view.erase(hint_frame)
             return self.children[0].successor()
 
-    # BNode specific methods below
+    # BTNode specific methods below
 
     def split_child(self, i, full_node):
         """
@@ -293,7 +293,7 @@ class BTNode(mb.BalNode):
         view.draw_exp_text(curr, f'Node [{curr.id}] has no children. '
                                  f'The max value is it\'s last value {curr.values[-1].value}')
 
-    def mean(self, val_sum=None, counter=None):
+    def mean(self, val_sum, counter):
         view = self.tree.view
         length = len(self.values)
         for i in range(length):
@@ -318,7 +318,7 @@ class BTNode(mb.BalNode):
             view.hint_frame.move(self.parent.values[pos_in_parent].x, self.parent.values[pos_in_parent].y)
         return val_sum, counter
 
-    def median(self, tab=None):
+    def median(self, tab):
         view = self.tree.view
         length = len(self.values)
         for i in range(length):
@@ -344,18 +344,6 @@ class BTNode(mb.BalNode):
 
 class BTree(mb.BalTree):
     node_class = BTNode
-
-    def min(self):
-        if self.root is None:
-            self.view.explanation.append(f'Tree is empty. Impossible to calculate min of an empty tree')
-        else:
-            self.root.min()
-
-    def max(self):
-        if self.root is None:
-            self.view.explanation.append(f'Tree is empty. Impossible to calculate max of an empty tree')
-        else:
-            self.root.max()
 
     def mean(self):
         if self.root is None:

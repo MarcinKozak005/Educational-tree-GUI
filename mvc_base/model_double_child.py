@@ -106,6 +106,12 @@ class DCLeaf:
     def get_balance():
         return 0
 
+    def median(self, tab):
+        pass
+
+    def mean(self, val_sum, counter):
+        pass
+
 
 class DCNode(model.AnimatedObject, model.Node):
 
@@ -150,7 +156,7 @@ class DCNode(model.AnimatedObject, model.Node):
             view.move_object(grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.right.x,
                              self.right.y - view.node_height // 2 - view.y_above)
             newNode = super(klass, self.right).insert_value(value)
-        # self.right is not a RBTNode
+        # self.right is not a Node subclass
         elif value >= self.value:
             view.draw_exp_text(self, f'{value} >= {self.value}, so insert into right subtree', False)
             newNode = klass(value, self.x + unit, self.y + view.y_space, self.tree, self.x, self.r_edge, self)
@@ -162,7 +168,7 @@ class DCNode(model.AnimatedObject, model.Node):
             view.move_object(grey_node, self.x, self.y - view.node_height // 2 - view.y_above, self.left.x,
                              self.left.y - view.node_height // 2 - view.y_above)
             newNode = super(klass, self.left).insert_value(value)
-        # self.left is not a RBTNode
+        # self.left is not a Node subclass
         else:
             view.draw_exp_text(self, f'{value} < {self.value}, so insert into left subtree', False)
             newNode = klass(value, self.x - unit, self.y + view.y_space, self.tree, self.l_edge, self.x, self)
@@ -292,6 +298,7 @@ class DCNode(model.AnimatedObject, model.Node):
         view = self.tree.view
         klass = self.tree.node_class
         if type(self.parent) is klass:
+            self.parent: DCNode
             unit = (self.parent.r_edge - self.parent.l_edge) / 4
             if self is self.parent.right:
                 self.x_next = self.parent.x_next + unit
@@ -330,7 +337,7 @@ class DCNode(model.AnimatedObject, model.Node):
         klass = self.tree.node_class
         # successor is below the node
         if type(self.right) is klass:
-            self.right: klass
+            self.right: DCNode
             view.hint_frame.move(self.right.x, self.right.y)
             view.draw_exp_text(self.right, f'Find the minimum of ({self.right.value}) subtree')
             minimum = self.right.subtree_minimum()
@@ -374,9 +381,10 @@ class DCNode(model.AnimatedObject, model.Node):
             curr = curr.right
         view.draw_exp_text(curr, f'Node [{curr.value}] has no right child. It\'s the max value of the tree')
 
-    def mean(self, val_sum=None, counter=None):
+    def mean(self, val_sum, counter):
         view = self.tree.view
         if type(self.left) is not DCLeaf:
+            self.left: DCNode
             view.draw_exp_text(self, f'Go to left child of node [{self.value}]')
             view.hint_frame.move(self.left.x, self.left.y)
             val_sum, counter = self.left.mean(val_sum, counter)
@@ -386,6 +394,7 @@ class DCNode(model.AnimatedObject, model.Node):
         val_sum += self.value
         counter += 1
         if type(self.right) is not DCLeaf:
+            self.right: DCNode
             view.draw_exp_text(self, f'Go to right child of node [{self.value}]')
             view.hint_frame.move(self.right.x, self.right.y)
             val_sum, counter = self.right.mean(val_sum, counter)
@@ -393,9 +402,10 @@ class DCNode(model.AnimatedObject, model.Node):
             view.hint_frame.move(self.x, self.y)
         return val_sum, counter
 
-    def median(self, tab=None):
+    def median(self, tab):
         view = self.tree.view
         if type(self.left) is not DCLeaf:
+            self.left: DCNode
             view.draw_exp_text(self, f'Go to left child of node [{self.value}]')
             view.hint_frame.move(self.left.x, self.left.y)
             tab = (self.left.median(tab))
@@ -404,6 +414,7 @@ class DCNode(model.AnimatedObject, model.Node):
         view.draw_exp_text(self, f'Append {self.value} to tab {tab}')
         tab.append(self.value)
         if type(self.right) is not DCLeaf:
+            self.right: DCNode
             view.draw_exp_text(self, f'Go to right child of node [{self.value}]')
             view.hint_frame.move(self.right.x, self.right.y)
             tab = (self.right.median(tab))

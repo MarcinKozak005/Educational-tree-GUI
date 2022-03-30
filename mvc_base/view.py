@@ -110,6 +110,7 @@ class View(abc.ABC):
         """
         Moves object obj by a distance (x2-x1, y2-y1)
         obj does not have to be in (x1,y1) to be moved
+        :param short_animation_time: boolean, if True a shorter animation time will be used
         :param obj: object to move identifier
         :param x1: first x coordinate
         :param y1: first  y coordinate

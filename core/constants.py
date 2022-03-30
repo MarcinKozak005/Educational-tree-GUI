@@ -15,4 +15,3 @@ light_green = '#43FF33'
 # Other
 left = 'left'
 right = 'right'
-

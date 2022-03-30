@@ -6,10 +6,6 @@ from core.constants import grey_node, white, hint_frame
 
 
 class MCTree(model.Tree):
-    @property
-    @abc.abstractmethod
-    def node_class(self):
-        pass
 
     @property
     @abc.abstractmethod
@@ -61,13 +57,17 @@ class MCTree(model.Tree):
         self.root = None
         self.node_class.class_node_id = ord('@')
 
-    @abc.abstractmethod
     def min(self):
-        pass
+        if self.root is None:
+            self.view.explanation.append(f'Tree is empty. Impossible to calculate min of an empty tree')
+        else:
+            self.root.min()
 
-    @abc.abstractmethod
     def max(self):
-        pass
+        if self.root is None:
+            self.view.explanation.append(f'Tree is empty. Impossible to calculate max of an empty tree')
+        else:
+            self.root.max()
 
     @abc.abstractmethod
     def mean(self):
@@ -192,11 +192,11 @@ class MCNode(model.AnimatedObject, model.Node, abc.ABC):
         pass
 
     @abc.abstractmethod
-    def mean(self):
+    def mean(self, val_sum, counter):
         pass
 
     @abc.abstractmethod
-    def median(self):
+    def median(self, tab):
         pass
 
     def fix_insert(self):

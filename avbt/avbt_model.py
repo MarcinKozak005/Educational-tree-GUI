@@ -20,7 +20,7 @@ class AVBTNode(ma.AggNode):
         self.tree.view.draw_exp_text(curr, f'Max value is last element of '
                                            f'double-linked list of leaves: {curr.values[-1].value}')
 
-    def mean(self, val_sum=None, counter=None):
+    def mean(self, val_sum, counter):
         view = self.tree.view
         length = len(self.values)
         for i in range(length):
@@ -45,7 +45,7 @@ class AVBTNode(ma.AggNode):
             view.hint_frame.move(self.parent.values[pos_in_parent].x, self.parent.values[pos_in_parent].y)
         return val_sum, counter
 
-    def median(self, tab=None):
+    def median(self, tab):
         view = self.tree.view
         length = len(self.values)
         for i in range(length):
@@ -71,18 +71,6 @@ class AVBTNode(ma.AggNode):
 
 class AVBTree(ma.AggTree):
     node_class = AVBTNode
-
-    def min(self):
-        if self.root is None:
-            self.view.explanation.append(f'Tree is empty. Impossible to calculate min of an empty tree')
-        else:
-            self.root.min()
-
-    def max(self):
-        if self.root is None:
-            self.view.explanation.append(f'Tree is empty. Impossible to calculate max of an empty tree')
-        else:
-            self.root.max()
 
     def mean(self):
         if self.root is None:

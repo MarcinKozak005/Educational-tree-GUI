@@ -29,9 +29,9 @@ class BPTNode(mb.BalNode):
         if parent is not None:
             values = [parent.values[i].value for i in range(len(parent.values))]
             if value in values:
+                i = values.index(value)
                 view.draw_exp_text(parent.values[i], f'Change value ({parent.values[i].value}) '
                                                      f'in node [{parent.id}] to successor of it\'s right child')
-                i = values.index(value)
                 parent.values[i].value = self.successor(False)
 
     def search_value(self, value):
@@ -102,7 +102,7 @@ class BPTNode(mb.BalNode):
             view.erase(hint_frame)
             return self.children[0].successor(remove)
 
-    # BPNode specific methods below
+    # BPTNode specific methods below
 
     def split_child(self, i, full_node):
         """
@@ -312,27 +312,15 @@ class BPTNode(mb.BalNode):
         self.tree.view.draw_exp_text(curr, f'Max value is last element of '
                                            f'double-linked list of leaves: {curr.values[-1].value}')
 
-    def mean(self):
+    def mean(self, val_sum, counter):
         pass
 
-    def median(self):
+    def median(self, tab):
         pass
 
 
 class BPTree(mb.BalTree):
     node_class = BPTNode
-
-    def min(self):
-        if self.root is None:
-            self.view.explanation.append(f'Tree is empty. Impossible to calculate min of an empty tree')
-        else:
-            self.root.min()
-
-    def max(self):
-        if self.root is None:
-            self.view.explanation.append(f'Tree is empty. Impossible to calculate max of an empty tree')
-        else:
-            self.root.max()
 
     def mean(self):
         if self.root is None:

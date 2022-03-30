@@ -4,9 +4,15 @@ import abc
 
 class Tree(abc.ABC):
     """Base class for all trees"""
+
     def __init__(self, view):
         self.root = None
         self.view = view
+
+    @property
+    @abc.abstractmethod
+    def node_class(self):
+        pass
 
     @abc.abstractmethod
     def insert_value(self, value):
@@ -178,11 +184,11 @@ class Node(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def mean(self):
+    def mean(self, val_sum, counter):
         """:return: Returns mean value of the tree elements"""
         pass
 
     @abc.abstractmethod
-    def median(self):
+    def median(self, tab):
         """:return: Returns median value of the tree elements"""
         pass
