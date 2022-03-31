@@ -2,6 +2,7 @@
 
 import tkinter as tk
 
+import asa_graph.main as asag
 import avbpt.main as avbpt
 import avbt.main as avbt
 import avlt.main as avlt
@@ -12,7 +13,7 @@ import rbt.main as rbt
 from core.constants import light_green
 
 frame = tk.Frame(r.frame)
-for f in (frame, rbt.frame, avlt.frame, bt.frame, bpt.frame, avbt.frame, avbpt.frame):
+for f in (frame, rbt.frame, avlt.frame, bt.frame, bpt.frame, avbt.frame, avbpt.frame, asag.frame):
     f.grid(row=0, column=0, sticky='nsew')
 
 tk.Label(frame, text='Menu', bg=light_green).pack(fill='x')
@@ -22,3 +23,4 @@ tk.Button(frame, width=15, height=2, text='B-tree', command=lambda: r.show_frame
 tk.Button(frame, width=15, height=2, text='B+tree', command=lambda: r.show_frame(bpt.frame)).pack()
 tk.Button(frame, width=15, height=2, text='AVB-tree', command=lambda: r.show_frame(avbt.frame)).pack()
 tk.Button(frame, width=15, height=2, text='AVB+tree', command=lambda: r.show_frame(avbpt.frame)).pack()
+tk.Button(frame, width=15, height=2, text='ASA-Graph', command=lambda: r.show_frame(asag.frame)).pack()
