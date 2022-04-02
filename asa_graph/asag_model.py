@@ -3,7 +3,7 @@ import statistics
 import mvc_base.model_aggregated as ma
 
 
-class AVBPTNode(ma.AggNode):
+class ASAGNode(ma.AggNode):
     class_node_id = ord('@')  # distinguishes nodes by using letters
 
     def in_order(self):
@@ -40,7 +40,7 @@ class AVBPTNode(ma.AggNode):
 
 
 class AVBPTree(ma.AggTree):
-    node_class = AVBPTNode
+    node_class = ASAGNode
 
     def mean(self):
         if self.root is None:

@@ -1,6 +1,7 @@
 import abc
 import math
 
+import core.root as r
 import mvc_base.model_multi_child as mc
 from core.constants import hint_frame
 
@@ -323,3 +324,63 @@ class AggNode(mc.MCNode, abc.ABC):
             else:
                 return
             prev.fix_delete()
+
+    def get_next(self, position, mode=r.Mode.value):
+        """
+        Get the next_value - such that after sorting values next_value would be just after self
+        :param position: position of node/value we want to get next of
+        :param mode: Mode.value or Mode.node
+        :return: returns next_value or None if it's not found
+        """
+
+        def get_next_help(node):
+            if node.parent is not None:
+                return node.parent.get_next(node.parent.children.index(node), r.Mode.node)  #
+            else:
+                return None
+
+        if mode == r.Mode.value:
+            if self.is_leaf:
+                if position + 1 < len(self.values):
+                    return self.values[position + 1]
+                # search in nodes above
+                else:
+                    return get_next_help(self)
+            else:
+                return self.children[position + 1].get_next(-1, r.Mode.value)
+        elif mode == r.Mode.node:
+            if position < len(self.values):
+                return self.values[position]
+            # search in nodes above
+            else:
+                return get_next_help(self)
+
+    def get_prev(self, position, mode=r.Mode.value):
+        """
+        Get the prev_value - such that after sorting values prev_value would be just before self
+        :param position: position of node/value we want to get next of
+        :param mode: Mode.value or Mode.node
+        :return: returns prev_value or None if it's not found
+        """
+
+        def get_prev_help(node):
+            if node.parent is not None:
+                return node.parent.get_prev(node.parent.children.index(node), r.Mode.node)
+            else:
+                return None
+
+        if mode == r.Mode.value:
+            if self.is_leaf:
+                if position - 1 >= 0:
+                    return self.values[position - 1]
+                # search in nodes above
+                else:
+                    return get_prev_help(self)
+            else:
+                return self.children[position].get_prev(len(self.children[position]), r.Mode.value)
+        elif mode == r.Mode.node:
+            if position != 0:
+                return self.values[position - 1]
+            # search in nodes above
+            else:
+                return get_prev_help(self)
