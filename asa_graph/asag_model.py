@@ -6,6 +6,11 @@ import mvc_base.model_aggregated as ma
 class ASAGNode(ma.AggNode):
     class_node_id = ord('@')  # distinguishes nodes by using letters
 
+    def __init__(self, tree, is_leaf, x, y):
+        super().__init__(tree, is_leaf, x, y)
+        self.prev_value = None
+        self.next_value = None
+
     def in_order(self):
         if self.is_leaf:
             return self.values
@@ -38,8 +43,22 @@ class ASAGNode(ma.AggNode):
     def median(self, tab):
         pass
 
+    def insert_specific(self, value, i):
+        view = self.tree.view
+        next_value = self.get_next(i)
+        prev_value = self.get_prev(i)
+        self.next_value = next_value
+        self.prev_value = prev_value
+        if prev_value is not None:
+            prev_value.next_value = self
+        if next_value is not None:
+            next_value.prev_value = self
+        view.draw_exp_text(self, f'Update next neighbour connections: '
+                                 f'next([{value.value}]) is [{None if next_value is None else next_value.value}] and '
+                                 f'prev([{value.value}]) is [{None if prev_value is None else prev_value.value}]')
 
-class AVBPTree(ma.AggTree):
+
+class ASAGraph(ma.AggTree):
     node_class = ASAGNode
 
     def mean(self):

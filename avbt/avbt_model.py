@@ -68,6 +68,9 @@ class AVBTNode(ma.AggNode):
             view.hint_frame.move(self.parent.values[pos_in_parent].x, self.parent.values[pos_in_parent].y)
         return tab
 
+    def insert_specific(self, value, i):
+        pass
+
 
 class AVBTree(ma.AggTree):
     node_class = AVBTNode

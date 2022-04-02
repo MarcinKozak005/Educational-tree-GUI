@@ -318,6 +318,9 @@ class BPTNode(mb.BalNode):
     def median(self, tab):
         pass
 
+    def insert_specific(self, value, i):
+        pass
+
 
 class BPTree(mb.BalTree):
     node_class = BPTNode
