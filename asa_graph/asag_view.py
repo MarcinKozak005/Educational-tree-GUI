@@ -1,7 +1,6 @@
 import tkinter as tk
 
 import asa_graph.asag_model as asag
-import mvc_base.model_aggregated as ma
 import mvc_base.view as view
 from core.constants import green, white, black
 
@@ -55,7 +54,7 @@ class ASAGView(view.View):
         self.draw_object(obj, canvas)
 
     def draw_object(self, node, canvas):
-        if type(node) is ma.AggValue:
+        if type(node) is not None:
             canvas.create_rectangle(node.x - self.node_width // 2, node.y - self.node_height // 2,
                                     node.x + self.node_width // 2, node.y + self.node_height // 2,
                                     fill=green, tags=node.tag())

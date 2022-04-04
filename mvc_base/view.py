@@ -18,8 +18,8 @@ class View(abc.ABC):
         self.y_above = 30
         self.node_width = node_width
         self.node_height = node_height
-        self.long_animation_time = 500
-        self.short_animation_time = 100
+        self.long_animation_time = 50
+        self.short_animation_time = 10
         self.animation_unit = 10
         self.layout = 'double'
         self.columns_to_skip = columns_to_skip

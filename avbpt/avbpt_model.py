@@ -55,10 +55,11 @@ class AVBPTNode(ma.AggNode):
             next_value.prev_value = self
         view.draw_exp_text(self, f'Update next neighbour connections: '
                                  f'next([{value.value}]) is [{None if next_value is None else next_value.value}] and '
-                                 f'prev([{value.value}]) is [{None if prev_value is None else next_value.value}]')
+                                 f'prev([{value.value}]) is [{None if prev_value is None else prev_value.value}]')
 
 
 class AVBPTree(ma.AggTree):
+    value_class = ma.LinkValue
     node_class = AVBPTNode
 
     def mean(self):

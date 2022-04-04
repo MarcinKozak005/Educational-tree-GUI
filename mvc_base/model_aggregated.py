@@ -13,8 +13,21 @@ class AggValue(mc.MCValue):
         self.counter = 1
 
 
+class LinkValue(AggValue):
+    def __init__(self, value, parent_node, x=0, y=0):
+        super().__init__(value, parent_node, x, y)
+        self.prev_value = None
+        self.next_value = None
+
+    def rewrite(self):
+        if self.prev_value is not None:
+            self.prev_value.next_value = self.next_value
+        if self.next_value is not None:
+            self.next_value.prev_value = self.prev_value
+
+
 class AggTree(mc.MCTree, abc.ABC):
-    value_class = AggValue
+    pass
 
 
 class AggNode(mc.MCNode, abc.ABC):
@@ -335,7 +348,7 @@ class AggNode(mc.MCNode, abc.ABC):
 
         def get_next_help(node):
             if node.parent is not None:
-                return node.parent.get_next(node.parent.children.index(node), r.Mode.node)  #
+                return node.parent.get_next(node.parent.children.index(node), r.Mode.node)
             else:
                 return None
 
@@ -377,7 +390,7 @@ class AggNode(mc.MCNode, abc.ABC):
                 else:
                     return get_prev_help(self)
             else:
-                return self.children[position].get_prev(len(self.children[position]), r.Mode.value)
+                return self.children[position].get_prev(len(self.children[position].values), r.Mode.value)
         elif mode == r.Mode.node:
             if position != 0:
                 return self.values[position - 1]

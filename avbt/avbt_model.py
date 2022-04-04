@@ -73,6 +73,7 @@ class AVBTNode(ma.AggNode):
 
 
 class AVBTree(ma.AggTree):
+    value_class = ma.AggValue
     node_class = AVBTNode
 
     def mean(self):

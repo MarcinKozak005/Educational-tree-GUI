@@ -13,4 +13,4 @@ view = v.ASAGView(
 
 graph = asag.ASAGraph(view, initial_max_degree)
 controller = c.Controller(graph, view)
-frame = view.create_GUI(controller, 'ASA-Graph+tree')
+frame = view.create_GUI(controller, 'ASA-Graph')
