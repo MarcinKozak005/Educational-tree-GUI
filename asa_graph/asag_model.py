@@ -56,7 +56,7 @@ class ASAGNode(ma.AggNode):
                 view.draw_exp_text(next_val_parent, f'Fix [{next_val_parent.id}] node')
                 view.erase(f'Line{hash(removed_node)}')
                 next_val_parent.fix_delete()
-            elif len(prev_val_parent.values) == min_val_degree and self is self.tree.root:
+            elif len(prev_val_parent.values) == min_val_degree:
                 view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
                 view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
                 view.draw_exp_text(prev_val_parent, f'Move value {prev_val.value} to [{self.id}] node')
@@ -66,7 +66,7 @@ class ASAGNode(ma.AggNode):
                 view.draw_exp_text(prev_val_parent, f'Fix [{prev_val_parent.id}] node')
                 view.erase(f'Line{hash(removed_node)}')
                 prev_val_parent.fix_delete()
-            elif len(next_val_parent.values) == min_val_degree and self is self.tree.root:
+            elif len(next_val_parent.values) == min_val_degree:
                 view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
                 view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
                 view.draw_exp_text(prev_val_parent, f'Move value {next_val.value} to [{self.id}] node')
@@ -89,7 +89,7 @@ class ASAGNode(ma.AggNode):
                     c.parent = prev_val_parent
                 view.erase(f'Line{hash(self.values[i])}')
                 self.values.pop(i)
-                self.children.pop(i + 1)
+                # self.children.pop(i + 1)
                 self.tree.update_positions()
                 view.animate(self.tree.root)
                 prev_val_parent.delete_value(value)
@@ -173,7 +173,8 @@ class ASAGNode(ma.AggNode):
                         next2_val.parent.values.remove(next2_val)
                         next_to_fix = next2_val.parent
                         next2_val.parent = next_val_parent
-                elif prev_val is not None and prev2_val is not None and len(prev2_val.parent.values) == min_val_degree:
+                elif prev_val is not None and prev2_val is not None and len(prev2_val.parent.values) == min_val_degree \
+                        and self.parent == prev2_val.parent.parent:
                     i = prev_val_parent.values.index(prev_val)
                     view.draw_exp_text(prev, f'Rewrite value {prev_val.value} '
                                              f'from [{prev_val_parent.id}] to [{prev2_val.parent.id}]')
@@ -191,7 +192,8 @@ class ASAGNode(ma.AggNode):
                     prev_val_parent.values.pop(i)
                     self.parent.children.remove(self)
                     next_to_fix = prev_val_parent
-                elif next_val is not None and next2_val is not None and len(next2_val.parent.values) == min_val_degree:
+                elif next_val is not None and next2_val is not None and len(next2_val.parent.values) == min_val_degree \
+                        and self.parent == next2_val.parent.parent:
                     i = next_val_parent.values.index(next_val)
                     view.draw_exp_text(prev, f'Rewrite value {next_val.value} '
                                              f'from [{next_val_parent.id}] to [{next2_val.parent.id}]')
@@ -212,7 +214,7 @@ class ASAGNode(ma.AggNode):
                 else:
                     return
             # len(self.values) <= min_degree
-            else:
+            elif prev is not None:
                 i = prev.children.index(self)
                 if i - 1 >= 0 and len(prev.children[i - 1].values) > min_val_degree:
                     view.draw_exp_text(self,
@@ -285,7 +287,8 @@ class ASAGNode(ma.AggNode):
                     prev.children.pop(i)
                 else:
                     return
-            next_to_fix.fix_delete()
+            if next_to_fix is not None:
+                next_to_fix.fix_delete()
 
     def in_order(self):
         if self.is_leaf:
@@ -342,43 +345,41 @@ class ASAGraph(ma.AggTree):
         if self.root is None:
             self.view.explanation.append(f'Tree is empty. Impossible to calculate mean of an empty tree')
         else:
-            self.view.explanation.append(f'Calculate the mean value of the tree - traverse leaves')
-            successors = self.root.successors()
-            values = []
-            for s in successors:
-                if type(s) is ma.AggValue:
-                    values.append(s)
-            self.view.hint_frame.draw(values[0].x, values[0].y)
-            val_sum = 0
-            counter = 0
-            values.sort(key=lambda x: x.value)
-            for v in values:
-                if v != values[0]:
-                    self.view.hint_frame.move(v.x, v.y)
-                self.view.draw_exp_text(v, f'Add {v.value}x{v.counter} to sum {val_sum} '
-                                           f'and increase counter {counter} by {v.counter}')
-                val_sum += v.value
-                counter += 1
-            self.view.draw_exp_text(self.root, f'Whole tree traversed. '
-                                               f'Mean = {val_sum}/{counter} = {val_sum / counter}')
+            curr_node = self.root
+            while not curr_node.is_leaf:
+                curr_node = curr_node.children[0]
+            curr_val = curr_node.values[0]
+            counter, val_sum = 0, 0
+            while True:
+                self.view.hint_frame.draw(curr_val.x, curr_val.y)
+                self.view.draw_exp_text(curr_val, f'Add {curr_val.value}x{curr_val.counter} to sum {val_sum} '
+                                                  f'and increase counter {counter} by {curr_val.counter}')
+                val_sum += curr_val.value * curr_val.counter
+                counter += curr_val.counter
+                if curr_val.next_value is not None:
+                    self.view.hint_frame.move(curr_val.next_value.x, curr_val.next_value.y)
+                    curr_val = curr_val.next_value
+                else:
+                    break
+            self.view.draw_exp_text(curr_val, f'Whole tree traversed. Mean = {val_sum}/{counter} = {val_sum / counter}')
 
     def median(self):
+        view = self.view
         if self.root is None:
-            self.view.explanation.append(f'Tree is empty. Impossible to calculate median of an empty tree')
+            view.explanation.append(f'Tree is empty. Impossible to calculate median of an empty tree')
         else:
-            self.view.explanation.append(f'Calculate the median value of the tree - traverse leaves')
-            successors = self.root.successors()
-            values = []
-            for s in successors:
-                if type(s) is ma.AggValue:
-                    values.append(s)
-            self.view.hint_frame.draw(values[0].x, values[0].y)
+            curr_node = self.root
+            while not curr_node.is_leaf:
+                curr_node = curr_node.children[0]
+            curr_val = curr_node.values[0]
             tab = []
-            values.sort(key=lambda x: x.value)
-            for v in values:
-                if v != values[0]:
-                    self.view.hint_frame.move(v.x, v.y)
-                self.view.draw_exp_text(v, f'Append {v.value} ({v.counter} times) to tab {tab}')
-                tab.append(v.value)
-            self.view.draw_exp_text(self.root, f'Whole tree traversed. Values = {tab}. '
-                                               f'Median = {statistics.median(tab)}')
+            while True:
+                view.hint_frame.draw(curr_val.x, curr_val.y)
+                view.draw_exp_text(curr_val, f'Append {curr_val.value} ({curr_val.counter} times) to tab {tab}')
+                tab.append(curr_val.value)
+                if curr_val.next_value is not None:
+                    view.hint_frame.move(curr_val.next_value.x, curr_val.next_value.y)
+                    curr_val = curr_val.next_value
+                else:
+                    break
+            view.draw_exp_text(curr_val, f'Whole tree traversed. Values = {tab}. Median = {statistics.median(tab)}')

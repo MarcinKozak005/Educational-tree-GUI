@@ -137,7 +137,9 @@ class View(abc.ABC):
         """
         self.canvas_prev.delete('all')
         self.erase('all')
+        self.explanation_text.config(state='normal')
         self.explanation_text.delete(0.0, 'end')
+        self.explanation_text.config(state='disabled')
 
     def prepare_view(self):
         """
