@@ -1,11 +1,11 @@
 import tkinter as tk
 
-import avbpt.avbpt_model as avbpt
+import asa_graph.asag_model as asag
 import mvc_base.view as view
 from core.constants import green, white, black
 
 
-class AVBPTView(view.View):
+class ASAGView(view.View):
     def __init__(self, node_width, node_height, columns_to_skip, current_max_degree):
         super().__init__(node_width, node_height, columns_to_skip)
         self.current_max_degree = current_max_degree
@@ -19,19 +19,19 @@ class AVBPTView(view.View):
             if self.current_max_degree != new_value:
                 self.current_max_degree = new_value
                 controller.tree.clear()
-                controller.tree = avbpt.AVBPTree(self, new_value)
+                controller.tree = asag.ASAGraph(self, new_value)
                 self.clear()
 
         max_degree_value = tk.IntVar(value=self.current_max_degree)
         max_degree_menu = tk.OptionMenu(self.controls_frame, max_degree_value, *[3, 4, 5, 6])
         max_degree_value.trace('w', selector_change)
         self.buttons.append(max_degree_menu)
-        tk.Label(self.controls_frame, text='Max tree degree:').grid(row=0, column=0)
+        tk.Label(self.controls_frame, text='Max graph degree:').grid(row=0, column=0)
         max_degree_menu.grid(row=0, column=1, padx=(0, 20))
         return frame
 
     def draw_tree(self, node, canvas):
-        if type(node) is avbpt.AVBPTNode:
+        if type(node) is asag.ASAGNode:
             canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill=black, text=node.id,
                                tags=node.tag())
             for v in node.values:

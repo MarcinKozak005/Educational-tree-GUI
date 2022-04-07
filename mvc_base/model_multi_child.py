@@ -199,6 +199,10 @@ class MCNode(model.AnimatedObject, model.Node, abc.ABC):
     def median(self, tab):
         pass
 
+    @abc.abstractmethod
+    def insert_specific(self, value, i):
+        pass
+
     def fix_insert(self):
         """
         Fixes the node to make it obey max_degree constraint of b-trees
@@ -244,6 +248,7 @@ class MCNode(model.AnimatedObject, model.Node, abc.ABC):
             view.draw_exp_text(self, f'Node [{self.id}] is a leaf. Insert {value.value} in the node [{self.id}]', False)
             self.tree.update_positions()
             view.animate(self)
+            self.insert_specific(value, i)
         else:
             view.draw_exp_text(self, f'Insert value to a child node [{self.children[i].id}] of [{self.id}]', False)
             view.erase(hint_frame)

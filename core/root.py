@@ -23,6 +23,11 @@ class Action(Enum):
     median = 7
 
 
+class Mode(Enum):
+    value = 1
+    node = 2
+
+
 frame = tk.Tk()
 frame.title('Educational tree GUI')
 frame.state('zoomed')
