@@ -33,6 +33,9 @@ class View(abc.ABC):
         self.explanation_frame = None
         self.controls_frame = None
         self.time_scale = None
+        self.hold_animation = True
+        self.pause_button = None
+        self.continue_button = None
 
     @abc.abstractmethod
     def draw_tree(self, node, canvas):
@@ -187,7 +190,6 @@ class View(abc.ABC):
         find_field = tk.Entry(self.controls_frame, width=7)
         find_button = tk.Button(self.controls_frame, text='Find node',
                                 command=lambda: controller.perform(r.Action.search, find_field.get()))
-        operations_label = tk.Label(self.controls_frame, text='Operations:')
         min_button = tk.Button(self.controls_frame, text='Min', command=lambda: controller.perform(r.Action.min, '0'))
         max_button = tk.Button(self.controls_frame, text='Max', command=lambda: controller.perform(r.Action.max, '0'))
         mean_button = tk.Button(self.controls_frame, text='Mean',
@@ -202,6 +204,27 @@ class View(abc.ABC):
         self.time_scale = tk.Scale(self.controls_frame, from_=5000, to=50, resolution=50, orient=tk.HORIZONTAL,
                                    label='Animation speed', command=selector_change, showvalue=False, sliderlength=15)
         self.time_scale.set(self.long_animation_time)
+
+        def pause_animation():
+            self.set_buttons(False)
+            self.info_label.config(text=f'Animation paused! Press \'{self.continue_button.cget("text")}\' to continue',
+                                   font=('TkDefaultFont', 10, 'bold'), fg='red')
+            self.pause_button.config(state='disabled')
+            self.continue_button.config(state='normal')
+            self.hold_animation = True
+            while self.hold_animation:
+                r.wait(10)
+
+        def continue_animation():
+            self.set_buttons(True)
+            self.info_label.config(text='', fg='black', font="TkDefaultFont")
+            self.pause_button.config(state='normal')
+            self.continue_button.config(state='disabled')
+            self.hold_animation = False
+
+        self.pause_button = tk.Button(self.controls_frame, text='Pause', command=pause_animation)
+        self.continue_button = tk.Button(self.controls_frame, text='Continue', command=continue_animation,
+                                         state='disabled')
         clear_button = tk.Button(self.controls_frame, text='Clear tree', command=lambda: controller.clear())
         self.view_button = tk.Button(self.controls_frame, text='Show previous state and explanation: ON',
                                      command=lambda: controller.change_layout())
@@ -215,18 +238,21 @@ class View(abc.ABC):
         delete_button.grid(row=0, column=cts + 3, padx=(5, 20))
         find_field.grid(row=0, column=cts + 4)
         find_button.grid(row=0, column=cts + 5, padx=(5, 20))
-        operations_label.grid(row=0, column=cts + 6, padx=(5, 0))
+        tk.Label(self.controls_frame, text='Operations:').grid(row=0, column=cts + 6, padx=(5, 0))
         min_button.grid(row=0, column=cts + 7, padx=(5, 0))
         max_button.grid(row=0, column=cts + 8, padx=(5, 0))
         mean_button.grid(row=0, column=cts + 9, padx=(5, 0))
         median_button.grid(row=0, column=cts + 10, padx=(5, 0))
 
-        self.time_scale.grid(row=0, column=cts + 11, padx=(20, 0))
-        clear_button.grid(row=0, column=cts + 12, padx=(5, 0))
-        self.view_button.grid(row=0, column=cts + 13, padx=(20, 20))
-        back_button.grid(row=0, column=cts + 14, padx=(40, 0))
+        clear_button.grid(row=0, column=cts + 11, padx=(5, 0))
+        self.view_button.grid(row=0, column=cts + 12, padx=(20, 20))
+        back_button.grid(row=0, column=cts + 13, padx=(40, 0))
 
-        self.info_label.grid(row=1, columnspan=14, sticky='WE')
+        self.info_label.grid(row=1, column=0, columnspan=5, sticky='WE')
+        tk.Label(self.controls_frame, text='Animation:').grid(row=1, column=cts + 6, padx=(5, 0))
+        self.time_scale.grid(row=1, column=cts + 7, columnspan=3, padx=(20, 0))
+        self.pause_button.grid(row=1, column=cts + 10)
+        self.continue_button.grid(row=1, column=cts + 11)
         self.controls_frame.pack()
 
         visualization_frame = tk.Frame(frame)
