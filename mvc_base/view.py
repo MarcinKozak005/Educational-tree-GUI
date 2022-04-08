@@ -3,7 +3,7 @@ import tkinter as tk
 
 import core.menu as m
 import core.root as r
-from core.constants import hint_frame, exp_txt, white, black
+from core.constants import hint_frame, exp_txt, white, black, animation_unit
 
 
 class View(abc.ABC):
@@ -18,9 +18,8 @@ class View(abc.ABC):
         self.y_above = 30
         self.node_width = node_width
         self.node_height = node_height
-        self.long_animation_time = 50
-        self.short_animation_time = 10
-        self.animation_unit = 10
+        self.long_animation_time = 2500
+        self.short_animation_time = self.long_animation_time // 2
         self.layout = 'double'
         self.columns_to_skip = columns_to_skip
         self.canvas_now = None
@@ -33,6 +32,7 @@ class View(abc.ABC):
         self.view_button = None
         self.explanation_frame = None
         self.controls_frame = None
+        self.time_scale = None
 
     @abc.abstractmethod
     def draw_tree(self, node, canvas):
@@ -75,7 +75,7 @@ class View(abc.ABC):
         if node is not None:
             successors = node.successors()
             units = {}
-            counter = time / self.animation_unit
+            counter = time / animation_unit
             for s in successors:
                 x_unit = (s.x_next - s.x) / counter
                 y_unit = (s.y_next - s.y) / counter
@@ -87,7 +87,7 @@ class View(abc.ABC):
             while counter > 0:
                 for s in successors:
                     s.tick(self, units[s][0], units[s][1])
-                r.wait(self.animation_unit)
+                r.wait(animation_unit)
                 counter -= 1
 
     def draw_exp_text(self, node, exp_str, above=True):
@@ -121,13 +121,13 @@ class View(abc.ABC):
         time = self.short_animation_time if short_animation_time else self.long_animation_time
         x_diff = x2 - x1
         y_diff = y2 - y1
-        x_unit = x_diff / (time / self.animation_unit)
-        y_unit = y_diff / (time / self.animation_unit)
-        counter = time / self.animation_unit
+        x_unit = x_diff / (time / animation_unit)
+        y_unit = y_diff / (time / animation_unit)
+        counter = time / animation_unit
         # Move object
         while counter > 0:
             self.canvas_now.move(obj, x_unit, y_unit)
-            r.wait(self.animation_unit)
+            r.wait(animation_unit)
             counter -= 1
 
     def clear(self):
@@ -187,9 +187,6 @@ class View(abc.ABC):
         find_field = tk.Entry(self.controls_frame, width=7)
         find_button = tk.Button(self.controls_frame, text='Find node',
                                 command=lambda: controller.perform(r.Action.search, find_field.get()))
-        clear_button = tk.Button(self.controls_frame, text='Clear tree', command=lambda: controller.clear())
-        self.view_button = tk.Button(self.controls_frame, text='Show previous state and explanation: ON',
-                                     command=lambda: controller.change_layout())
         operations_label = tk.Label(self.controls_frame, text='Operations:')
         min_button = tk.Button(self.controls_frame, text='Min', command=lambda: controller.perform(r.Action.min, '0'))
         max_button = tk.Button(self.controls_frame, text='Max', command=lambda: controller.perform(r.Action.max, '0'))
@@ -197,8 +194,20 @@ class View(abc.ABC):
                                 command=lambda: controller.perform(r.Action.mean, '0'))
         median_button = tk.Button(self.controls_frame, text='Median',
                                   command=lambda: controller.perform(r.Action.median, '0'))
+
+        def selector_change(new_value):
+            self.long_animation_time = int(new_value)
+            self.short_animation_time = int(new_value) // 2
+
+        self.time_scale = tk.Scale(self.controls_frame, from_=5000, to=50, resolution=50, orient=tk.HORIZONTAL,
+                                   label='Animation speed', command=selector_change, showvalue=False, sliderlength=15)
+        self.time_scale.set(self.long_animation_time)
+        clear_button = tk.Button(self.controls_frame, text='Clear tree', command=lambda: controller.clear())
+        self.view_button = tk.Button(self.controls_frame, text='Show previous state and explanation: ON',
+                                     command=lambda: controller.change_layout())
         back_button = tk.Button(self.controls_frame, text='Back to menu', command=lambda: r.show_frame(m.frame))
         self.info_label = tk.Label(self.controls_frame)
+
         cts = self.columns_to_skip
         insert_field.grid(row=0, column=cts)
         insert_button.grid(row=0, column=cts + 1, padx=(5, 20))
@@ -211,9 +220,12 @@ class View(abc.ABC):
         max_button.grid(row=0, column=cts + 8, padx=(5, 0))
         mean_button.grid(row=0, column=cts + 9, padx=(5, 0))
         median_button.grid(row=0, column=cts + 10, padx=(5, 0))
-        clear_button.grid(row=0, column=cts + 11, padx=(20, 0))
-        self.view_button.grid(row=0, column=cts + 12, padx=(20, 20))
-        back_button.grid(row=0, column=cts + 13, padx=(40, 0))
+
+        self.time_scale.grid(row=0, column=cts + 11, padx=(20, 0))
+        clear_button.grid(row=0, column=cts + 12, padx=(5, 0))
+        self.view_button.grid(row=0, column=cts + 13, padx=(20, 20))
+        back_button.grid(row=0, column=cts + 14, padx=(40, 0))
+
         self.info_label.grid(row=1, columnspan=14, sticky='WE')
         self.controls_frame.pack()
 

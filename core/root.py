@@ -3,14 +3,23 @@
 import tkinter as tk
 from enum import Enum
 
+from core.constants import animation_unit
+
 
 def show_frame(f):
     f.tkraise()
 
 
 def wait(time):
-    frame.update()
-    frame.after(time)
+    if time <= animation_unit:
+        frame.update()
+        frame.after(time)
+    else:
+        counter = time / animation_unit
+        while counter > 0:
+            frame.update()
+            frame.after(animation_unit)
+            counter -= 1
 
 
 class Action(Enum):
