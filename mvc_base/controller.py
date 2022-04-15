@@ -1,3 +1,5 @@
+import copy
+
 import core.root as r
 
 
@@ -9,9 +11,11 @@ def validate_input(val):
 
 class Controller:
     """Controller component of MVC design pattern"""
+
     def __init__(self, tree, view):
         self.tree = tree
         self.view = view
+        self.storage = Storage()
 
     def clear(self):
         """
@@ -42,7 +46,9 @@ class Controller:
                 self.tree.root.update_positions(True, width=1000)
                 view.draw_tree(self.tree.root, view.canvas_prev)
                 self.tree.root.update_positions(True)
+                self.storage.append(StorageElement(copy.deepcopy(self.tree.root), func, arg))
             elif self.tree.root is None:
+                self.storage.append(StorageElement(copy.deepcopy(self.tree.root), func, arg))
                 view.canvas_prev.delete('all')
             if func == r.Action.insert:
                 self.tree.insert_value(val)
@@ -98,3 +104,20 @@ class Controller:
                 self.tree.root.update_positions(True, view.width)
             view.draw_tree(self.tree.root, view.canvas_now)
             view.layout = 'double'
+
+
+class Storage:
+    def __init__(self):
+        self.storage = []
+        self.pointer = None
+
+    def append(self, storage_element):
+        self.storage.append(storage_element)
+        self.pointer = 0 if self.pointer is None else self.pointer + 1
+
+
+class StorageElement:
+    def __init__(self, tree, operation, value):
+        self.tree = tree
+        self.operation = operation
+        self.value = value
