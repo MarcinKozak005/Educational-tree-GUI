@@ -64,73 +64,75 @@ class AggNode(mc.MCNode, abc.ABC):
         self.insert_and_fix(value, i)
 
     def delete_value(self, value):
-        min_val_degree = math.ceil(self.tree.max_degree / 2) - 1
-        values = [self.values[i].value for i in range(len(self.values))]
-        counts = [self.values[i].counter for i in range(len(self.values))]
-        view = self.tree.view
-        if self.is_leaf and value in values:
-            i = values.index(value)
-            if counts[i] > 1:
-                view.draw_exp_text(self.values[i], f'Reduce value counter by 1 to {self.values[i].counter - 1}')
-                self.values[i].counter -= 1
-            else:
-                removed_node = self.values.pop(i)
-                view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
-                view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
-                self.fix_delete()
-        elif value in values:
-            i = values.index(value)
-            if counts[i] > 1:
-                view.draw_exp_text(self.values[i], f'Reduce value counter by 1 to {self.values[i].counter - 1}')
-                self.values[i].counter -= 1
-                return
-            if len(self.children[i].values) > min_val_degree and self.children[i].is_leaf \
-                    or not self.children[i].is_leaf:
-                removed_node = self.values[i]
-                view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
-                view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
-                view.draw_exp_text(self.children[i], f'Find predecessor of {value} in [{self.children[i].id}] node')
-                self.values[i], to_fix = self.children[i].predecessor()
-                self.values[i].parent = self
-                view.draw_exp_text(to_fix, f'Value {self.values[i].value} goes to node {self.id}')
-                view.erase(f'Line{hash(removed_node)}')
-                to_fix.fix_delete()
-            elif len(self.children[i + 1].values) > min_val_degree and self.children[i + 1].is_leaf \
-                    or not self.children[i + 1].is_leaf:
-                removed_node = self.values[i]
-                view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
-                view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
-                view.draw_exp_text(self.children[i + 1],
-                                   f'Find successor of {value} in [{self.children[i + 1].id}] node')
-                self.values[i], to_fix = self.children[i + 1].successor()
-                self.values[i].parent = self
-                view.draw_exp_text(to_fix, f'Value {self.values[i].value} goes to node {self.id}')
-                view.erase(f'Line{hash(removed_node)}')
-                to_fix.fix_delete()
-            else:
-                view.draw_exp_text(self, f'Merge node [{self.children[i].id}] value {self.values[i].value} '
-                                         f'and node [{self.children[i + 1].id}]')
-                self.children[i].values.append(self.values[i])
-                self.values[i].parent = self.children[i]
-                for v in self.children[i + 1].values:
-                    v.parent = self.children[i]
-                    self.children[i].values.append(v)
-                self.children[i].children.extend(self.children[i + 1].children)
-                for c in self.children[i + 1].children:
-                    c.parent = self.children[i]
-                view.erase(f'Line{hash(self.values[i])}')
-                self.values.pop(i)
-                self.children.pop(i + 1)
-                self.tree.update_positions()
-                view.animate(self.tree.root)
-                self.children[i].delete_value(value)
-                self.fix_delete()
-        # Search for a value to delete
-        else:
-            i = 0
-            while i < len(self.values) and value > self.values[i].value:
-                i += 1
-            self.children[i].delete_value(value)
+        node, pos = self.search_value(value)
+        if node is not None and pos is not None:
+            min_val_degree = math.ceil(node.tree.max_degree / 2) - 1
+            values = [node.values[i].value for i in range(len(node.values))]
+            counts = [node.values[i].counter for i in range(len(node.values))]
+            view = node.tree.view
+            if node.is_leaf and value in values:
+                i = pos
+                if counts[i] > 1:
+                    view.draw_exp_text(node.values[i], f'Reduce value counter by 1 to {node.values[i].counter - 1}')
+                    node.values[i].counter -= 1
+                else:
+                    removed_elem = node.values.pop(i)
+                    view.draw_exp_text(removed_elem, f'Remove value {removed_elem.value}')
+                    # Different destination y that usually, since [counter] below the node also needs to disappear
+                    view.move_object(removed_elem.tag(), removed_elem.x, removed_elem.y,
+                                     removed_elem.x, -1.5 * view.node_height)
+                    node.fix_delete()
+            elif value in values:
+                i = values.index(value)
+                if counts[i] > 1:
+                    view.draw_exp_text(node.values[i], f'Reduce value counter by 1 to {node.values[i].counter - 1}')
+                    node.values[i].counter -= 1
+                    return
+                if len(node.children[i].values) > min_val_degree and node.children[i].is_leaf \
+                        or not node.children[i].is_leaf:
+                    removed_elem = node.values[i]
+                    view.draw_exp_text(removed_elem, f'Remove value {removed_elem.value}')
+                    # Different destination y that usually, since [counter] below the node also needs to disappear
+                    view.move_object(removed_elem.tag(), removed_elem.x, removed_elem.y,
+                                     removed_elem.x, -1.5 * view.node_height)
+                    view.draw_exp_text(node.children[i], f'Find predecessor of {value} in [{node.children[i].id}] node')
+                    node.values[i], to_fix = node.children[i].predecessor()
+                    node.values[i].parent = node
+                    view.draw_exp_text(to_fix, f'Value {node.values[i].value} goes to node [{node.id}]')
+                    view.erase(f'Line{hash(removed_elem)}')
+                    to_fix.fix_delete()
+                elif len(node.children[i + 1].values) > min_val_degree and node.children[i + 1].is_leaf \
+                        or not node.children[i + 1].is_leaf:
+                    removed_elem = node.values[i]
+                    view.draw_exp_text(removed_elem, f'Remove value {removed_elem.value}')
+                    # Different destination y that usually, since [counter] below the node also needs to disappear
+                    view.move_object(removed_elem.tag(), removed_elem.x, removed_elem.y,
+                                     removed_elem.x, -1.5 * view.node_height)
+                    view.draw_exp_text(node.children[i + 1],
+                                       f'Find successor of {value} in [{node.children[i + 1].id}] node')
+                    node.values[i], to_fix = node.children[i + 1].successor()
+                    node.values[i].parent = node
+                    view.draw_exp_text(to_fix, f'Value {node.values[i].value} goes to node [{node.id}]')
+                    view.erase(f'Line{hash(removed_elem)}')
+                    to_fix.fix_delete()
+                else:
+                    view.draw_exp_text(node, f'Merge node [{node.children[i].id}] value {node.values[i].value} '
+                                             f'and node [{node.children[i + 1].id}]')
+                    node.children[i].values.append(node.values[i])
+                    node.values[i].parent = node.children[i]
+                    for v in node.children[i + 1].values:
+                        v.parent = node.children[i]
+                        node.children[i].values.append(v)
+                    node.children[i].children.extend(node.children[i + 1].children)
+                    for c in node.children[i + 1].children:
+                        c.parent = node.children[i]
+                    view.erase(f'Line{hash(node.values[i])}')
+                    node.values.pop(i)
+                    node.children.pop(i + 1)
+                    node.tree.update_positions()
+                    view.animate(node.tree.root)
+                    node.children[i].delete_value(value)
+                    node.fix_delete()
 
     def search_value(self, value):
         """
@@ -157,7 +159,7 @@ class AggNode(mc.MCNode, abc.ABC):
             exp_string = f'No more values.' if i >= len(self.values) else f'{value} < {self.values[i].value}.'
             view.draw_exp_text(self, f'[{self.id}]: {exp_string}  [{self.id}] is a leaf. Value {value} not found')
             view.erase(hint_frame)
-            return None
+            return None, None
         # Search in child
         else:
             # Show appropriate explanation string

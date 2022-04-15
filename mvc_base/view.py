@@ -3,14 +3,14 @@ import tkinter as tk
 
 import core.menu as m
 import core.root as r
-from core.constants import hint_frame, exp_txt, white, black
+from core.constants import hint_frame, exp_txt, white, black, animation_unit
 
 
 class View(abc.ABC):
     """View component of MVC design pattern"""
 
     def __init__(self, node_width, node_height, columns_to_skip):
-        self.explanation = Explanation()
+        self.explanation = Explanation(self)
         self.hint_frame = HintFrame(self)
         self.width = 1000
         self.height = 300
@@ -18,9 +18,8 @@ class View(abc.ABC):
         self.y_above = 30
         self.node_width = node_width
         self.node_height = node_height
-        self.long_animation_time = 50
-        self.short_animation_time = 10
-        self.animation_unit = 10
+        self.long_animation_time = 2500
+        self.short_animation_time = self.long_animation_time // 2
         self.layout = 'double'
         self.columns_to_skip = columns_to_skip
         self.canvas_now = None
@@ -33,6 +32,10 @@ class View(abc.ABC):
         self.view_button = None
         self.explanation_frame = None
         self.controls_frame = None
+        self.time_scale = None
+        self.hold_animation = True
+        self.pause_button = None
+        self.continue_button = None
 
     @abc.abstractmethod
     def draw_tree(self, node, canvas):
@@ -75,7 +78,7 @@ class View(abc.ABC):
         if node is not None:
             successors = node.successors()
             units = {}
-            counter = time / self.animation_unit
+            counter = time / animation_unit
             for s in successors:
                 x_unit = (s.x_next - s.x) / counter
                 y_unit = (s.y_next - s.y) / counter
@@ -87,7 +90,7 @@ class View(abc.ABC):
             while counter > 0:
                 for s in successors:
                     s.tick(self, units[s][0], units[s][1])
-                r.wait(self.animation_unit)
+                r.wait(animation_unit)
                 counter -= 1
 
     def draw_exp_text(self, node, exp_str, above=True):
@@ -121,13 +124,13 @@ class View(abc.ABC):
         time = self.short_animation_time if short_animation_time else self.long_animation_time
         x_diff = x2 - x1
         y_diff = y2 - y1
-        x_unit = x_diff / (time / self.animation_unit)
-        y_unit = y_diff / (time / self.animation_unit)
-        counter = time / self.animation_unit
+        x_unit = x_diff / (time / animation_unit)
+        y_unit = y_diff / (time / animation_unit)
+        counter = time / animation_unit
         # Move object
         while counter > 0:
             self.canvas_now.move(obj, x_unit, y_unit)
-            r.wait(self.animation_unit)
+            r.wait(animation_unit)
             counter -= 1
 
     def clear(self):
@@ -148,10 +151,6 @@ class View(abc.ABC):
         """
         self.info_label.config(text='')
         self.erase('all')
-        self.explanation_text.config(state='normal')
-        self.explanation_text.delete(0.0, 'end')
-        self.explanation_text.insert('end', self.explanation.string)
-        self.explanation_text.config(state='disabled')
         self.explanation.reset()
 
     def set_buttons(self, state):
@@ -187,18 +186,47 @@ class View(abc.ABC):
         find_field = tk.Entry(self.controls_frame, width=7)
         find_button = tk.Button(self.controls_frame, text='Find node',
                                 command=lambda: controller.perform(r.Action.search, find_field.get()))
-        clear_button = tk.Button(self.controls_frame, text='Clear tree', command=lambda: controller.clear())
-        self.view_button = tk.Button(self.controls_frame, text='Show previous state and explanation: ON',
-                                     command=lambda: controller.change_layout())
-        operations_label = tk.Label(self.controls_frame, text='Operations:')
         min_button = tk.Button(self.controls_frame, text='Min', command=lambda: controller.perform(r.Action.min, '0'))
         max_button = tk.Button(self.controls_frame, text='Max', command=lambda: controller.perform(r.Action.max, '0'))
         mean_button = tk.Button(self.controls_frame, text='Mean',
                                 command=lambda: controller.perform(r.Action.mean, '0'))
         median_button = tk.Button(self.controls_frame, text='Median',
                                   command=lambda: controller.perform(r.Action.median, '0'))
+
+        def selector_change(new_value):
+            self.long_animation_time = int(new_value)
+            self.short_animation_time = int(new_value) // 2
+
+        self.time_scale = tk.Scale(self.controls_frame, from_=5000, to=50, resolution=50, orient=tk.HORIZONTAL,
+                                   label='Animation speed', command=selector_change, showvalue=False, sliderlength=15)
+        self.time_scale.set(self.long_animation_time)
+
+        def pause_animation():
+            self.set_buttons(False)
+            self.info_label.config(text=f'Animation paused! Press \'{self.continue_button.cget("text")}\' to continue',
+                                   font=('TkDefaultFont', 10, 'bold'), fg='red')
+            self.pause_button.config(state='disabled')
+            self.continue_button.config(state='normal')
+            self.hold_animation = True
+            while self.hold_animation:
+                r.wait(10)
+
+        def continue_animation():
+            self.set_buttons(True)
+            self.info_label.config(text='', fg='black', font="TkDefaultFont")
+            self.pause_button.config(state='normal')
+            self.continue_button.config(state='disabled')
+            self.hold_animation = False
+
+        self.pause_button = tk.Button(self.controls_frame, text='Pause', command=pause_animation)
+        self.continue_button = tk.Button(self.controls_frame, text='Continue', command=continue_animation,
+                                         state='disabled')
+        clear_button = tk.Button(self.controls_frame, text='Clear tree', command=lambda: controller.clear())
+        self.view_button = tk.Button(self.controls_frame, text='Show previous state and explanation: ON',
+                                     command=lambda: controller.change_layout())
         back_button = tk.Button(self.controls_frame, text='Back to menu', command=lambda: r.show_frame(m.frame))
         self.info_label = tk.Label(self.controls_frame)
+
         cts = self.columns_to_skip
         insert_field.grid(row=0, column=cts)
         insert_button.grid(row=0, column=cts + 1, padx=(5, 20))
@@ -206,15 +234,21 @@ class View(abc.ABC):
         delete_button.grid(row=0, column=cts + 3, padx=(5, 20))
         find_field.grid(row=0, column=cts + 4)
         find_button.grid(row=0, column=cts + 5, padx=(5, 20))
-        operations_label.grid(row=0, column=cts + 6, padx=(5, 0))
+        tk.Label(self.controls_frame, text='Operations:').grid(row=0, column=cts + 6, padx=(5, 0))
         min_button.grid(row=0, column=cts + 7, padx=(5, 0))
         max_button.grid(row=0, column=cts + 8, padx=(5, 0))
         mean_button.grid(row=0, column=cts + 9, padx=(5, 0))
         median_button.grid(row=0, column=cts + 10, padx=(5, 0))
-        clear_button.grid(row=0, column=cts + 11, padx=(20, 0))
+
+        clear_button.grid(row=0, column=cts + 11, padx=(5, 0))
         self.view_button.grid(row=0, column=cts + 12, padx=(20, 20))
         back_button.grid(row=0, column=cts + 13, padx=(40, 0))
-        self.info_label.grid(row=1, columnspan=14, sticky='WE')
+
+        self.info_label.grid(row=1, column=0, columnspan=5, sticky='WE')
+        tk.Label(self.controls_frame, text='Animation:').grid(row=1, column=cts + 6, padx=(5, 0))
+        self.time_scale.grid(row=1, column=cts + 7, columnspan=3, padx=(20, 0))
+        self.pause_button.grid(row=1, column=cts + 10)
+        self.continue_button.grid(row=1, column=cts + 11)
         self.controls_frame.pack()
 
         visualization_frame = tk.Frame(frame)
@@ -339,8 +373,8 @@ class HintFrame:
 class Explanation:
     """Class responsible for showing the explanations next to the canvases"""
 
-    def __init__(self):
-        self.string = ''
+    def __init__(self, view):
+        self.view = view
         self.line = 1
 
     def append(self, text):
@@ -349,7 +383,10 @@ class Explanation:
         :param text: text to be appended
         :return: returns nothing
         """
-        self.string += f'{self.line}) {text}\n'
+        string = f'{self.line}) {text}\n'
+        self.view.explanation_text.config(state='normal')
+        self.view.explanation_text.insert('end', string)
+        self.view.explanation_text.config(state='disabled')
         self.line += 1
 
     def reset(self):
@@ -357,5 +394,4 @@ class Explanation:
         Resets all values
         :return: returns nothing
         """
-        self.string = ''
         self.line = 1

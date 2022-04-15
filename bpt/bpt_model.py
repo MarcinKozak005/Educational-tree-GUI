@@ -9,30 +9,26 @@ class BPTNode(mb.BalNode):
     class_node_id = ord('@')  # distinguishes nodes by using letters
 
     def delete_value(self, value):
-        values = [self.values[i].value for i in range(len(self.values))]
-        view = self.tree.view
-        # Search for a value to delete
-        if not self.is_leaf:
-            i = 0
-            while i < len(self.values) and value >= self.values[i].value:
-                i += 1
-            self.children[i].delete_value(value)
-        # Value found (in leaf node)
-        elif self.is_leaf and value in values:
-            i = values.index(value)
-            removed_node = self.values.pop(i)
-            view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
-            view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
-            self.fix_delete(value)
-        # Fixing indexes' (inner nodes) values
-        parent = self.parent
-        if parent is not None:
-            values = [parent.values[i].value for i in range(len(parent.values))]
-            if value in values:
+        node, pos = self.search_value(value)
+        if node is not None and pos is not None:
+            values = [node.values[i].value for i in range(len(node.values))]
+            view = node.tree.view
+            # Value found (in leaf node)
+            if node.is_leaf and value in values:
                 i = values.index(value)
-                view.draw_exp_text(parent.values[i], f'Change value ({parent.values[i].value}) '
-                                                     f'in node [{parent.id}] to successor of it\'s right child')
-                parent.values[i].value = self.successor(False)
+                removed_elem = node.values.pop(i)
+                view.draw_exp_text(removed_elem, f'Remove value {removed_elem.value}')
+                view.move_object(removed_elem.tag(), removed_elem.x, removed_elem.y, removed_elem.x, -view.node_height)
+                node.fix_delete(value)
+            # Fixing indexes' (inner nodes) values
+            parent = node.parent
+            if parent is not None:
+                values = [parent.values[i].value for i in range(len(parent.values))]
+                if value in values:
+                    i = values.index(value)
+                    view.draw_exp_text(parent.values[i], f'Change value ({parent.values[i].value}) '
+                                                         f'in node [{parent.id}] to successor of it\'s right child')
+                    parent.values[i].value = node.successor(False)
 
     def search_value(self, value):
         """
@@ -59,7 +55,7 @@ class BPTNode(mb.BalNode):
             exp_string = f'No more values.' if i >= len(self.values) else f'{value} < {self.values[i].value}.'
             view.draw_exp_text(self, f'[{self.id}]: {exp_string}  [{self.id}] is a leaf. Value {value} not found')
             view.erase(hint_frame)
-            return None
+            return None, None
         # Search in child
         else:
             # Show appropriate explanation string
