@@ -142,7 +142,7 @@ class MCNode(model.AnimatedObject, model.Node, abc.ABC):
         if i < len(self.values) and value == self.values[i].value:
             return self, i
         if self.is_leaf:
-            return None
+            return None, None
         else:
             return self.children[i].search_value_no_GUI(value)
 
