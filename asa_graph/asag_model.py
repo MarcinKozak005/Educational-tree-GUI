@@ -20,12 +20,12 @@ class ASAGNode(ma.AggNode):
                     view.draw_exp_text(node.values[i], f'Reduce value counter by 1 to {node.values[i].counter - 1}')
                     node.values[i].counter -= 1
                 else:
-                    removed_node = node.values.pop(i)
-                    view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
+                    removed_elem = node.values.pop(i)
+                    view.draw_exp_text(removed_elem, f'Remove value {removed_elem.value}')
                     # Different destination y that usually, since [counter] below the node also needs to disappear
-                    view.move_object(removed_node.tag(), removed_node.x, removed_node.y,
-                                     removed_node.x, -1.5 * view.node_height)
-                    removed_node.rewrite()
+                    view.move_object(removed_elem.tag(), removed_elem.x, removed_elem.y,
+                                     removed_elem.x, -1.5 * view.node_height)
+                    removed_elem.rewrite()
                     node.fix_delete()
             elif value in values:
                 i = values.index(value)
@@ -34,59 +34,59 @@ class ASAGNode(ma.AggNode):
                     node.values[i].counter -= 1
                     return
                 # No None handling cause each non leaf node always has prev and next
-                removed_node = node.values[i]
-                prev_val = removed_node.prev_value
+                removed_elem = node.values[i]
+                prev_val = removed_elem.prev_value
                 prev_val_parent = prev_val.parent
-                next_val = removed_node.next_value
+                next_val = removed_elem.next_value
                 next_val_parent = next_val.parent
-                removed_node.rewrite()
+                removed_elem.rewrite()
                 if len(prev_val_parent.values) > min_val_degree:
-                    view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
+                    view.draw_exp_text(removed_elem, f'Remove value {removed_elem.value}')
                     # Different destination y that usually, since [counter] below the node also needs to disappear
-                    view.move_object(removed_node.tag(), removed_node.x, removed_node.y,
-                                     removed_node.x, -1.5 * view.node_height)
+                    view.move_object(removed_elem.tag(), removed_elem.x, removed_elem.y,
+                                     removed_elem.x, -1.5 * view.node_height)
                     view.draw_exp_text(prev_val_parent, f'Move value {prev_val.value} to [{node.id}] node')
                     node.values[i] = prev_val
                     node.values[i].parent = node
                     prev_val_parent.values.remove(prev_val)
                     view.draw_exp_text(prev_val_parent, f'Fix [{prev_val_parent.id}] node')
-                    view.erase(f'Line{hash(removed_node)}')
+                    view.erase(f'Line{hash(removed_elem)}')
                     prev_val_parent.fix_delete()
                 elif len(next_val_parent.values) > min_val_degree:
-                    view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
+                    view.draw_exp_text(removed_elem, f'Remove value {removed_elem.value}')
                     # Different destination y that usually, since [counter] below the node also needs to disappear
-                    view.move_object(removed_node.tag(), removed_node.x, removed_node.y,
-                                     removed_node.x, -1.5 * view.node_height)
+                    view.move_object(removed_elem.tag(), removed_elem.x, removed_elem.y,
+                                     removed_elem.x, -1.5 * view.node_height)
                     view.draw_exp_text(next_val_parent, f'Move value {next_val.value} to [{node.id}] node')
                     node.values[i] = next_val
                     node.values[i].parent = node
                     next_val_parent.values.remove(next_val)
                     view.draw_exp_text(next_val_parent, f'Fix [{next_val_parent.id}] node')
-                    view.erase(f'Line{hash(removed_node)}')
+                    view.erase(f'Line{hash(removed_elem)}')
                     next_val_parent.fix_delete()
                 elif len(prev_val_parent.values) == min_val_degree:
-                    view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
+                    view.draw_exp_text(removed_elem, f'Remove value {removed_elem.value}')
                     # Different destination y that usually, since [counter] below the node also needs to disappear
-                    view.move_object(removed_node.tag(), removed_node.x, removed_node.y,
-                                     removed_node.x, -1.5 * view.node_height)
+                    view.move_object(removed_elem.tag(), removed_elem.x, removed_elem.y,
+                                     removed_elem.x, -1.5 * view.node_height)
                     view.draw_exp_text(prev_val_parent, f'Move value {prev_val.value} to [{node.id}] node')
                     node.values[i] = prev_val
                     node.values[i].parent = node
                     prev_val_parent.values.remove(prev_val)
                     view.draw_exp_text(prev_val_parent, f'Fix [{prev_val_parent.id}] node')
-                    view.erase(f'Line{hash(removed_node)}')
+                    view.erase(f'Line{hash(removed_elem)}')
                     prev_val_parent.fix_delete()
                 elif len(next_val_parent.values) == min_val_degree:
-                    view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
+                    view.draw_exp_text(removed_elem, f'Remove value {removed_elem.value}')
                     # Different destination y that usually, since [counter] below the node also needs to disappear
-                    view.move_object(removed_node.tag(), removed_node.x, removed_node.y,
-                                     removed_node.x, -1.5 * view.node_height)
+                    view.move_object(removed_elem.tag(), removed_elem.x, removed_elem.y,
+                                     removed_elem.x, -1.5 * view.node_height)
                     view.draw_exp_text(prev_val_parent, f'Move value {next_val.value} to [{node.id}] node')
                     node.values[i] = next_val
                     node.values[i].parent = node
                     next_val_parent.values.remove(next_val)
                     view.draw_exp_text(next_val_parent, f'Fix [{next_val_parent.id}] node')
-                    view.erase(f'Line{hash(removed_node)}')
+                    view.erase(f'Line{hash(removed_elem)}')
                     next_val_parent.fix_delete()
                 else:
                     view.draw_exp_text(node, f'Merge node [{prev_val_parent.id}] value {node.values[i].value} '
@@ -383,7 +383,7 @@ class ASAGraph(ma.AggTree):
             while True:
                 view.hint_frame.draw(curr_val.x, curr_val.y)
                 view.draw_exp_text(curr_val, f'Append {curr_val.value} ({curr_val.counter} times) to tab {tab}')
-                tab.append(curr_val.value)
+                tab.append([curr_val.value] * curr_val.counter)
                 if curr_val.next_value is not None:
                     view.hint_frame.move(curr_val.next_value.x, curr_val.next_value.y)
                     curr_val = curr_val.next_value

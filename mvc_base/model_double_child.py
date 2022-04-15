@@ -235,7 +235,7 @@ class DCNode(model.AnimatedObject, model.Node):
             view.erase('swap1')
             view.draw_object(node, view.canvas_now)
         view.move_object(y.tag(), y.x, y.y, y.x, - view.node_height)
-        view.explanation.append(f'Remove ({value}) from tree')
+        view.explanation.append(f'Remove {value} from tree')
         return x, y
 
     def search_value(self, value):

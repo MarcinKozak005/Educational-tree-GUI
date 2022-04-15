@@ -16,36 +16,36 @@ class BTNode(mb.BalNode):
             view = node.tree.view
             if node.is_leaf and value in values:
                 i = values.index(value)
-                removed_node = node.values.pop(i)
-                view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
-                view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
+                removed_elem = node.values.pop(i)
+                view.draw_exp_text(removed_elem, f'Remove value {removed_elem.value}')
+                view.move_object(removed_elem.tag(), removed_elem.x, removed_elem.y, removed_elem.x, -view.node_height)
                 node.fix_delete()
             elif value in values:
                 i = values.index(value)
                 if len(node.children[i].values) > min_val_degree and node.children[i].is_leaf \
                         or not node.children[i].is_leaf:
-                    removed_node = node.values[i]
-                    view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
-                    view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x,
+                    removed_elem = node.values[i]
+                    view.draw_exp_text(removed_elem, f'Remove value {removed_elem.value}')
+                    view.move_object(removed_elem.tag(), removed_elem.x, removed_elem.y, removed_elem.x,
                                      -view.node_height)
                     view.draw_exp_text(node.children[i], f'Find predecessor of {value} in [{node.children[i].id}] node')
                     node.values[i], to_fix = node.children[i].predecessor()
                     node.values[i].parent = node
                     view.draw_exp_text(to_fix, f'Value {node.values[i].value} goes to node {node.id}')
-                    view.erase(f'Line{hash(removed_node)}')
+                    view.erase(f'Line{hash(removed_elem)}')
                     to_fix.fix_delete()
                 elif len(node.children[i + 1].values) > min_val_degree and node.children[i + 1].is_leaf \
                         or not node.children[i + 1].is_leaf:
-                    removed_node = node.values[i]
-                    view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
-                    view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x,
+                    removed_elem = node.values[i]
+                    view.draw_exp_text(removed_elem, f'Remove value {removed_elem.value}')
+                    view.move_object(removed_elem.tag(), removed_elem.x, removed_elem.y, removed_elem.x,
                                      -view.node_height)
                     view.draw_exp_text(node.children[i + 1],
                                        f'Find successor of {value} in [{node.children[i + 1].id}] node')
                     node.values[i], to_fix = node.children[i + 1].successor()
                     node.values[i].parent = node
                     view.draw_exp_text(to_fix, f'Value {node.values[i].value} goes to node {node.id}')
-                    view.erase(f'Line{hash(removed_node)}')
+                    view.erase(f'Line{hash(removed_elem)}')
                     to_fix.fix_delete()
                 else:
                     view.draw_exp_text(node, f'Merge node [{node.children[i].id}] value {node.values[i].value} '

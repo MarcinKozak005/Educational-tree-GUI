@@ -103,6 +103,6 @@ class AVBPTree(ma.AggTree):
                 if v != values[0]:
                     self.view.hint_frame.move(v.x, v.y)
                 self.view.draw_exp_text(v, f'Append {v.value} ({v.counter} times) to tab {tab}')
-                tab.append(v.value)
+                tab.append([v.value] * v.counter)
             self.view.draw_exp_text(self.root, f'Whole tree traversed. Values = {tab}. '
                                                f'Median = {statistics.median(tab)}')

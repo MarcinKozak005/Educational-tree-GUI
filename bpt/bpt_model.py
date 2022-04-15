@@ -16,9 +16,9 @@ class BPTNode(mb.BalNode):
             # Value found (in leaf node)
             if node.is_leaf and value in values:
                 i = values.index(value)
-                removed_node = node.values.pop(i)
-                view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
-                view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
+                removed_elem = node.values.pop(i)
+                view.draw_exp_text(removed_elem, f'Remove value {removed_elem.value}')
+                view.move_object(removed_elem.tag(), removed_elem.x, removed_elem.y, removed_elem.x, -view.node_height)
                 node.fix_delete(value)
             # Fixing indexes' (inner nodes) values
             parent = node.parent
