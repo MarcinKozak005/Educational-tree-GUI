@@ -20,7 +20,9 @@ class ASAGNode(ma.AggNode):
             else:
                 removed_node = self.values.pop(i)
                 view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
-                view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
+                # Different destination y that usually, since [counter] below the node also needs to disappear
+                view.move_object(removed_node.tag(), removed_node.x, removed_node.y,
+                                 removed_node.x, -1.5 * view.node_height)
                 removed_node.rewrite()
                 self.fix_delete()
         elif value in values:
@@ -38,7 +40,9 @@ class ASAGNode(ma.AggNode):
             removed_node.rewrite()
             if len(prev_val_parent.values) > min_val_degree:
                 view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
-                view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
+                # Different destination y that usually, since [counter] below the node also needs to disappear
+                view.move_object(removed_node.tag(), removed_node.x, removed_node.y,
+                                 removed_node.x, -1.5 * view.node_height)
                 view.draw_exp_text(prev_val_parent, f'Move value {prev_val.value} to [{self.id}] node')
                 self.values[i] = prev_val
                 self.values[i].parent = self
@@ -48,7 +52,9 @@ class ASAGNode(ma.AggNode):
                 prev_val_parent.fix_delete()
             elif len(next_val_parent.values) > min_val_degree:
                 view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
-                view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
+                # Different destination y that usually, since [counter] below the node also needs to disappear
+                view.move_object(removed_node.tag(), removed_node.x, removed_node.y,
+                                 removed_node.x, -1.5 * view.node_height)
                 view.draw_exp_text(next_val_parent, f'Move value {next_val.value} to [{self.id}] node')
                 self.values[i] = next_val
                 self.values[i].parent = self
@@ -58,7 +64,9 @@ class ASAGNode(ma.AggNode):
                 next_val_parent.fix_delete()
             elif len(prev_val_parent.values) == min_val_degree:
                 view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
-                view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
+                # Different destination y that usually, since [counter] below the node also needs to disappear
+                view.move_object(removed_node.tag(), removed_node.x, removed_node.y,
+                                 removed_node.x, -1.5 * view.node_height)
                 view.draw_exp_text(prev_val_parent, f'Move value {prev_val.value} to [{self.id}] node')
                 self.values[i] = prev_val
                 self.values[i].parent = self
@@ -68,7 +76,9 @@ class ASAGNode(ma.AggNode):
                 prev_val_parent.fix_delete()
             elif len(next_val_parent.values) == min_val_degree:
                 view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
-                view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
+                # Different destination y that usually, since [counter] below the node also needs to disappear
+                view.move_object(removed_node.tag(), removed_node.x, removed_node.y,
+                                 removed_node.x, -1.5 * view.node_height)
                 view.draw_exp_text(prev_val_parent, f'Move value {next_val.value} to [{self.id}] node')
                 self.values[i] = next_val
                 self.values[i].parent = self

@@ -32,6 +32,9 @@ class Controller:
         view.set_buttons(False)
         if validate_input(arg):
             val = int(arg)
+            self.view.explanation_text.config(state='normal')
+            self.view.explanation_text.delete(0.0, 'end')
+            self.view.explanation_text.config(state='disabled')
             if self.tree.root is not None and \
                     (func == r.Action.insert or (func == r.Action.delete and self.tree.search_value_no_GUI(val))):
                 # Draw previous state on canvas_prev
@@ -39,6 +42,8 @@ class Controller:
                 self.tree.root.update_positions(True, width=1000)
                 view.draw_tree(self.tree.root, view.canvas_prev)
                 self.tree.root.update_positions(True)
+            elif self.tree.root is None:
+                view.canvas_prev.delete('all')
             if func == r.Action.insert:
                 self.tree.insert_value(val)
             elif func == r.Action.delete:

@@ -76,7 +76,9 @@ class AggNode(mc.MCNode, abc.ABC):
             else:
                 removed_node = self.values.pop(i)
                 view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
-                view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
+                # Different destination y that usually, since [counter] below the node also needs to disappear
+                view.move_object(removed_node.tag(), removed_node.x, removed_node.y,
+                                 removed_node.x, -1.5 * view.node_height)
                 self.fix_delete()
         elif value in values:
             i = values.index(value)
@@ -88,7 +90,9 @@ class AggNode(mc.MCNode, abc.ABC):
                     or not self.children[i].is_leaf:
                 removed_node = self.values[i]
                 view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
-                view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
+                # Different destination y that usually, since [counter] below the node also needs to disappear
+                view.move_object(removed_node.tag(), removed_node.x, removed_node.y,
+                                 removed_node.x, -1.5 * view.node_height)
                 view.draw_exp_text(self.children[i], f'Find predecessor of {value} in [{self.children[i].id}] node')
                 self.values[i], to_fix = self.children[i].predecessor()
                 self.values[i].parent = self
@@ -99,7 +103,9 @@ class AggNode(mc.MCNode, abc.ABC):
                     or not self.children[i + 1].is_leaf:
                 removed_node = self.values[i]
                 view.draw_exp_text(removed_node, f'Remove value {removed_node.value}')
-                view.move_object(removed_node.tag(), removed_node.x, removed_node.y, removed_node.x, -view.node_height)
+                # Different destination y that usually, since [counter] below the node also needs to disappear
+                view.move_object(removed_node.tag(), removed_node.x, removed_node.y,
+                                 removed_node.x, -1.5 * view.node_height)
                 view.draw_exp_text(self.children[i + 1],
                                    f'Find successor of {value} in [{self.children[i + 1].id}] node')
                 self.values[i], to_fix = self.children[i + 1].successor()

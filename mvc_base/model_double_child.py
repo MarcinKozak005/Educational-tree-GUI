@@ -193,7 +193,7 @@ class DCNode(model.AnimatedObject, model.Node):
             view.move_object(self.tree.root.tag(), self.tree.root.x, self.tree.root.y, self.tree.root.x,
                              -view.node_height)
             self.tree.clear()
-            return
+            return None, None
         if type(node.left) is DCLeaf or type(node.right) is DCLeaf:
             view.explanation.append(f'Right or left child of ({node.value}) is a leaf')
             y = node

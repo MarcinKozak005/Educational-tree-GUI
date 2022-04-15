@@ -10,7 +10,7 @@ class View(abc.ABC):
     """View component of MVC design pattern"""
 
     def __init__(self, node_width, node_height, columns_to_skip):
-        self.explanation = Explanation()
+        self.explanation = Explanation(self)
         self.hint_frame = HintFrame(self)
         self.width = 1000
         self.height = 300
@@ -151,10 +151,6 @@ class View(abc.ABC):
         """
         self.info_label.config(text='')
         self.erase('all')
-        self.explanation_text.config(state='normal')
-        self.explanation_text.delete(0.0, 'end')
-        self.explanation_text.insert('end', self.explanation.string)
-        self.explanation_text.config(state='disabled')
         self.explanation.reset()
 
     def set_buttons(self, state):
@@ -377,8 +373,8 @@ class HintFrame:
 class Explanation:
     """Class responsible for showing the explanations next to the canvases"""
 
-    def __init__(self):
-        self.string = ''
+    def __init__(self, view):
+        self.view = view
         self.line = 1
 
     def append(self, text):
@@ -387,7 +383,10 @@ class Explanation:
         :param text: text to be appended
         :return: returns nothing
         """
-        self.string += f'{self.line}) {text}\n'
+        string = f'{self.line}) {text}\n'
+        self.view.explanation_text.config(state='normal')
+        self.view.explanation_text.insert('end', string)
+        self.view.explanation_text.config(state='disabled')
         self.line += 1
 
     def reset(self):
@@ -395,5 +394,4 @@ class Explanation:
         Resets all values
         :return: returns nothing
         """
-        self.string = ''
         self.line = 1
