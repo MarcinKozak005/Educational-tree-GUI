@@ -1,3 +1,4 @@
+import copy
 import math
 import statistics
 
@@ -347,6 +348,11 @@ class ASAGNode(ma.AggNode):
 class ASAGraph(ma.AggTree):
     value_class = ma.LinkValue
     node_class = ASAGNode
+
+    def __deepcopy__(self, memo):
+        cp = ASAGraph(self.view, self.max_degree)
+        cp.root = copy.deepcopy(self.root, memo)
+        return cp
 
     def mean(self):
         if self.root is None:

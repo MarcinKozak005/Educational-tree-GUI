@@ -1,3 +1,5 @@
+import copy
+
 import core.root as r
 import mvc_base.model_double_child as mdc
 from core.constants import left, right, red, black
@@ -165,6 +167,11 @@ class RBTNode(mdc.DCNode):
 
 class RBTree(mdc.DCTree):
     node_class = RBTNode
+
+    def __deepcopy__(self, memo):
+        cp = RBTree(self.view)
+        cp.root = copy.deepcopy(self.root, memo)
+        return cp
 
     # DCTree derived methods override
 
