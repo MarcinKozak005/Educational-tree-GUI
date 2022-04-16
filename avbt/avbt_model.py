@@ -1,3 +1,4 @@
+import copy
 import statistics
 
 import mvc_base.model_aggregated as ma
@@ -75,6 +76,11 @@ class AVBTNode(ma.AggNode):
 class AVBTree(ma.AggTree):
     value_class = ma.AggValue
     node_class = AVBTNode
+
+    def __deepcopy__(self, memo):
+        cp = AVBTree(self.view, self.max_degree)
+        cp.root = copy.deepcopy(self.root, memo)
+        return cp
 
     def mean(self):
         if self.root is None:

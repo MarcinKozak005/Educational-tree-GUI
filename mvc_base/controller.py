@@ -37,6 +37,7 @@ class Controller:
         """
         view = self.view
         view.set_buttons(False)
+        view.set_browsing_buttons(False)
         add_final_result = False
         if validate_input(arg):
             val = int(arg)
@@ -44,7 +45,8 @@ class Controller:
             self.view.explanation_text.delete(0.0, 'end')
             self.view.explanation_text.config(state='disabled')
             if self.tree.root is not None and \
-                    (func == r.Action.insert or (func == r.Action.delete and self.tree.search_value_no_GUI(val))):
+                    (func == r.Action.insert or
+                     (func == r.Action.delete and self.tree.search_value_no_GUI(val) != (None, None))):
                 add_final_result = True
                 # Draw previous state on canvas_prev
                 view.canvas_prev.delete('all')
@@ -78,7 +80,8 @@ class Controller:
         else:
             view.info_label.config(text='Not a valid input (integer in range 0-999)')
         view.set_buttons(True)
-        self.view.set_browsing_buttons(self.history.pointer, len(self.history.history_list))
+        view.set_browsing_buttons(True)
+        self.view.check_browsing_buttons(self.history.pointer, len(self.history.history_list))
 
     def change_layout(self):
         """
@@ -120,7 +123,7 @@ class Controller:
         self.view.erase('all')
         self.history.decrement()
         self.view.draw_tree(self.history.get_tree().root, self.view.canvas_now)
-        self.view.set_browsing_buttons(self.history.pointer, len(self.history.history_list))
+        self.view.check_browsing_buttons(self.history.pointer, len(self.history.history_list))
 
     def forward(self):
         """Makes step forward in browsing history --> performs an action from tree(time-1) state to tree(time) state"""
@@ -130,13 +133,15 @@ class Controller:
         # Draw tree(time-1) and perform action
         self.view.erase('all')
         self.view.draw_tree(cp.tree.root, self.view.canvas_now)
+        self.view.set_browsing_buttons(False)
         cp.perform(history_elem.func, history_elem.arg)
+        self.view.set_browsing_buttons(True)
         cp.history.track = False
         # Draw tree(time)
         self.view.erase('all')
         self.history.increment()
         self.view.draw_tree(self.history.get_tree().root, self.view.canvas_now)
-        self.view.set_browsing_buttons(self.history.pointer, len(self.history.history_list))
+        self.view.check_browsing_buttons(self.history.pointer, len(self.history.history_list))
         # Draw most current tree if we are at the current history time moment
         if self.history.pointer == len(self.history.history_list) - 1:
             self.view.erase('all')

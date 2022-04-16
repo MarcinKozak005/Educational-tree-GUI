@@ -1,3 +1,4 @@
+import copy
 import math
 import statistics
 
@@ -320,6 +321,11 @@ class BPTNode(mb.BalNode):
 
 class BPTree(mb.BalTree):
     node_class = BPTNode
+
+    def __deepcopy__(self, memo):
+        cp = BPTree(self.view, self.max_degree)
+        cp.root = copy.deepcopy(self.root, memo)
+        return cp
 
     def mean(self):
         if self.root is None:

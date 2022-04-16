@@ -134,7 +134,7 @@ class MCNode(model.AnimatedObject, model.Node, abc.ABC):
         """
         Searches for value in the node
         :param value: searched value
-        :return: if found: tuple (node_with_value, position_of_value_in_node), else: None
+        :return: if found: tuple (node_with_value, position_of_value_in_node), else: None, None
         """
         i = 0
         while i < len(self.values) and value > self.values[i].value:

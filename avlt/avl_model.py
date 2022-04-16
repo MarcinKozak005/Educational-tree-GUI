@@ -1,3 +1,5 @@
+import copy
+
 import mvc_base.model_double_child as mdc
 from core.constants import green
 from core.constants import left, right
@@ -92,6 +94,11 @@ class AVLTNode(mdc.DCNode):
 
 class AVLTree(mdc.DCTree):
     node_class = AVLTNode
+
+    def __deepcopy__(self, memo):
+        cp = AVLTree(self.view)
+        cp.root = copy.deepcopy(self.root, memo)
+        return cp
 
     # DCTree derived methods override
 

@@ -46,7 +46,7 @@ class Tree(abc.ABC):
         """
         Searches for the value in the tree. Does not show the process in the GUI
         :param value: value to be found
-        :return: found node or None
+        :return: found node or node and position of found value or tuple: None, None
         """
         pass
 

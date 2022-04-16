@@ -279,7 +279,7 @@ class DCNode(model.AnimatedObject, model.Node):
         """
         Searches for the value in the subtree without the use of GUI
         :param value: value to be found
-        :return: node with the value or None
+        :return: node with the value or None, None
         """
         curr = self.tree.root
         klass = self.tree.node_class
@@ -287,11 +287,11 @@ class DCNode(model.AnimatedObject, model.Node):
             if curr.value > value and type(curr.left) is klass:
                 curr = curr.left
             elif curr.value > value:
-                return None
+                return None, None
             elif curr.value <= value and type(curr.right) is klass:
                 curr = curr.right
             elif curr.value <= value:
-                return None
+                return None, None
         return curr
 
     def update_positions(self, static=False, width=None):

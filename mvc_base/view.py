@@ -164,7 +164,12 @@ class View(abc.ABC):
         for b in self.buttons:
             b.config(state='normal' if state else 'disabled')
 
-    def set_browsing_buttons(self, pointer, length):
+    def set_browsing_buttons(self, state):
+        st = 'normal' if state else 'disabled'
+        self.forward_button.config(state=st)
+        self.back_button.config(state=st)
+
+    def check_browsing_buttons(self, pointer, length):
         """
         Disables/Enables history browsing buttons and operation buttons
         :param pointer: value of history_list in controller
@@ -261,17 +266,16 @@ class View(abc.ABC):
         self.view_button.grid(row=0, column=cts + 12, columnspan=5, padx=(20, 20))
         back_button.grid(row=0, column=cts + 17, padx=(40, 0))
 
-        self.back_button = tk.Button(self.controls_frame, text='<', command=controller.back)
-        self.forward_button = tk.Button(self.controls_frame, text='>', command=controller.forward)
+        self.back_button = tk.Button(self.controls_frame, text='Next', command=controller.back)
+        self.forward_button = tk.Button(self.controls_frame, text='Prev', command=controller.forward)
         self.info_label.grid(row=1, column=0, columnspan=5, sticky='WE')
         tk.Label(self.controls_frame, text='Animation:').grid(row=1, column=cts + 6, padx=(5, 0))
         self.back_button.grid(row=1, column=cts + 7)
         self.forward_button.grid(row=1, column=cts + 8)
-        # tk.Button(self.controls_frame, text='>>', command=controller.to_last).grid(row=1, column=cts + 9)
-        self.set_browsing_buttons(controller.history.pointer, len(controller.history.history_list))
-        self.time_scale.grid(row=1, column=cts + 10, columnspan=3, padx=(20, 0))
-        self.pause_button.grid(row=1, column=cts + 13)
-        self.continue_button.grid(row=1, column=cts + 14)
+        self.check_browsing_buttons(controller.history.pointer, len(controller.history.history_list))
+        self.time_scale.grid(row=1, column=cts + 9, columnspan=3, padx=(20, 0))
+        self.pause_button.grid(row=1, column=cts + 12)
+        self.continue_button.grid(row=1, column=cts + 13)
         self.controls_frame.pack()
 
         visualization_frame = tk.Frame(frame)
