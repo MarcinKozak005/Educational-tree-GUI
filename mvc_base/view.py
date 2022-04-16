@@ -36,6 +36,8 @@ class View(abc.ABC):
         self.hold_animation = True
         self.pause_button = None
         self.continue_button = None
+        self.back_button = None
+        self.forward_button = None
 
     @abc.abstractmethod
     def draw_tree(self, node, canvas):
@@ -162,6 +164,21 @@ class View(abc.ABC):
         for b in self.buttons:
             b.config(state='normal' if state else 'disabled')
 
+    def set_browsing_buttons(self, pointer, length):
+        """
+        Disables/Enables history browsing buttons and operation buttons
+        :param pointer: value of history_list in controller
+        :param length: length of history_list in controller
+        :return: returns nothing
+        """
+        self.back_button.config(state='normal' if pointer > 0 else 'disabled')
+        if pointer < length - 1:
+            self.forward_button.config(state='normal')
+            self.set_buttons(False)
+        else:
+            self.forward_button.config(state='disabled')
+            self.set_buttons(True)
+
     def create_GUI(self, controller, text):
         """
         Creates a GUI with buttons triggering model methods with the use of controller
@@ -241,14 +258,20 @@ class View(abc.ABC):
         median_button.grid(row=0, column=cts + 10, padx=(5, 0))
 
         clear_button.grid(row=0, column=cts + 11, padx=(5, 0))
-        self.view_button.grid(row=0, column=cts + 12, padx=(20, 20))
-        back_button.grid(row=0, column=cts + 13, padx=(40, 0))
+        self.view_button.grid(row=0, column=cts + 12, columnspan=5, padx=(20, 20))
+        back_button.grid(row=0, column=cts + 17, padx=(40, 0))
 
+        self.back_button = tk.Button(self.controls_frame, text='<', command=controller.back)
+        self.forward_button = tk.Button(self.controls_frame, text='>', command=controller.forward)
         self.info_label.grid(row=1, column=0, columnspan=5, sticky='WE')
         tk.Label(self.controls_frame, text='Animation:').grid(row=1, column=cts + 6, padx=(5, 0))
-        self.time_scale.grid(row=1, column=cts + 7, columnspan=3, padx=(20, 0))
-        self.pause_button.grid(row=1, column=cts + 10)
-        self.continue_button.grid(row=1, column=cts + 11)
+        self.back_button.grid(row=1, column=cts + 7)
+        self.forward_button.grid(row=1, column=cts + 8)
+        # tk.Button(self.controls_frame, text='>>', command=controller.to_last).grid(row=1, column=cts + 9)
+        self.set_browsing_buttons(controller.history.pointer, len(controller.history.history_list))
+        self.time_scale.grid(row=1, column=cts + 10, columnspan=3, padx=(20, 0))
+        self.pause_button.grid(row=1, column=cts + 13)
+        self.continue_button.grid(row=1, column=cts + 14)
         self.controls_frame.pack()
 
         visualization_frame = tk.Frame(frame)
