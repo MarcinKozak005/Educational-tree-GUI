@@ -98,7 +98,6 @@ class MCValue(model.AnimatedObject):
                 view.draw_line(view.canvas_now, self, self.parent.children[index], tk.SW, tk.N)
             if index == len(self.parent.values) - 1 and index + 1 < len(self.parent.children):
                 view.draw_line(view.canvas_now, self, self.parent.children[index + 1], tk.SE, tk.N)
-            view.canvas_now.tag_lower('Line')
 
     def tag(self):
         return f'Value{hash(self)}'

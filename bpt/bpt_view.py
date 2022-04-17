@@ -49,7 +49,6 @@ class BPTView(view.View):
             while not right.is_leaf:
                 right = right.children[-1]
             self.draw_line(canvas, left.values[0], right, from_side=tk.SE, to_side=tk.SW, fill='blue')
-            self.canvas_now.tag_lower('Line')
 
     def draw_object_with_children_lines(self, obj, canvas):
         parent = obj.parent

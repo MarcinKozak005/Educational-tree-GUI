@@ -136,7 +136,6 @@ class DCNode(model.AnimatedObject, model.Node):
         if type(self.parent) is self.tree.node_class:
             view.draw_line(view.canvas_now, self.parent, self.parent.right)
             view.draw_line(view.canvas_now, self.parent, self.parent.left)
-        view.canvas_now.tag_lower('Line')
 
     def tag(self):
         return f'Node{hash(self)}'

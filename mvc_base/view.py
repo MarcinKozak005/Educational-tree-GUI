@@ -358,6 +358,7 @@ class View(abc.ABC):
                 canvas.create_line(node1.x + from_mod[0], node1.y + from_mod[1],
                                    node2.x + to_mod[0], node2.y + to_mod[1],
                                    fill=fill, tags=[f'Line{hash(node1)}', 'Line'])
+                canvas.tag_lower('Line')
             except AttributeError as e:
                 print(e)
 
