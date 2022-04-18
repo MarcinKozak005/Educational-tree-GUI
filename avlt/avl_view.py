@@ -1,13 +1,18 @@
-import mvc_base.view as view
+from PIL import ImageTk, Image
+
 import avlt.avl_model as avlt
 import mvc_base.model_double_child as mdc
-from core.constants import green, white, black
+import mvc_base.view as view
+from core.constants import white, black
 
 
 class AVLView(view.View):
 
     def __init__(self, node_width, node_height, columns_to_skip):
         super().__init__(node_width, node_height, columns_to_skip)
+        green_circle = Image.open('../materials/green_circle.png').resize((self.node_width, self.node_height),
+                                                                          Image.ANTIALIAS)
+        self.green_circle = ImageTk.PhotoImage(green_circle)
 
     def draw_tree(self, node, canvas):
         if type(node) is not mdc.DCLeaf and node is not None:
@@ -24,9 +29,9 @@ class AVLView(view.View):
 
     def draw_object(self, obj, canvas):
         if type(obj) is avlt.AVLTNode:
-            canvas.create_oval(obj.x - self.node_width // 2, obj.y - self.node_height // 2,
-                               obj.x + self.node_width // 2, obj.y + self.node_height // 2,
-                               fill=green, tags=obj.tag())
-            canvas.create_text(obj.x, obj.y, fill=white, text=obj.value, tags=obj.tag())
-            canvas.create_text(obj.x-self.node_width//2, obj.y-self.node_height//2,
+            canvas.create_image(obj.x - self.node_width // 2, obj.y - self.node_height // 2,
+                                image=self.green_circle, anchor='nw', tags=obj.tag())
+            canvas.create_text(obj.x, obj.y, fill=white, text=obj.value, tags=obj.tag(),
+                               font=('TkDefaultFont', 10, 'bold'))
+            canvas.create_text(obj.x - self.node_width // 2, obj.y - self.node_height // 2,
                                fill=black, text=obj.height, tags=obj.tag())

@@ -2,12 +2,20 @@
 import abc
 import statistics
 
+from PIL import ImageTk, Image
+
 import mvc_base.model as model
 from core.constants import left, right, white, black, grey_node, hint_frame
 
 
 class DCTree(model.Tree, abc.ABC):
     """Contains methods similar in all Double Child trees"""
+
+    def __init__(self, view):
+        super().__init__(view)
+        grey_circle = Image.open('../materials/grey_circle.png').resize((self.view.node_width, self.view.node_height),
+                                                                        Image.ANTIALIAS)
+        self.grey_circle = ImageTk.PhotoImage(grey_circle)
 
     # Tree derived methods override
 
@@ -68,9 +76,8 @@ class DCTree(model.Tree, abc.ABC):
         view = self.view
         root = self.root
         view.explanation.append(f'Tree is not empty. Find insert place for {value}')
-        view.canvas_now.create_oval(root.x - view.node_width // 2, root.y - view.y_above - view.node_height // 2,
-                                    root.x + view.node_width // 2, root.y - view.y_above + view.node_height // 2,
-                                    fill='grey', tags=grey_node)
+        view.canvas_now.create_image(root.x - view.node_width // 2, root.y - view.y_above - view.node_height // 2,
+                                     anchor='nw', image=self.grey_circle, tags=grey_node)
         view.canvas_now.create_text(root.x, root.y - view.y_above, fill=white, text=value, tags=grey_node)
         newNode = root.insert_value(value)
         view.explanation.append(f'Start node-fixing process')

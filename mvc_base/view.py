@@ -45,7 +45,6 @@ class View(abc.ABC):
         self.back_button = None
         self.forward_button = None
         self.buttons_state = {}
-        self.image = tk.PhotoImage(file='../materials/tile.ppm')
 
     @abc.abstractmethod
     def draw_tree(self, node, canvas):
@@ -306,12 +305,6 @@ class View(abc.ABC):
         ctk.CTkLabel(self.controls_frame, text='Anim. speed:').grid(row=1, column=cts + 10)
         self.time_scale.grid(row=1, column=cts + 11, columnspan=3)
 
-        # def showw():
-        #     import random
-        #     self.canvas_now.create_image(random.randint(1,10), random.randint(1,100), anchor=tk.NW,
-        #                                  image=self.image, tags=['asd','aaa'])
-        #
-        # tk.Button(self.controls_frame, text='InsertImage', command=showw).grid(row=1, column=cts+14)
         self.controls_frame.pack()
 
         # Visualization frame
