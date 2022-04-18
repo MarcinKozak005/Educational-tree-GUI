@@ -100,6 +100,7 @@ class RBTNode(mdc.DCNode):
             """
             snd_side = left if side == right else right
             sibling = n.parent[side]
+            non_exception_case = True  # Turned out to be needed. I haven't tested all cases
             if type(sibling) is not mdc.DCLeaf and sibling.color == red:
                 sibling.color = black
                 n.parent.color = red
@@ -119,6 +120,7 @@ class RBTNode(mdc.DCNode):
                 view.draw_object(sibling, view.canvas_now)
                 view.erase(recolor_txt)
                 n = n.parent
+                non_exception_case = False
             elif type(sibling) is not mdc.DCLeaf and sibling[side].color == black:
                 sibling[snd_side].color = black
                 sibling.color = red
@@ -131,7 +133,7 @@ class RBTNode(mdc.DCNode):
                 view.draw_object(tmp_node2, view.canvas_now)
                 view.erase(recolor_txt)
                 sibling = n.parent[side]
-            if n is not self.tree.root:
+            if n is not self.tree.root and non_exception_case:
                 sibling.color = n.parent.color
                 n.parent.color = black
                 sibling[side].color = black
@@ -156,6 +158,7 @@ class RBTNode(mdc.DCNode):
                 node = fix_delete_subpart(node, right)
             else:
                 node = fix_delete_subpart(node, left)
+        view.draw_recolor_text(node, black)
         node.color = black
 
     def rotate(self, side):
