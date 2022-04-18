@@ -1,9 +1,15 @@
 import abc
 import tkinter as tk
 
+import customtkinter as ctk
+
 import core.menu as m
 import core.root as r
 from core.constants import hint_frame, exp_txt, white, black, animation_unit
+
+ctk.set_default_color_theme('green')
+button_arguments = {'width': 20, 'height': 10, 'text_color_disabled': '#d1d1d1'}
+btn_arg = {'width': 7, 'height': 7, 'text_color_disabled': '#d1d1d1'}  # for max_degree buttons
 
 
 class View(abc.ABC):
@@ -152,9 +158,9 @@ class View(abc.ABC):
         """
         self.canvas_prev.delete('all')
         self.erase('all')
-        self.explanation_text.config(state='normal')
+        self.explanation_text.config(state=tk.NORMAL)
         self.explanation_text.delete(0.0, 'end')
-        self.explanation_text.config(state='disabled')
+        self.explanation_text.config(state=tk.DISABLED)
 
     def prepare_view(self):
         """
@@ -172,10 +178,10 @@ class View(abc.ABC):
         :return: returns nothing
         """
         for b in self.buttons:
-            b.config(state='normal' if state else 'disabled')
+            b.config(state=tk.NORMAL if state else tk.DISABLED)
 
     def set_browsing_buttons(self, state):
-        st = 'normal' if state else 'disabled'
+        st = tk.NORMAL if state else tk.DISABLED
         self.forward_button.config(state=st)
         self.back_button.config(state=st)
 
@@ -186,12 +192,12 @@ class View(abc.ABC):
         :param length: length of history_list in controller
         :return: returns nothing
         """
-        self.back_button.config(state='normal' if pointer > 0 else 'disabled')
+        self.back_button.config(state=tk.NORMAL if pointer > 0 else tk.DISABLED)
         if pointer < length - 1:
-            self.forward_button.config(state='normal')
+            self.forward_button.config(state=tk.NORMAL)
             self.set_buttons(False)
         else:
-            self.forward_button.config(state='disabled')
+            self.forward_button.config(state=tk.DISABLED)
             self.set_buttons(True)
 
     def create_GUI(self, controller, text):
@@ -204,35 +210,37 @@ class View(abc.ABC):
 
         frame = tk.Frame(r.frame)
 
-        main_subframe = tk.Frame(frame)
-        tk.Label(main_subframe, text=text, font=(20,), pady=7).pack()
+        main_subframe = ctk.CTkFrame(frame)
+        ctk.CTkLabel(main_subframe, text=text, pady=7).pack()
         main_subframe.pack(fill='x')
 
+        # Controls frame
+        # First row of controls_frame
         self.controls_frame = tk.Frame(frame)
-        insert_field = tk.Entry(self.controls_frame, width=7)
-        insert_button = tk.Button(self.controls_frame, text='Add node',
-                                  command=lambda: controller.perform(r.Action.insert, insert_field.get()))
-        delete_field = tk.Entry(self.controls_frame, width=7)
-        delete_button = tk.Button(self.controls_frame, text='Delete node',
-                                  command=lambda: controller.perform(r.Action.delete, delete_field.get()))
-        find_field = tk.Entry(self.controls_frame, width=7)
-        find_button = tk.Button(self.controls_frame, text='Find node',
-                                command=lambda: controller.perform(r.Action.search, find_field.get()))
-        min_button = tk.Button(self.controls_frame, text='Min', command=lambda: controller.perform(r.Action.min, '0'))
-        max_button = tk.Button(self.controls_frame, text='Max', command=lambda: controller.perform(r.Action.max, '0'))
-        mean_button = tk.Button(self.controls_frame, text='Mean',
-                                command=lambda: controller.perform(r.Action.mean, '0'))
-        median_button = tk.Button(self.controls_frame, text='Median',
-                                  command=lambda: controller.perform(r.Action.median, '0'))
+        input_field = ctk.CTkEntry(self.controls_frame, width=100, placeholder_text='Enter value')
+        insert_button = ctk.CTkButton(self.controls_frame, text='Add node', **button_arguments,
+                                      command=lambda: controller.perform(r.Action.insert, input_field.get()))
+        delete_button = ctk.CTkButton(self.controls_frame, text='Delete node', **button_arguments,
+                                      command=lambda: controller.perform(r.Action.delete, input_field.get()))
+        find_button = ctk.CTkButton(self.controls_frame, text='Find node', **button_arguments,
+                                    command=lambda: controller.perform(r.Action.search, input_field.get()))
+        min_button = ctk.CTkButton(self.controls_frame, text='Min',
+                                   command=lambda: controller.perform(r.Action.min, '0'), **button_arguments)
+        max_button = ctk.CTkButton(self.controls_frame, text='Max',
+                                   command=lambda: controller.perform(r.Action.max, '0'), **button_arguments)
+        mean_button = ctk.CTkButton(self.controls_frame, text='Mean', **button_arguments,
+                                    command=lambda: controller.perform(r.Action.mean, '0'))
+        median_button = ctk.CTkButton(self.controls_frame, text='Median', **button_arguments,
+                                      command=lambda: controller.perform(r.Action.median, '0'))
 
-        def selector_change(new_value):
-            self.long_animation_time = int(new_value)
-            self.short_animation_time = int(new_value) // 2
+        clear_button = ctk.CTkButton(self.controls_frame, text='Clear tree', command=lambda: controller.clear(),
+                                     **button_arguments)
+        self.view_button = ctk.CTkButton(self.controls_frame, text='Show previous state and explanation: ON',
+                                         command=lambda: controller.change_layout(), **button_arguments)
+        back_button = ctk.CTkButton(self.controls_frame, text='Back to menu', command=lambda: r.show_frame(m.frame),
+                                    **button_arguments)
 
-        self.time_scale = tk.Scale(self.controls_frame, from_=5000, to=50, resolution=50, orient=tk.HORIZONTAL,
-                                   label='Animation speed', command=selector_change, showvalue=False, sliderlength=15)
-        self.time_scale.set(self.long_animation_time)
-
+        # Second row of controls_frame
         def pause_continue_animation():
             if self.hold_animation:
                 # Load buttons state
@@ -240,58 +248,62 @@ class View(abc.ABC):
                     b.config(state=self.buttons_state[b])
                 # Change GUI
                 self.pause_continue_button.config(text='Pause')
-                self.info_label.config(text='', fg='black', font="TkDefaultFont")
+                self.info_label.config(text='', fg='black', font='TkDefaultFont')
                 self.hold_animation = False
             elif not self.hold_animation:
                 # Save buttons state
                 for b in self.buttons:
-                    self.buttons_state[b] = b.cget('state')
-                    self.buttons_state[self.back_button] = self.back_button.cget('state')
-                    self.buttons_state[self.forward_button] = self.forward_button.cget('state')
+                    self.buttons_state[b] = b.state
+                    self.buttons_state[self.back_button] = self.back_button.state
+                    self.buttons_state[self.forward_button] = self.forward_button.state
                 # Change GUI and hold animation
                 self.set_buttons(False)
                 self.pause_continue_button.config(text='Continue')
-                self.back_button.config(state='disabled')
-                self.forward_button.config(state='disabled')
-                self.info_label.config(text=f'Animation paused! Press \'{self.pause_continue_button.cget("text")}\' to '
-                                            f'continue', font=('TkDefaultFont', 10, 'bold'), fg='red')
+                self.back_button.config(state=tk.DISABLED)
+                self.forward_button.config(state=tk.DISABLED)
+                self.info_label.config(text=f'Animation paused! Press \'{self.pause_continue_button.text}\' to '
+                                            f'continue', fg='red')
                 self.hold_animation = True
                 while self.hold_animation:
                     r.wait(10)
 
-        self.pause_continue_button = tk.Button(self.controls_frame, text='Pause', command=pause_continue_animation)
-        clear_button = tk.Button(self.controls_frame, text='Clear tree', command=lambda: controller.clear())
-        self.view_button = tk.Button(self.controls_frame, text='Show previous state and explanation: ON',
-                                     command=lambda: controller.change_layout())
-        back_button = tk.Button(self.controls_frame, text='Back to menu', command=lambda: r.show_frame(m.frame))
+        def selector_change(new_value):
+            self.long_animation_time = int(new_value)
+            self.short_animation_time = int(new_value) // 2
+
         self.info_label = tk.Label(self.controls_frame)
+        self.back_button = ctk.CTkButton(self.controls_frame, text='<<<', command=controller.back, **button_arguments)
+        self.forward_button = ctk.CTkButton(self.controls_frame, text='>>>', command=controller.forward,
+                                            **button_arguments)
+        self.pause_continue_button = ctk.CTkButton(self.controls_frame, text='Pause', command=pause_continue_animation,
+                                                   **button_arguments)
+        self.time_scale = ctk.CTkSlider(self.controls_frame, from_=5000, to=50, width=155, command=selector_change)
+        self.time_scale.set(self.long_animation_time)
 
+        # Putting on window
         cts = self.columns_to_skip
-        insert_field.grid(row=0, column=cts)
-        insert_button.grid(row=0, column=cts + 1, padx=(5, 20))
-        delete_field.grid(row=0, column=cts + 2)
-        delete_button.grid(row=0, column=cts + 3, padx=(5, 20))
-        find_field.grid(row=0, column=cts + 4)
-        find_button.grid(row=0, column=cts + 5, padx=(5, 20))
-        tk.Label(self.controls_frame, text='Operations:').grid(row=0, column=cts + 6, padx=(5, 0))
-        min_button.grid(row=0, column=cts + 7, padx=(5, 0))
-        max_button.grid(row=0, column=cts + 8, padx=(5, 0))
-        mean_button.grid(row=0, column=cts + 9, padx=(5, 0))
-        median_button.grid(row=0, column=cts + 10, padx=(5, 0))
+        input_field.grid(row=0, column=cts)
+        insert_button.grid(row=0, column=cts + 1, padx=5)
+        delete_button.grid(row=0, column=cts + 2, padx=5)
+        find_button.grid(row=0, column=cts + 3, padx=5)
+        ctk.CTkLabel(self.controls_frame, text='Operations:').grid(row=0, column=cts + 4, padx=(5, 0))
+        min_button.grid(row=0, column=cts + 5, padx=(5, 0))
+        max_button.grid(row=0, column=cts + 6, padx=(5, 0))
+        mean_button.grid(row=0, column=cts + 7, padx=(5, 0))
+        median_button.grid(row=0, column=cts + 8, padx=(5, 0))
 
-        clear_button.grid(row=0, column=cts + 11, padx=(5, 0))
-        self.view_button.grid(row=0, column=cts + 12, columnspan=5, padx=(20, 20))
-        back_button.grid(row=0, column=cts + 17, padx=(40, 0))
+        clear_button.grid(row=0, column=cts + 9, padx=(5, 0))
+        self.view_button.grid(row=0, column=cts + 10, columnspan=5, padx=(20, 20))
+        back_button.grid(row=0, column=cts + 15, padx=(40, 0))
 
-        self.back_button = tk.Button(self.controls_frame, text='Prev', command=controller.back)
-        self.forward_button = tk.Button(self.controls_frame, text='Next', command=controller.forward)
-        self.info_label.grid(row=1, column=0, columnspan=5, sticky='WE')
-        tk.Label(self.controls_frame, text='Animation:').grid(row=1, column=cts + 6, padx=(5, 0))
-        self.back_button.grid(row=1, column=cts + 7)
-        self.forward_button.grid(row=1, column=cts + 8)
+        self.info_label.grid(row=1, column=0, columnspan=4, sticky='WE')
+        ctk.CTkLabel(self.controls_frame, text='Animation:').grid(row=1, column=cts + 4, padx=(5, 0))
+        self.back_button.grid(row=1, column=cts + 5)
+        self.forward_button.grid(row=1, column=cts + 6)
         self.check_browsing_buttons(controller.history.pointer, len(controller.history.history_list))
-        self.time_scale.grid(row=1, column=cts + 9, columnspan=3, padx=(20, 0))
-        self.pause_continue_button.grid(row=1, column=cts + 12)
+        self.pause_continue_button.grid(row=1, column=cts + 9)
+        ctk.CTkLabel(self.controls_frame, text='Anim. speed:').grid(row=1, column=cts + 10)
+        self.time_scale.grid(row=1, column=cts + 11, columnspan=3)
 
         # def showw():
         #     import random
@@ -301,37 +313,60 @@ class View(abc.ABC):
         # tk.Button(self.controls_frame, text='InsertImage', command=showw).grid(row=1, column=cts+14)
         self.controls_frame.pack()
 
-        visualization_frame = tk.Frame(frame)
-        self.explanation_frame = tk.Frame(visualization_frame)
-        explanation_title_label = tk.Label(self.explanation_frame)
-        explanation_label = tk.Label(self.explanation_frame)
-        self.explanation_text = tk.Text(explanation_label, font='TkDefaultFont',
-                                        width=70, height=42, bg=frame.cget('bg'))
-        explanation_scrollbar = tk.Scrollbar(explanation_label, command=self.explanation_text.yview)
-        self.explanation_text.config(yscrollcommand=explanation_scrollbar.set, state='disabled')
-        explanation_title_label.config(text=f'{text} explanation', font=15)
+        # Visualization frame
+        visualization_frame = ctk.CTkFrame(frame)
+        self.explanation_frame = ctk.CTkFrame(visualization_frame)
+        explanation_title_label = ctk.CTkLabel(self.explanation_frame, text='')
+        explanation_label = tk.Label(self.explanation_frame, text='')
+        self.explanation_text = tk.Text(explanation_label,
+                                        width=50, height=42, bg=frame.cget('bg'), font='TkDefaultFont')
+        explanation_scrollbar = tk.Scrollbar(explanation_label, command=self.explanation_text.yview, width=5)
+        self.explanation_text.config(yscrollcommand=explanation_scrollbar.set, state=tk.DISABLED)
+        explanation_title_label.config(text=f'{text} explanation')
         explanation_title_label.grid(row=0, column=0)
         explanation_label.grid(row=1, column=0)
         self.explanation_text.grid(row=1, column=1)
         explanation_scrollbar.grid(row=1, column=0, sticky=tk.NSEW)
         self.explanation_frame.grid(row=0, column=0, sticky='NS')
 
-        canvas_frame = tk.Frame(visualization_frame)
-        self.prev_label = tk.Label(canvas_frame, text=f'Previous state of the {text}:')
-        self.canvas_prev = tk.Canvas(canvas_frame, width=self.width, height=self.height, bg=white)
-        self.now_label = tk.Label(canvas_frame, text=f'Current state of the {text}:')
-        self.canvas_now = tk.Canvas(canvas_frame, width=self.width, height=self.height, bg=white)
+        canvas_frame = ctk.CTkFrame(visualization_frame)
+        self.prev_label = ctk.CTkLabel(canvas_frame, text=f'Previous state of the {text}:')
+        self.canvas_prev = ctk.CTkCanvas(canvas_frame, width=self.width, height=self.height, bg=white)
+        self.now_label = ctk.CTkLabel(canvas_frame, text=f'Current state of the {text}:')
+        self.canvas_now = ctk.CTkCanvas(canvas_frame, width=self.width, height=self.height, bg=white)
         self.prev_label.pack(pady=(5, 0))
         self.canvas_prev.pack()
         self.now_label.pack(pady=(5, 0))
         self.canvas_now.pack()
         canvas_frame.grid(row=0, column=1)
-        visualization_frame.pack()
+        visualization_frame.pack(pady=(5, 0))
 
         self.buttons = [insert_button, delete_button, find_button, clear_button, self.view_button,
                         min_button, max_button, mean_button, median_button]
 
         return frame
+
+    def add_max_degree_change_to_GUI(self, controller):
+        def selector_change(new_value):
+            if self.current_max_degree != new_value:
+                self.current_max_degree = new_value
+                controller.clear()
+                controller.tree = type(controller.tree)(self, new_value)
+                for b in degree_buttons:
+                    b.config(state=tk.DISABLED if int(b.text) == new_value else tk.NORMAL)
+
+        degree_buttons = []
+        degree_btn_frame = tk.Frame(self.controls_frame)
+        degree_buttons.append(ctk.CTkButton(degree_btn_frame, text='3', command=lambda: selector_change(3), **btn_arg))
+        degree_buttons.append(ctk.CTkButton(degree_btn_frame, text='4', command=lambda: selector_change(4), **btn_arg))
+        degree_buttons.append(ctk.CTkButton(degree_btn_frame, text='5', command=lambda: selector_change(5), **btn_arg))
+        degree_buttons.append(ctk.CTkButton(degree_btn_frame, text='6', command=lambda: selector_change(6), **btn_arg))
+        tk.Label(self.controls_frame, text='Max graph degree:').grid(row=0, column=0)
+        degree_btn_frame.grid(row=0, column=1)
+        for btn in degree_buttons:
+            btn.grid(row=0, column=degree_buttons.index(btn), padx=(0, 10 if btn is degree_buttons[-1] else 1))
+        degree_buttons[0].config(state=tk.DISABLED)
+        self.buttons.extend(degree_buttons)
 
     def calculate_anchor(self, anchor):
         """
@@ -435,9 +470,9 @@ class Explanation:
         :return: returns nothing
         """
         string = f'{self.line}) {text}\n'
-        self.view.explanation_text.config(state='normal')
+        self.view.explanation_text.config(state=tk.NORMAL)
         self.view.explanation_text.insert('end', string)
-        self.view.explanation_text.config(state='disabled')
+        self.view.explanation_text.config(state=tk.DISABLED)
         self.line += 1
 
     def reset(self):

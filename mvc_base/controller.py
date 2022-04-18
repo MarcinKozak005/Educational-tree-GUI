@@ -1,4 +1,5 @@
 import copy
+import tkinter as tk
 
 import core.root as r
 
@@ -43,9 +44,9 @@ class Controller:
         add_final_result = False
         if validate_input(arg):
             val = int(arg)
-            self.view.explanation_text.config(state='normal')
+            self.view.explanation_text.config(state=tk.NORMAL)
             self.view.explanation_text.delete(0.0, 'end')
-            self.view.explanation_text.config(state='disabled')
+            self.view.explanation_text.config(state=tk.DISABLED)
             if self.tree.root is not None and \
                     (func == r.Action.insert or
                      (func == r.Action.delete and self.tree.search_value_no_GUI(val) != (None, None))):

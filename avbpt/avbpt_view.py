@@ -13,20 +13,7 @@ class AVBPTView(view.View):
     def create_GUI(self, controller, text):
         """Adds max_degree selection"""
         frame = super().create_GUI(controller, text)
-
-        def selector_change(*_):
-            new_value = max_degree_value.get()
-            if self.current_max_degree != new_value:
-                self.current_max_degree = new_value
-                controller.clear()
-                controller.tree = avbpt.AVBPTree(self, new_value)
-
-        max_degree_value = tk.IntVar(value=self.current_max_degree)
-        max_degree_menu = tk.OptionMenu(self.controls_frame, max_degree_value, *[3, 4, 5, 6])
-        max_degree_value.trace('w', selector_change)
-        self.buttons.append(max_degree_menu)
-        tk.Label(self.controls_frame, text='Max tree degree:').grid(row=0, column=0)
-        max_degree_menu.grid(row=0, column=1, padx=(0, 20))
+        self.add_max_degree_change_to_GUI(controller)
         return frame
 
     def draw_tree(self, node, canvas):
