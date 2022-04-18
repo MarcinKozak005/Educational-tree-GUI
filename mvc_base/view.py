@@ -5,7 +5,8 @@ import customtkinter as ctk
 
 import core.menu as m
 import core.root as r
-from core.constants import hint_frame, exp_txt, white, black, animation_unit
+from core.constants import hint_frame, exp_txt, white, black, animation_unit, canvas_width_modifier, \
+    canvas_height_modifier, explanation_width_modifier, explanation_height_modifier
 
 ctk.set_default_color_theme('green')
 button_arguments = {'width': 20, 'height': 10, 'text_color_disabled': '#d1d1d1'}
@@ -18,8 +19,8 @@ class View(abc.ABC):
     def __init__(self, node_width, node_height, columns_to_skip):
         self.explanation = Explanation(self)
         self.hint_frame = HintFrame(self)
-        self.width = 1000
-        self.height = 300
+        self.width = int(r.frame.width * canvas_width_modifier)
+        self.height = int(r.frame.height * canvas_height_modifier)
         self.y_space = 50
         self.y_above = 30
         self.node_width = node_width
@@ -319,7 +320,9 @@ class View(abc.ABC):
         explanation_title_label = ctk.CTkLabel(self.explanation_frame, text='')
         explanation_label = tk.Label(self.explanation_frame, text='')
         self.explanation_text = tk.Text(explanation_label,
-                                        width=50, height=42, bg=frame.cget('bg'), font='TkDefaultFont')
+                                        width=int(r.frame.width * explanation_width_modifier),
+                                        height=int(r.frame.height * explanation_height_modifier),
+                                        bg=frame.cget('bg'), font='TkDefaultFont')
         explanation_scrollbar = tk.Scrollbar(explanation_label, command=self.explanation_text.yview, width=5)
         self.explanation_text.config(yscrollcommand=explanation_scrollbar.set, state=tk.DISABLED)
         explanation_title_label.config(text=f'{text} explanation')

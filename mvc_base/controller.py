@@ -2,6 +2,7 @@ import copy
 import tkinter as tk
 
 import core.root as r
+from core.constants import canvas_width_modifier, canvas_height_modifier
 
 
 def validate_input(val):
@@ -53,7 +54,7 @@ class Controller:
                 add_final_result = True
                 # Draw previous state on canvas_prev
                 view.canvas_prev.delete('all')
-                self.tree.root.update_positions(True, width=1000)
+                self.tree.root.update_positions(True, width=int(r.frame.width * canvas_width_modifier))
                 view.draw_tree(self.tree.root, view.canvas_prev)
                 self.tree.root.update_positions(True)
                 self.history.pop()
@@ -96,7 +97,8 @@ class Controller:
             view.canvas_prev.pack_forget()
             view.prev_label.pack_forget()
             view.explanation_frame.grid_forget()
-            view.width, view.height = 1400, 600
+            view.width, view.height = int(1.25 * r.frame.width * canvas_width_modifier), 2 * int(
+                r.frame.height * canvas_height_modifier)
             view.canvas_now.config(width=view.width, height=view.height)
             view.view_button.config(text='Show previous state and explanation: OFF')
             view.erase('all')
@@ -112,7 +114,8 @@ class Controller:
             view.now_label.pack()
             view.canvas_now.pack()
             view.explanation_frame.grid(row=0, column=0, sticky='NS')
-            view.width, view.height = 1000, 300
+            view.width = int(r.frame.width * canvas_width_modifier)
+            view.height = int(r.frame.height * canvas_height_modifier)
             view.canvas_now.config(width=view.width, height=view.height)
             view.view_button.config(text='Show previous state and explanation: ON')
             view.erase('all')

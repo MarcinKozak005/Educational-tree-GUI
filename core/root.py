@@ -43,5 +43,7 @@ class Mode(Enum):
 frame = ctk.CTk()
 frame.title('Educational tree GUI')
 frame.state('zoomed')
+frame.width = frame.winfo_screenwidth()
+frame.height = frame.winfo_screenheight()
 frame.rowconfigure(0, weight=1)
 frame.columnconfigure(0, weight=1)
