@@ -45,6 +45,10 @@ class View(abc.ABC):
         self.back_button = None
         self.forward_button = None
         self.buttons_state = {}
+        self.current_max_degree = None
+        self.max_degree_buttons = []
+        self.increase_size_button = None
+        self.decrease_size_button = None
 
     @abc.abstractmethod
     def draw_tree(self, node, canvas):
@@ -199,6 +203,12 @@ class View(abc.ABC):
         else:
             self.forward_button.config(state=tk.DISABLED)
             self.set_buttons(True)
+        self.check_max_degree_buttons()
+
+    def check_max_degree_buttons(self):
+        if self.max_degree_buttons:
+            for b in self.max_degree_buttons:
+                b.config(state=tk.DISABLED if int(b.text) == self.current_max_degree else tk.NORMAL)
 
     def create_GUI(self, controller, text):
         """
@@ -348,21 +358,25 @@ class View(abc.ABC):
                 self.current_max_degree = new_value
                 controller.clear()
                 controller.tree = type(controller.tree)(self, new_value)
-                for b in degree_buttons:
+                for b in self.max_degree_buttons:
                     b.config(state=tk.DISABLED if int(b.text) == new_value else tk.NORMAL)
 
-        degree_buttons = []
         degree_btn_frame = tk.Frame(self.controls_frame)
-        degree_buttons.append(ctk.CTkButton(degree_btn_frame, text='3', command=lambda: selector_change(3), **btn_arg))
-        degree_buttons.append(ctk.CTkButton(degree_btn_frame, text='4', command=lambda: selector_change(4), **btn_arg))
-        degree_buttons.append(ctk.CTkButton(degree_btn_frame, text='5', command=lambda: selector_change(5), **btn_arg))
-        degree_buttons.append(ctk.CTkButton(degree_btn_frame, text='6', command=lambda: selector_change(6), **btn_arg))
+        self.max_degree_buttons.append(ctk.CTkButton(degree_btn_frame, text='3',
+                                                     command=lambda: selector_change(3), **btn_arg))
+        self.max_degree_buttons.append(ctk.CTkButton(degree_btn_frame, text='4',
+                                                     command=lambda: selector_change(4), **btn_arg))
+        self.max_degree_buttons.append(ctk.CTkButton(degree_btn_frame, text='5',
+                                                     command=lambda: selector_change(5), **btn_arg))
+        self.max_degree_buttons.append(ctk.CTkButton(degree_btn_frame, text='6',
+                                                     command=lambda: selector_change(6), **btn_arg))
         tk.Label(self.controls_frame, text='Max graph degree:').grid(row=0, column=0)
         degree_btn_frame.grid(row=0, column=1)
-        for btn in degree_buttons:
-            btn.grid(row=0, column=degree_buttons.index(btn), padx=(0, 10 if btn is degree_buttons[-1] else 1))
-        degree_buttons[0].config(state=tk.DISABLED)
-        self.buttons.extend(degree_buttons)
+        for btn in self.max_degree_buttons:
+            btn.grid(row=0, column=self.max_degree_buttons.index(btn),
+                     padx=(0, 10 if btn is self.max_degree_buttons[-1] else 1))
+        self.max_degree_buttons[0].config(state=tk.DISABLED)
+        self.buttons.extend(self.max_degree_buttons)
 
     def calculate_anchor(self, anchor):
         """

@@ -223,12 +223,12 @@ class DCNode(model.AnimatedObject, model.Node):
         # Swap values in two nodes: one holding value to delete and it's successor
         if y is not node:
             view.explanation.append(f'Swap {node.value} with {y.value}')
-            view.canvas_now.create_oval(node.x - view.node_width // 2, node.y - view.node_height // 2,
-                                        node.x + view.node_width // 2, node.y + view.node_height // 2,
-                                        fill=node.color, tags='swap1')
-            view.canvas_now.create_oval(y.x - view.node_width // 2, y.y - view.node_height // 2,
-                                        y.x + view.node_width // 2, y.y + view.node_height // 2,
-                                        fill=y.color, tags=y.tag())
+            circle_node = view.black_circle if node.color == black else view.red_circle
+            circle_y = view.black_circle if y.color == black else view.red_circle
+            view.canvas_now.create_image(node.x - view.node_width // 2, node.y - view.node_height // 2,
+                                         image=circle_node, anchor='nw', tags='swap1')
+            view.canvas_now.create_image(y.x - view.node_width // 2, y.y - view.node_height // 2,
+                                         image=circle_y, anchor='nw', tags=y.tag())
             txt1 = view.canvas_now.create_text(node.x, node.y, fill=black, text=node.value, tags=[y.tag(), 'txt1'])
             txt2 = view.canvas_now.create_text(y.x, y.y, fill=black, text=y.value, tags=['swap1', 'txt2'])
             txt1_bg = view.canvas_now.create_rectangle(view.canvas_now.bbox(txt1), fill=white, tags=[y.tag(), 'txt1'])

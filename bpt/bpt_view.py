@@ -3,7 +3,7 @@ import tkinter as tk
 import bpt.bpt_model as bpt
 import mvc_base.model_balanced as mb
 import mvc_base.view as view
-from core.constants import green, white, blue
+from core.constants import white, blue, black
 
 
 class BPTView(view.View):
@@ -19,7 +19,7 @@ class BPTView(view.View):
 
     def draw_tree(self, node, canvas):
         if type(node) is bpt.BPTNode:
-            canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill=blue, text=node.id,
+            canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill=black, text=node.id,
                                tags=node.tag(), font=('TkDefaultFont', 10, 'bold'))
             for v in node.values:
                 self.draw_object_with_children_lines(v, canvas)
@@ -38,9 +38,9 @@ class BPTView(view.View):
 
     def draw_object(self, node, canvas):
         if type(node) is mb.LinkBalValue:
-            canvas.create_rectangle(node.x - self.node_width // 2, node.y - self.node_height // 2,
-                                    node.x + self.node_width // 2, node.y + self.node_height // 2,
-                                    fill=green, tags=node.tag())
-            canvas.create_text(node.x, node.y, fill=white, text=node.value, tags=node.tag())
+            canvas.create_image(node.x - self.node_width // 2, node.y - self.node_height // 2,
+                                image=node.parent.tree.green_square, anchor='nw', tags=node.tag())
+            canvas.create_text(node.x, node.y, fill=white, text=node.value, tags=node.tag(),
+                               font=('TkDefaultFont', 10, 'bold'))
             if node.next_value is not None:
                 self.draw_line(canvas, node, node.next_value, tk.SE, tk.SW, fill=blue)

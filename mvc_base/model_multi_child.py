@@ -1,6 +1,8 @@
 import abc
 import tkinter as tk
 
+from PIL import ImageTk, Image
+
 import mvc_base.model as model
 from core.constants import grey_node, white, hint_frame
 
@@ -18,6 +20,12 @@ class MCTree(model.Tree):
             raise ValueError
         self.max_degree = max_degree
         self.class_node_id = ord('@')
+        grey_square = Image.open('../materials/grey_square.png').resize((self.view.node_width, self.view.node_height),
+                                                                        Image.ANTIALIAS)
+        green_square = Image.open('../materials/green_square.png').resize((self.view.node_width, self.view.node_height),
+                                                                          Image.ANTIALIAS)
+        self.grey_square = ImageTk.PhotoImage(grey_square)
+        self.green_square = ImageTk.PhotoImage(green_square)
 
     def insert_value(self, value):
         if self.root is None:
@@ -27,11 +35,9 @@ class MCTree(model.Tree):
         else:
             view = self.view
             view.explanation.append(f'Tree is not empty. Find insert place for {value}')
-            view.canvas_now.create_rectangle(self.root.x - view.node_width // 2,
-                                             self.root.y - view.node_height // 2 - view.y_above,
-                                             self.root.x + view.node_width // 2,
-                                             self.root.y + view.node_height // 2 - view.y_above,
-                                             fill='grey', tags=grey_node)
+            view.canvas_now.create_image(self.root.x - view.node_width // 2,
+                                         self.root.y - view.node_height // 2 - view.y_above,
+                                         image=self.grey_square, anchor='nw', tags=grey_node)
             view.canvas_now.create_text(self.root.x, self.root.y - view.y_above, fill=white,
                                         text=value, tags=grey_node)
             self.root.insert_value(self.value_class(value, None, self.root.x, self.root.y - view.y_above))

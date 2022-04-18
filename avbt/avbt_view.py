@@ -3,7 +3,7 @@ import tkinter as tk
 import avbt.avbt_model as avbt
 import mvc_base.model_aggregated as ma
 import mvc_base.view as view
-from core.constants import green, white, black, blue
+from core.constants import white, black
 
 
 class AVBTView(view.View):
@@ -19,7 +19,7 @@ class AVBTView(view.View):
 
     def draw_tree(self, node, canvas):
         if type(node) is avbt.AVBTNode:
-            canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill=blue, text=node.id,
+            canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill=black, text=node.id,
                                tags=node.tag(), font=('TkDefaultFont', 10, 'bold'))
             for v in node.values:
                 self.draw_object_with_children_lines(v, canvas)
@@ -38,9 +38,9 @@ class AVBTView(view.View):
 
     def draw_object(self, node, canvas):
         if type(node) is ma.AggValue:
-            canvas.create_rectangle(node.x - self.node_width // 2, node.y - self.node_height // 2,
-                                    node.x + self.node_width // 2, node.y + self.node_height // 2,
-                                    fill=green, tags=node.tag())
-            canvas.create_text(node.x, node.y, fill=white, text=node.value, tags=node.tag())
+            canvas.create_image(node.x - self.node_width // 2, node.y - self.node_height // 2,
+                                image=node.parent.tree.green_square, anchor='nw', tags=node.tag())
+            canvas.create_text(node.x, node.y, fill=white, text=node.value, tags=node.tag(),
+                               font=('TkDefaultFont', 10, 'bold'))
             canvas.create_text(node.x, node.y + self.node_height, fill=black, text=f'[{node.counter}]',
                                font=(None, 8), tags=node.tag())
