@@ -253,7 +253,7 @@ class MCNode(model.AnimatedObject, model.Node, abc.ABC):
             view.erase(hint_frame)
             view.move_object(grey_node, self.x, self.y, self.children[i].x, self.children[i].y)
             self.children[i].insert_value(value)
-        # Fix AVB tree constraints
+        # Fix tree constraints
         if len(self.values) == self.tree.max_degree:
             view.erase(hint_frame)
             view.draw_exp_text(self, f'Number of values in [{self.id}] == max_tree_degree. Start fixing process')

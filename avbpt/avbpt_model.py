@@ -48,19 +48,19 @@ class AVBPTNode(ma.AggNode):
         view = self.tree.view
         next_value = self.get_next(i)
         prev_value = self.get_prev(i)
-        self.next_value = next_value
-        self.prev_value = prev_value
+        value.next_value = next_value
+        value.prev_value = prev_value
         if prev_value is not None:
-            prev_value.next_value = self
+            prev_value.next_value = value
         if next_value is not None:
-            next_value.prev_value = self
+            next_value.prev_value = value
         view.draw_exp_text(self, f'Update next neighbour connections: '
                                  f'next([{value.value}]) is [{None if next_value is None else next_value.value}] and '
                                  f'prev([{value.value}]) is [{None if prev_value is None else prev_value.value}]')
 
 
 class AVBPTree(ma.AggTree):
-    value_class = ma.LinkValue
+    value_class = ma.LinkAggValue
     node_class = AVBPTNode
 
     def __deepcopy__(self, memo):

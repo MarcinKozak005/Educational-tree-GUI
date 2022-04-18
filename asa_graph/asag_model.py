@@ -346,7 +346,7 @@ class ASAGNode(ma.AggNode):
 
 
 class ASAGraph(ma.AggTree):
-    value_class = ma.LinkValue
+    value_class = ma.LinkAggValue
     node_class = ASAGNode
 
     def __deepcopy__(self, memo):

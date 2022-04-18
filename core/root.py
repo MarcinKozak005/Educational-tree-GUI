@@ -35,6 +35,8 @@ class Action(Enum):
 class Mode(Enum):
     value = 1
     node = 2
+    down = 3
+    up = 4
 
 
 frame = tk.Tk()

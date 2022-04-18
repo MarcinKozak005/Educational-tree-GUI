@@ -105,8 +105,8 @@ class View(abc.ABC):
         """
         txt = self.canvas_now.create_text(node.x, node.y + (-1 if above else 1) * self.node_height, fill=white,
                                           text=exp_str, tags=exp_txt)
-        txt_background = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill="grey", tags=exp_txt)
-        self.canvas_now.tag_lower(txt_background)
+        txt_background = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill='grey', tags=exp_txt)
+        self.canvas_now.tag_lower(txt_background, txt)
         r.wait(self.long_animation_time)
         self.erase(exp_txt)
         self.explanation.append(exp_str)
@@ -357,7 +357,7 @@ class View(abc.ABC):
             try:
                 canvas.create_line(node1.x + from_mod[0], node1.y + from_mod[1],
                                    node2.x + to_mod[0], node2.y + to_mod[1],
-                                   fill=fill, tags=[f'Line{hash(node1)}', 'Line'])
+                                   fill=fill, tags=[f'Line{hash(node1)}', 'Line'], width=2 if fill == black else 1)
                 canvas.tag_lower('Line')
             except AttributeError as e:
                 print(e)

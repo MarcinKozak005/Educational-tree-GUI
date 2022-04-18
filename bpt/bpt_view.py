@@ -40,15 +40,6 @@ class BPTView(view.View):
             if not node.is_leaf:
                 for c in node.children:
                     self.draw_tree(c, canvas)
-        # Line connecting leaves
-        if node is not None and node is node.tree.root:
-            left = node
-            while not left.is_leaf:
-                left = left.children[0]
-            right = node
-            while not right.is_leaf:
-                right = right.children[-1]
-            self.draw_line(canvas, left.values[0], right, from_side=tk.SE, to_side=tk.SW, fill='blue')
 
     def draw_object_with_children_lines(self, obj, canvas):
         parent = obj.parent
@@ -60,8 +51,10 @@ class BPTView(view.View):
         self.draw_object(obj, canvas)
 
     def draw_object(self, node, canvas):
-        if type(node) is mb.BalValue:
+        if type(node) is mb.LinkBalValue:
             canvas.create_rectangle(node.x - self.node_width // 2, node.y - self.node_height // 2,
                                     node.x + self.node_width // 2, node.y + self.node_height // 2,
                                     fill=green, tags=node.tag())
             canvas.create_text(node.x, node.y, fill=white, text=node.value, tags=node.tag())
+            if node.next_value is not None:
+                self.draw_line(canvas, node, node.next_value, tk.SE, tk.SW, fill='blue')

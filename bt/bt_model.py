@@ -345,6 +345,7 @@ class BTNode(mb.BalNode):
 
 
 class BTree(mb.BalTree):
+    value_class = mb.BalValue
     node_class = BTNode
 
     def __deepcopy__(self, memo):

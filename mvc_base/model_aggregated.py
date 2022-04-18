@@ -14,7 +14,7 @@ class AggValue(mc.MCValue):
         self.counter = 1
 
 
-class LinkValue(AggValue):
+class LinkAggValue(AggValue):
     def __init__(self, value, parent_node, x=0, y=0):
         super().__init__(value, parent_node, x, y)
         self.prev_value = None
