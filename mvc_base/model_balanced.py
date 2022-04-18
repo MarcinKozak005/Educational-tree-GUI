@@ -3,6 +3,7 @@ import tkinter as tk
 
 import core.root as r
 import mvc_base.model_multi_child as mc
+from core.constants import blue
 
 
 class BalValue(mc.MCValue):
@@ -26,7 +27,7 @@ class LinkBalValue(BalValue):
     def tick(self, view, x_unit, y_unit):
         super().tick(view, x_unit, y_unit)
         if self.next_value is not None:
-            view.draw_line(view.canvas_now, self, self.next_value, tk.SE, tk.SW, fill='blue')
+            view.draw_line(view.canvas_now, self, self.next_value, tk.SE, tk.SW, fill=blue)
 
 
 class BalTree(mc.MCTree, abc.ABC):

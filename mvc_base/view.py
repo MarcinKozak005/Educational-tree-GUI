@@ -33,11 +33,12 @@ class View(abc.ABC):
         self.explanation_frame = None
         self.controls_frame = None
         self.time_scale = None
-        self.hold_animation = True
-        self.pause_button = None
-        self.continue_button = None
+        self.hold_animation = False
+        self.pause_continue_button = None
         self.back_button = None
         self.forward_button = None
+        self.buttons_state = {}
+        self.image = tk.PhotoImage(file='../materials/tile.ppm')
 
     @abc.abstractmethod
     def draw_tree(self, node, canvas):
@@ -105,7 +106,16 @@ class View(abc.ABC):
         """
         txt = self.canvas_now.create_text(node.x, node.y + (-1 if above else 1) * self.node_height, fill=white,
                                           text=exp_str, tags=exp_txt)
-        txt_background = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill='grey', tags=exp_txt)
+        txt_bb = self.canvas_now.bbox(txt)
+        if txt_bb[0] < 0:
+            x_change = -txt_bb[0]
+            self.canvas_now.move(txt, x_change, 0)
+            txt_bb = (txt_bb[0] - x_change, txt_bb[1], txt_bb[2] - x_change, txt_bb[3])
+        if txt_bb[2] - self.width > 0:
+            x_change = -(txt_bb[2] - self.width)
+            self.canvas_now.move(txt, x_change, 0)
+            txt_bb = (txt_bb[0] + x_change, txt_bb[1], txt_bb[2] + x_change, txt_bb[3])
+        txt_background = self.canvas_now.create_rectangle(txt_bb, fill='grey', tags=exp_txt)
         self.canvas_now.tag_lower(txt_background, txt)
         r.wait(self.long_animation_time)
         self.erase(exp_txt)
@@ -223,26 +233,33 @@ class View(abc.ABC):
                                    label='Animation speed', command=selector_change, showvalue=False, sliderlength=15)
         self.time_scale.set(self.long_animation_time)
 
-        def pause_animation():
-            self.set_buttons(False)
-            self.info_label.config(text=f'Animation paused! Press \'{self.continue_button.cget("text")}\' to continue',
-                                   font=('TkDefaultFont', 10, 'bold'), fg='red')
-            self.pause_button.config(state='disabled')
-            self.continue_button.config(state='normal')
-            self.hold_animation = True
-            while self.hold_animation:
-                r.wait(10)
+        def pause_continue_animation():
+            if self.hold_animation:
+                # Load buttons state
+                for b in self.buttons_state.keys():
+                    b.config(state=self.buttons_state[b])
+                # Change GUI
+                self.pause_continue_button.config(text='Pause')
+                self.info_label.config(text='', fg='black', font="TkDefaultFont")
+                self.hold_animation = False
+            elif not self.hold_animation:
+                # Save buttons state
+                for b in self.buttons:
+                    self.buttons_state[b] = b.cget('state')
+                    self.buttons_state[self.back_button] = self.back_button.cget('state')
+                    self.buttons_state[self.forward_button] = self.forward_button.cget('state')
+                # Change GUI and hold animation
+                self.set_buttons(False)
+                self.pause_continue_button.config(text='Continue')
+                self.back_button.config(state='disabled')
+                self.forward_button.config(state='disabled')
+                self.info_label.config(text=f'Animation paused! Press \'{self.pause_continue_button.cget("text")}\' to '
+                                            f'continue', font=('TkDefaultFont', 10, 'bold'), fg='red')
+                self.hold_animation = True
+                while self.hold_animation:
+                    r.wait(10)
 
-        def continue_animation():
-            self.set_buttons(True)
-            self.info_label.config(text='', fg='black', font="TkDefaultFont")
-            self.pause_button.config(state='normal')
-            self.continue_button.config(state='disabled')
-            self.hold_animation = False
-
-        self.pause_button = tk.Button(self.controls_frame, text='Pause', command=pause_animation)
-        self.continue_button = tk.Button(self.controls_frame, text='Continue', command=continue_animation,
-                                         state='disabled')
+        self.pause_continue_button = tk.Button(self.controls_frame, text='Pause', command=pause_continue_animation)
         clear_button = tk.Button(self.controls_frame, text='Clear tree', command=lambda: controller.clear())
         self.view_button = tk.Button(self.controls_frame, text='Show previous state and explanation: ON',
                                      command=lambda: controller.change_layout())
@@ -266,16 +283,22 @@ class View(abc.ABC):
         self.view_button.grid(row=0, column=cts + 12, columnspan=5, padx=(20, 20))
         back_button.grid(row=0, column=cts + 17, padx=(40, 0))
 
-        self.back_button = tk.Button(self.controls_frame, text='Next', command=controller.back)
-        self.forward_button = tk.Button(self.controls_frame, text='Prev', command=controller.forward)
+        self.back_button = tk.Button(self.controls_frame, text='Prev', command=controller.back)
+        self.forward_button = tk.Button(self.controls_frame, text='Next', command=controller.forward)
         self.info_label.grid(row=1, column=0, columnspan=5, sticky='WE')
         tk.Label(self.controls_frame, text='Animation:').grid(row=1, column=cts + 6, padx=(5, 0))
         self.back_button.grid(row=1, column=cts + 7)
         self.forward_button.grid(row=1, column=cts + 8)
         self.check_browsing_buttons(controller.history.pointer, len(controller.history.history_list))
         self.time_scale.grid(row=1, column=cts + 9, columnspan=3, padx=(20, 0))
-        self.pause_button.grid(row=1, column=cts + 12)
-        self.continue_button.grid(row=1, column=cts + 13)
+        self.pause_continue_button.grid(row=1, column=cts + 12)
+
+        # def showw():
+        #     import random
+        #     self.canvas_now.create_image(random.randint(1,10), random.randint(1,100), anchor=tk.NW,
+        #                                  image=self.image, tags=['asd','aaa'])
+        #
+        # tk.Button(self.controls_frame, text='InsertImage', command=showw).grid(row=1, column=cts+14)
         self.controls_frame.pack()
 
         visualization_frame = tk.Frame(frame)

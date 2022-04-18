@@ -1,7 +1,7 @@
 import mvc_base.model_double_child as mdc
 import mvc_base.view as view
 import rbt.rbt_model as rbt
-from core.constants import white
+from core.constants import white, recolor_txt
 
 
 class RBTView(view.View):
@@ -17,8 +17,17 @@ class RBTView(view.View):
         """
         if type(node) is rbt.RBTNode:
             txt = self.canvas_now.create_text(node.x, node.y - self.node_height, fill=white,
-                                              text=f'Change color to {to_color}', tags='recolor_txt')
-            txt_bg = self.canvas_now.create_rectangle(self.canvas_now.bbox(txt), fill='grey', tags='recolor_txt')
+                                              text=f'Change color to {to_color}', tags=recolor_txt)
+            txt_bb = self.canvas_now.bbox(txt)
+            if txt_bb[0] < 0:
+                x_change = -txt_bb[0]
+                self.canvas_now.move(txt, x_change, 0)
+                txt_bb = (txt_bb[0] - x_change, txt_bb[1], txt_bb[2] - x_change, txt_bb[3])
+            if txt_bb[2] - self.width > 0:
+                x_change = -(txt_bb[2] - self.width)
+                self.canvas_now.move(txt, x_change, 0)
+                txt_bb = (txt_bb[0] + x_change, txt_bb[1], txt_bb[2] + x_change, txt_bb[3])
+            txt_bg = self.canvas_now.create_rectangle(txt_bb, fill='grey', tags=recolor_txt)
             self.explanation.append(f'Change color of ({node.value}) to {to_color}')
             self.canvas_now.tag_lower(txt_bg, txt)
 

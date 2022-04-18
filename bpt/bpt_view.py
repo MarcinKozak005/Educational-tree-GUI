@@ -3,7 +3,7 @@ import tkinter as tk
 import bpt.bpt_model as bpt
 import mvc_base.model_balanced as mb
 import mvc_base.view as view
-from core.constants import green, white, black
+from core.constants import green, white, blue
 
 
 class BPTView(view.View):
@@ -19,9 +19,8 @@ class BPTView(view.View):
             new_value = max_degree_value.get()
             if self.current_max_degree != new_value:
                 self.current_max_degree = new_value
-                controller.tree.clear()
+                controller.clear()
                 controller.tree = bpt.BPTree(self, new_value)
-                self.clear()
 
         max_degree_value = tk.IntVar(value=self.current_max_degree)
         max_degree_menu = tk.OptionMenu(self.controls_frame, max_degree_value, *[3, 4, 5, 6])
@@ -33,8 +32,8 @@ class BPTView(view.View):
 
     def draw_tree(self, node, canvas):
         if type(node) is bpt.BPTNode:
-            canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill=black, text=node.id,
-                               tags=node.tag())
+            canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill=blue, text=node.id,
+                               tags=node.tag(), font=('TkDefaultFont', 10, 'bold'))
             for v in node.values:
                 self.draw_object_with_children_lines(v, canvas)
             if not node.is_leaf:
@@ -57,4 +56,4 @@ class BPTView(view.View):
                                     fill=green, tags=node.tag())
             canvas.create_text(node.x, node.y, fill=white, text=node.value, tags=node.tag())
             if node.next_value is not None:
-                self.draw_line(canvas, node, node.next_value, tk.SE, tk.SW, fill='blue')
+                self.draw_line(canvas, node, node.next_value, tk.SE, tk.SW, fill=blue)

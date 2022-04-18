@@ -5,7 +5,6 @@ import mvc_base.model_aggregated as ma
 
 
 class AVBPTNode(ma.AggNode):
-    class_node_id = ord('@')  # distinguishes nodes by using letters
 
     def __init__(self, tree, is_leaf, x, y):
         super().__init__(tree, is_leaf, x, y)

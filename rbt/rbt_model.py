@@ -2,7 +2,7 @@ import copy
 
 import core.root as r
 import mvc_base.model_double_child as mdc
-from core.constants import left, right, red, black
+from core.constants import left, right, red, black, recolor_txt
 
 
 class RBTNode(mdc.DCNode):
@@ -20,7 +20,7 @@ class RBTNode(mdc.DCNode):
             view.animate(self.tree.root)
             view.draw_recolor_text(x, black)
             r.wait(view.long_animation_time)
-            view.erase('recolor_txt')
+            view.erase(recolor_txt)
         view.explanation.append(f'Deletion finished')
         if type(self.tree.root) is mdc.DCLeaf:
             self.tree.clear()
@@ -55,7 +55,7 @@ class RBTNode(mdc.DCNode):
                 view.draw_object(n.parent, view.canvas_now)
                 view.draw_object(uncle, view.canvas_now)
                 view.draw_object(n.parent.parent, view.canvas_now)
-                view.erase('recolor_txt')
+                view.erase(recolor_txt)
                 return n.parent.parent
             elif n == n.parent[right if side == left else left]:
                 n = n.parent
@@ -70,7 +70,7 @@ class RBTNode(mdc.DCNode):
                 r.wait(view.long_animation_time)
                 view.draw_object(tmp_node1, view.canvas_now)
                 view.draw_object(tmp_node2, view.canvas_now)
-                view.erase('recolor_txt')
+                view.erase(recolor_txt)
             return n
 
         # fix_insert
@@ -110,14 +110,14 @@ class RBTNode(mdc.DCNode):
                 r.wait(view.long_animation_time)
                 view.draw_object(tmp_node1, view.canvas_now)
                 view.draw_object(tmp_node2, view.canvas_now)
-                view.erase('recolor_txt')
+                view.erase(recolor_txt)
                 sibling = n.parent[side]
             if type(sibling) is not mdc.DCLeaf and sibling[snd_side].color == black and sibling[side].color == black:
                 sibling.color = red
                 view.draw_recolor_text(sibling, red)
                 r.wait(view.long_animation_time)
                 view.draw_object(sibling, view.canvas_now)
-                view.erase('recolor_txt')
+                view.erase(recolor_txt)
                 n = n.parent
             elif type(sibling) is not mdc.DCLeaf and sibling[side].color == black:
                 sibling[snd_side].color = black
@@ -129,7 +129,7 @@ class RBTNode(mdc.DCNode):
                 r.wait(view.long_animation_time)
                 view.draw_object(tmp_node1, view.canvas_now)
                 view.draw_object(tmp_node2, view.canvas_now)
-                view.erase('recolor_txt')
+                view.erase(recolor_txt)
                 sibling = n.parent[side]
             if n is not self.tree.root:
                 sibling.color = n.parent.color
@@ -145,7 +145,7 @@ class RBTNode(mdc.DCNode):
                 view.draw_object(tmp_node1, view.canvas_now)
                 view.draw_object(tmp_node2, view.canvas_now)
                 view.draw_object(tmp_node3, view.canvas_now)
-                view.erase('recolor_txt')
+                view.erase(recolor_txt)
                 n = self.tree.root
             return n
 

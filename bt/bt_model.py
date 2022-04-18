@@ -7,7 +7,6 @@ from core.constants import hint_frame
 
 
 class BTNode(mb.BalNode):
-    class_node_id = ord('@')  # distinguishes nodes by using letters
 
     def delete_value(self, value):
         node, pos = self.search_value(value)

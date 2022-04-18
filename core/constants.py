@@ -11,9 +11,11 @@ red = 'red'
 green = 'green'
 white = 'white'
 light_green = '#43FF33'
+blue = 'blue'
 
 # Other
 left = 'left'
 right = 'right'
+recolor_txt = 'recolor_txt'
 
 animation_unit = 10

@@ -7,7 +7,6 @@ from core.constants import hint_frame
 
 
 class BPTNode(mb.BalNode):
-    class_node_id = ord('@')  # distinguishes nodes by using letters
 
     def __init__(self, tree, is_leaf, x, y):
         super().__init__(tree, is_leaf, x, y)

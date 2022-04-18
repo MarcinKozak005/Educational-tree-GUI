@@ -27,6 +27,8 @@ class Controller:
         """
         self.tree.clear()
         self.view.clear()
+        self.history.clear()
+        self.view.check_browsing_buttons(self.history.pointer, len(self.history.history_list))
 
     def perform(self, func, arg):
         """
@@ -184,6 +186,11 @@ class History:
 
     def substitute(self, sub):
         self.history_list[self.pointer].tree = sub
+
+    def clear(self):
+        self.history_list = []
+        self.pointer = -1
+        self.track = False
 
 
 class HistoryElement:

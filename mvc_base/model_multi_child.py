@@ -17,6 +17,7 @@ class MCTree(model.Tree):
         if max_degree < 2:
             raise ValueError
         self.max_degree = max_degree
+        self.class_node_id = ord('@')
 
     def insert_value(self, value):
         if self.root is None:
@@ -53,9 +54,9 @@ class MCTree(model.Tree):
             return self.root.search_value_no_GUI(value)
 
     def clear(self):
-        """ Additionally resets self.node_class.class_node_id """
+        """ Additionally resets self.class_node_id """
         self.root = None
-        self.node_class.class_node_id = ord('@')
+        self.class_node_id = ord('@')
 
     def min(self):
         if self.root is None:
@@ -104,14 +105,14 @@ class MCValue(model.AnimatedObject):
 
 
 class MCNode(model.AnimatedObject, model.Node, abc.ABC):
-    @classmethod
-    def get_id(cls):
-        cls.class_node_id += 1
-        if cls.class_node_id == ord('['):
-            cls.class_node_id = ord('a')
-        elif cls.class_node_id == ord('{'):
-            cls.class_node_id = ord('A')
-        return chr(cls.class_node_id)
+
+    def get_id(self):
+        self.tree.class_node_id += 1
+        if self.tree.class_node_id == ord('['):
+            self.tree.class_node_id = ord('a')
+        elif self.tree.class_node_id == ord('{'):
+            self.tree.class_node_id = ord('A')
+        return chr(self.tree.class_node_id)
 
     def __init__(self, tree, is_leaf, x, y):
         model.AnimatedObject.__init__(self, x, y, None)
@@ -119,7 +120,7 @@ class MCNode(model.AnimatedObject, model.Node, abc.ABC):
         self.is_leaf = is_leaf
         self.values = []
         self.children = []
-        self.id = type(self).get_id()
+        self.id = self.get_id()
 
     def tick(self, view, x_unit, y_unit):
         view.canvas_now.move(self.tag(), x_unit, y_unit)
