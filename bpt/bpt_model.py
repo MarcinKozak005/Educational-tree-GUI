@@ -7,7 +7,11 @@ from core.constants import hint_frame
 
 
 class BPTNode(mb.BalNode):
-    class_node_id = ord('@')  # distinguishes nodes by using letters
+
+    def __init__(self, tree, is_leaf, x, y):
+        super().__init__(tree, is_leaf, x, y)
+        self.prev_value = None
+        self.next_value = None
 
     def delete_value(self, value):
         node, pos = self.search_value(value)
@@ -20,6 +24,7 @@ class BPTNode(mb.BalNode):
                 removed_elem = node.values.pop(i)
                 view.draw_exp_text(removed_elem, f'Remove value {removed_elem.value}')
                 view.move_object(removed_elem.tag(), removed_elem.x, removed_elem.y, removed_elem.x, -view.node_height)
+                removed_elem.rewrite()
                 node.fix_delete(value)
             # Fixing indexes' (inner nodes) values
             parent = node.parent
@@ -134,14 +139,23 @@ class BPTNode(mb.BalNode):
         self.values.insert(i, full_node.values[len(full_node.values) - 1])
         self.values[i].parent = self
         # b+tree
+        self.values[i].next_value = self.get_next(None)
+        self.values[i].prev_value = self.get_prev(None)
         if full_node.is_leaf:
-            tmp = mb.BalValue(full_node.values[len(full_node.values) - 1].value, new_node,
-                              full_node.values[len(full_node.values) - 1].x,
-                              full_node.values[len(full_node.values) - 1].y)
+            tmp = mb.LinkBalValue(full_node.values[len(full_node.values) - 1].value, new_node,
+                                  full_node.values[len(full_node.values) - 1].x,
+                                  full_node.values[len(full_node.values) - 1].y)
             view.draw_object(tmp, view.canvas_now)
             new_node.values.insert(0, tmp)
         # b+tree end
         full_node.values.pop(len(full_node.values) - 1)
+        # b+tree
+        if full_node.is_leaf:
+            tmp.next_value = new_node.get_next(0)
+            tmp.prev_value = new_node.get_prev(0)
+            new_node.values[0].prev_value = new_node.get_prev(0)
+            full_node.values[-1].next_value = full_node.get_next(len(full_node.values) - 1)
+        # b+tree end
         self.tree.root.update_positions()
         view.animate(self.tree.root)
         view.draw_exp_text(full_node, f'Values < {self.values[0].value} stay in [{full_node.id}] node')
@@ -316,10 +330,22 @@ class BPTNode(mb.BalNode):
         pass
 
     def insert_specific(self, value, i):
-        pass
+        view = self.tree.view
+        next_value = self.get_next(i)
+        prev_value = self.get_prev(i)
+        value.next_value = next_value
+        value.prev_value = prev_value
+        if prev_value is not None:
+            prev_value.next_value = value
+        if next_value is not None:
+            next_value.prev_value = value
+        view.draw_exp_text(self, f'Update next neighbour connections: '
+                                 f'next([{value.value}]) is [{None if next_value is None else next_value.value}] and '
+                                 f'prev([{value.value}]) is [{None if prev_value is None else prev_value.value}]')
 
 
 class BPTree(mb.BalTree):
+    value_class = mb.LinkBalValue
     node_class = BPTNode
 
     def __deepcopy__(self, memo):

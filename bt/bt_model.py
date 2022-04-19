@@ -7,7 +7,6 @@ from core.constants import hint_frame
 
 
 class BTNode(mb.BalNode):
-    class_node_id = ord('@')  # distinguishes nodes by using letters
 
     def delete_value(self, value):
         node, pos = self.search_value(value)
@@ -345,6 +344,7 @@ class BTNode(mb.BalNode):
 
 
 class BTree(mb.BalTree):
+    value_class = mb.BalValue
     node_class = BTNode
 
     def __deepcopy__(self, memo):

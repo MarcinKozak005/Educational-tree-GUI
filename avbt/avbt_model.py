@@ -5,7 +5,6 @@ import mvc_base.model_aggregated as ma
 
 
 class AVBTNode(ma.AggNode):
-    class_node_id = ord('@')  # distinguishes nodes by using letters
 
     def min(self):
         curr = self

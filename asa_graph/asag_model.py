@@ -6,7 +6,6 @@ import mvc_base.model_aggregated as ma
 
 
 class ASAGNode(ma.AggNode):
-    class_node_id = ord('@')  # distinguishes nodes by using letters
 
     def delete_value(self, value):
         node, pos = self.search_value(value)
@@ -346,7 +345,7 @@ class ASAGNode(ma.AggNode):
 
 
 class ASAGraph(ma.AggTree):
-    value_class = ma.LinkValue
+    value_class = ma.LinkAggValue
     node_class = ASAGNode
 
     def __deepcopy__(self, memo):

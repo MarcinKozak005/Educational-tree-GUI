@@ -1,7 +1,8 @@
 # Root (Main window) frame file. Contains miscellaneous functions and classes
 
-import tkinter as tk
 from enum import Enum
+
+import customtkinter as ctk
 
 from core.constants import animation_unit
 
@@ -35,10 +36,14 @@ class Action(Enum):
 class Mode(Enum):
     value = 1
     node = 2
+    down = 3
+    up = 4
 
 
-frame = tk.Tk()
+frame = ctk.CTk()
 frame.title('Educational tree GUI')
 frame.state('zoomed')
+frame.width = frame.winfo_screenwidth()
+frame.height = frame.winfo_screenheight()
 frame.rowconfigure(0, weight=1)
 frame.columnconfigure(0, weight=1)

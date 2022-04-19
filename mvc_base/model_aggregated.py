@@ -1,9 +1,10 @@
 import abc
 import math
+import tkinter as tk
 
 import core.root as r
 import mvc_base.model_multi_child as mc
-from core.constants import hint_frame
+from core.constants import hint_frame, blue
 
 
 class AggValue(mc.MCValue):
@@ -13,7 +14,7 @@ class AggValue(mc.MCValue):
         self.counter = 1
 
 
-class LinkValue(AggValue):
+class LinkAggValue(AggValue):
     def __init__(self, value, parent_node, x=0, y=0):
         super().__init__(value, parent_node, x, y)
         self.prev_value = None
@@ -24,6 +25,11 @@ class LinkValue(AggValue):
             self.prev_value.next_value = self.next_value
         if self.next_value is not None:
             self.next_value.prev_value = self.prev_value
+
+    def tick(self, view, x_unit, y_unit):
+        super().tick(view, x_unit, y_unit)
+        if self.next_value is not None:
+            view.draw_line(view.canvas_now, self, self.next_value, tk.SE, tk.SW, fill=blue)
 
 
 class AggTree(mc.MCTree, abc.ABC):

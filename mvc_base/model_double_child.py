@@ -2,12 +2,20 @@
 import abc
 import statistics
 
+from PIL import ImageTk, Image
+
 import mvc_base.model as model
 from core.constants import left, right, white, black, grey_node, hint_frame
 
 
 class DCTree(model.Tree, abc.ABC):
     """Contains methods similar in all Double Child trees"""
+
+    def __init__(self, view):
+        super().__init__(view)
+        grey_circle = Image.open('../materials/grey_circle.png').resize((self.view.node_width, self.view.node_height),
+                                                                        Image.ANTIALIAS)
+        self.grey_circle = ImageTk.PhotoImage(grey_circle)
 
     # Tree derived methods override
 
@@ -68,9 +76,8 @@ class DCTree(model.Tree, abc.ABC):
         view = self.view
         root = self.root
         view.explanation.append(f'Tree is not empty. Find insert place for {value}')
-        view.canvas_now.create_oval(root.x - view.node_width // 2, root.y - view.y_above - view.node_height // 2,
-                                    root.x + view.node_width // 2, root.y - view.y_above + view.node_height // 2,
-                                    fill='grey', tags=grey_node)
+        view.canvas_now.create_image(root.x - view.node_width // 2, root.y - view.y_above - view.node_height // 2,
+                                     anchor='nw', image=self.grey_circle, tags=grey_node)
         view.canvas_now.create_text(root.x, root.y - view.y_above, fill=white, text=value, tags=grey_node)
         newNode = root.insert_value(value)
         view.explanation.append(f'Start node-fixing process')
@@ -136,7 +143,6 @@ class DCNode(model.AnimatedObject, model.Node):
         if type(self.parent) is self.tree.node_class:
             view.draw_line(view.canvas_now, self.parent, self.parent.right)
             view.draw_line(view.canvas_now, self.parent, self.parent.left)
-        view.canvas_now.tag_lower('Line')
 
     def tag(self):
         return f'Node{hash(self)}'
@@ -217,12 +223,12 @@ class DCNode(model.AnimatedObject, model.Node):
         # Swap values in two nodes: one holding value to delete and it's successor
         if y is not node:
             view.explanation.append(f'Swap {node.value} with {y.value}')
-            view.canvas_now.create_oval(node.x - view.node_width // 2, node.y - view.node_height // 2,
-                                        node.x + view.node_width // 2, node.y + view.node_height // 2,
-                                        fill=node.color, tags='swap1')
-            view.canvas_now.create_oval(y.x - view.node_width // 2, y.y - view.node_height // 2,
-                                        y.x + view.node_width // 2, y.y + view.node_height // 2,
-                                        fill=y.color, tags=y.tag())
+            circle_node = view.black_circle if node.color == black else view.red_circle
+            circle_y = view.black_circle if y.color == black else view.red_circle
+            view.canvas_now.create_image(node.x - view.node_width // 2, node.y - view.node_height // 2,
+                                         image=circle_node, anchor='nw', tags='swap1')
+            view.canvas_now.create_image(y.x - view.node_width // 2, y.y - view.node_height // 2,
+                                         image=circle_y, anchor='nw', tags=y.tag())
             txt1 = view.canvas_now.create_text(node.x, node.y, fill=black, text=node.value, tags=[y.tag(), 'txt1'])
             txt2 = view.canvas_now.create_text(y.x, y.y, fill=black, text=y.value, tags=['swap1', 'txt2'])
             txt1_bg = view.canvas_now.create_rectangle(view.canvas_now.bbox(txt1), fill=white, tags=[y.tag(), 'txt1'])

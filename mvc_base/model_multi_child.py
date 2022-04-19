@@ -1,6 +1,8 @@
 import abc
 import tkinter as tk
 
+from PIL import ImageTk, Image
+
 import mvc_base.model as model
 from core.constants import grey_node, white, hint_frame
 
@@ -17,6 +19,13 @@ class MCTree(model.Tree):
         if max_degree < 2:
             raise ValueError
         self.max_degree = max_degree
+        self.class_node_id = ord('@')
+        grey_square = Image.open('../materials/grey_square.png').resize((self.view.node_width, self.view.node_height),
+                                                                        Image.ANTIALIAS)
+        green_square = Image.open('../materials/green_square.png').resize((self.view.node_width, self.view.node_height),
+                                                                          Image.ANTIALIAS)
+        self.grey_square = ImageTk.PhotoImage(grey_square)
+        self.green_square = ImageTk.PhotoImage(green_square)
 
     def insert_value(self, value):
         if self.root is None:
@@ -26,11 +35,9 @@ class MCTree(model.Tree):
         else:
             view = self.view
             view.explanation.append(f'Tree is not empty. Find insert place for {value}')
-            view.canvas_now.create_rectangle(self.root.x - view.node_width // 2,
-                                             self.root.y - view.node_height // 2 - view.y_above,
-                                             self.root.x + view.node_width // 2,
-                                             self.root.y + view.node_height // 2 - view.y_above,
-                                             fill='grey', tags=grey_node)
+            view.canvas_now.create_image(self.root.x - view.node_width // 2,
+                                         self.root.y - view.node_height // 2 - view.y_above,
+                                         image=self.grey_square, anchor='nw', tags=grey_node)
             view.canvas_now.create_text(self.root.x, self.root.y - view.y_above, fill=white,
                                         text=value, tags=grey_node)
             self.root.insert_value(self.value_class(value, None, self.root.x, self.root.y - view.y_above))
@@ -53,9 +60,9 @@ class MCTree(model.Tree):
             return self.root.search_value_no_GUI(value)
 
     def clear(self):
-        """ Additionally resets self.node_class.class_node_id """
+        """ Additionally resets self.class_node_id """
         self.root = None
-        self.node_class.class_node_id = ord('@')
+        self.class_node_id = ord('@')
 
     def min(self):
         if self.root is None:
@@ -98,21 +105,20 @@ class MCValue(model.AnimatedObject):
                 view.draw_line(view.canvas_now, self, self.parent.children[index], tk.SW, tk.N)
             if index == len(self.parent.values) - 1 and index + 1 < len(self.parent.children):
                 view.draw_line(view.canvas_now, self, self.parent.children[index + 1], tk.SE, tk.N)
-            view.canvas_now.tag_lower('Line')
 
     def tag(self):
         return f'Value{hash(self)}'
 
 
 class MCNode(model.AnimatedObject, model.Node, abc.ABC):
-    @classmethod
-    def get_id(cls):
-        cls.class_node_id += 1
-        if cls.class_node_id == ord('['):
-            cls.class_node_id = ord('a')
-        elif cls.class_node_id == ord('{'):
-            cls.class_node_id = ord('A')
-        return chr(cls.class_node_id)
+
+    def get_id(self):
+        self.tree.class_node_id += 1
+        if self.tree.class_node_id == ord('['):
+            self.tree.class_node_id = ord('a')
+        elif self.tree.class_node_id == ord('{'):
+            self.tree.class_node_id = ord('A')
+        return chr(self.tree.class_node_id)
 
     def __init__(self, tree, is_leaf, x, y):
         model.AnimatedObject.__init__(self, x, y, None)
@@ -120,7 +126,7 @@ class MCNode(model.AnimatedObject, model.Node, abc.ABC):
         self.is_leaf = is_leaf
         self.values = []
         self.children = []
-        self.id = type(self).get_id()
+        self.id = self.get_id()
 
     def tick(self, view, x_unit, y_unit):
         view.canvas_now.move(self.tag(), x_unit, y_unit)
@@ -254,7 +260,7 @@ class MCNode(model.AnimatedObject, model.Node, abc.ABC):
             view.erase(hint_frame)
             view.move_object(grey_node, self.x, self.y, self.children[i].x, self.children[i].y)
             self.children[i].insert_value(value)
-        # Fix AVB tree constraints
+        # Fix tree constraints
         if len(self.values) == self.tree.max_degree:
             view.erase(hint_frame)
             view.draw_exp_text(self, f'Number of values in [{self.id}] == max_tree_degree. Start fixing process')

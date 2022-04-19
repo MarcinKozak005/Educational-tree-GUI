@@ -3,7 +3,7 @@ import tkinter as tk
 import bpt.bpt_model as bpt
 import mvc_base.model_balanced as mb
 import mvc_base.view as view
-from core.constants import green, white, black
+from core.constants import white, blue, black
 
 
 class BPTView(view.View):
@@ -14,42 +14,18 @@ class BPTView(view.View):
     def create_GUI(self, controller, text):
         """Adds max_degree selection"""
         frame = super().create_GUI(controller, text)
-
-        def selector_change(*_):
-            new_value = max_degree_value.get()
-            if self.current_max_degree != new_value:
-                self.current_max_degree = new_value
-                controller.tree.clear()
-                controller.tree = bpt.BPTree(self, new_value)
-                self.clear()
-
-        max_degree_value = tk.IntVar(value=self.current_max_degree)
-        max_degree_menu = tk.OptionMenu(self.controls_frame, max_degree_value, *[3, 4, 5, 6])
-        max_degree_value.trace('w', selector_change)
-        self.buttons.append(max_degree_menu)
-        tk.Label(self.controls_frame, text='Max tree degree:').grid(row=0, column=0)
-        max_degree_menu.grid(row=0, column=1, padx=(0, 20))
+        self.add_max_degree_change_to_GUI(controller)
         return frame
 
     def draw_tree(self, node, canvas):
         if type(node) is bpt.BPTNode:
             canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill=black, text=node.id,
-                               tags=node.tag())
+                               tags=node.tag(), font=('TkDefaultFont', 10, 'bold'))
             for v in node.values:
                 self.draw_object_with_children_lines(v, canvas)
             if not node.is_leaf:
                 for c in node.children:
                     self.draw_tree(c, canvas)
-        # Line connecting leaves
-        if node is not None and node is node.tree.root:
-            left = node
-            while not left.is_leaf:
-                left = left.children[0]
-            right = node
-            while not right.is_leaf:
-                right = right.children[-1]
-            self.draw_line(canvas, left.values[0], right, from_side=tk.SE, to_side=tk.SW, fill='blue')
-            self.canvas_now.tag_lower('Line')
 
     def draw_object_with_children_lines(self, obj, canvas):
         parent = obj.parent
@@ -61,8 +37,10 @@ class BPTView(view.View):
         self.draw_object(obj, canvas)
 
     def draw_object(self, node, canvas):
-        if type(node) is mb.BalValue:
-            canvas.create_rectangle(node.x - self.node_width // 2, node.y - self.node_height // 2,
-                                    node.x + self.node_width // 2, node.y + self.node_height // 2,
-                                    fill=green, tags=node.tag())
-            canvas.create_text(node.x, node.y, fill=white, text=node.value, tags=node.tag())
+        if type(node) is mb.LinkBalValue:
+            canvas.create_image(node.x - self.node_width // 2, node.y - self.node_height // 2,
+                                image=node.parent.tree.green_square, anchor='nw', tags=node.tag())
+            canvas.create_text(node.x, node.y, fill=white, text=node.value, tags=node.tag(),
+                               font=('TkDefaultFont', 10, 'bold'))
+            if node.next_value is not None:
+                self.draw_line(canvas, node, node.next_value, tk.SE, tk.SW, fill=blue)

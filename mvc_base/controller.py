@@ -1,6 +1,8 @@
 import copy
+import tkinter as tk
 
 import core.root as r
+from core.constants import canvas_width_modifier, canvas_height_modifier
 
 
 def validate_input(val):
@@ -27,6 +29,8 @@ class Controller:
         """
         self.tree.clear()
         self.view.clear()
+        self.history.clear()
+        self.view.check_browsing_buttons(self.history.pointer, len(self.history.history_list))
 
     def perform(self, func, arg):
         """
@@ -41,16 +45,16 @@ class Controller:
         add_final_result = False
         if validate_input(arg):
             val = int(arg)
-            self.view.explanation_text.config(state='normal')
+            self.view.explanation_text.config(state=tk.NORMAL)
             self.view.explanation_text.delete(0.0, 'end')
-            self.view.explanation_text.config(state='disabled')
+            self.view.explanation_text.config(state=tk.DISABLED)
             if self.tree.root is not None and \
                     (func == r.Action.insert or
                      (func == r.Action.delete and self.tree.search_value_no_GUI(val) != (None, None))):
                 add_final_result = True
                 # Draw previous state on canvas_prev
                 view.canvas_prev.delete('all')
-                self.tree.root.update_positions(True, width=1000)
+                self.tree.root.update_positions(True, width=int(r.frame.width * canvas_width_modifier))
                 view.draw_tree(self.tree.root, view.canvas_prev)
                 self.tree.root.update_positions(True)
                 self.history.pop()
@@ -93,7 +97,8 @@ class Controller:
             view.canvas_prev.pack_forget()
             view.prev_label.pack_forget()
             view.explanation_frame.grid_forget()
-            view.width, view.height = 1400, 600
+            view.width, view.height = int(1.25 * r.frame.width * canvas_width_modifier), 2 * int(
+                r.frame.height * canvas_height_modifier)
             view.canvas_now.config(width=view.width, height=view.height)
             view.view_button.config(text='Show previous state and explanation: OFF')
             view.erase('all')
@@ -109,7 +114,8 @@ class Controller:
             view.now_label.pack()
             view.canvas_now.pack()
             view.explanation_frame.grid(row=0, column=0, sticky='NS')
-            view.width, view.height = 1000, 300
+            view.width = int(r.frame.width * canvas_width_modifier)
+            view.height = int(r.frame.height * canvas_height_modifier)
             view.canvas_now.config(width=view.width, height=view.height)
             view.view_button.config(text='Show previous state and explanation: ON')
             view.erase('all')
@@ -184,6 +190,11 @@ class History:
 
     def substitute(self, sub):
         self.history_list[self.pointer].tree = sub
+
+    def clear(self):
+        self.history_list = []
+        self.pointer = -1
+        self.track = False
 
 
 class HistoryElement:
