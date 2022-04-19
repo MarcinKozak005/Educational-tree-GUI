@@ -243,8 +243,8 @@ class AggNode(mc.MCNode, abc.ABC):
         full_node.values.pop(len(full_node.values) - 1)
         self.tree.root.update_positions()
         view.animate(self.tree.root)
-        view.draw_exp_text(full_node, f'Values < {self.values[0].value} stay in [{full_node.id}] node')
-        view.draw_exp_text(new_node, f'Values > {self.values[0].value} make new node [{new_node.id}]')
+        view.draw_exp_text(full_node, f'Values < {self.values[i].value} stay in [{full_node.id}] node')
+        view.draw_exp_text(new_node, f'Values > {self.values[i].value} make new node [{new_node.id}]')
         view.draw_exp_text(self, f'Nodes [{full_node.id}] and [{new_node.id}] become '
                                  f'left and right children of [{self.id}]')
 
