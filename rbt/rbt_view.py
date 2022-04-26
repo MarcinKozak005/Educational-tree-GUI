@@ -10,8 +10,8 @@ class RBTView(view.View):
     def __init__(self, node_width, node_height, columns_to_skip):
         super().__init__(node_width, node_height, columns_to_skip)
         anti = Image.ANTIALIAS
-        black_circle = Image.open('../materials/black_circle.png').resize((self.node_width, self.node_height), anti)
-        red_circle = Image.open('../materials/red_circle.png').resize((self.node_width, self.node_height), anti)
+        black_circle = Image.open('./materials/black_circle.png').resize((self.node_width, self.node_height), anti)
+        red_circle = Image.open('./materials/red_circle.png').resize((self.node_width, self.node_height), anti)
         self.black_circle = ImageTk.PhotoImage(black_circle)
         self.red_circle = ImageTk.PhotoImage(red_circle)
 

@@ -13,8 +13,8 @@ class DCTree(model.Tree, abc.ABC):
 
     def __init__(self, view):
         super().__init__(view)
-        grey_circle = Image.open('../materials/grey_circle.png').resize((self.view.node_width, self.view.node_height),
-                                                                        Image.ANTIALIAS)
+        grey_circle = Image.open('./materials/grey_circle.png').resize((self.view.node_width, self.view.node_height),
+                                                                       Image.ANTIALIAS)
         self.grey_circle = ImageTk.PhotoImage(grey_circle)
 
     # Tree derived methods override

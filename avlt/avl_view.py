@@ -10,8 +10,8 @@ class AVLView(view.View):
 
     def __init__(self, node_width, node_height, columns_to_skip):
         super().__init__(node_width, node_height, columns_to_skip)
-        green_circle = Image.open('../materials/green_circle.png').resize((self.node_width, self.node_height),
-                                                                          Image.ANTIALIAS)
+        green_circle = Image.open('./materials/green_circle.png').resize((self.node_width, self.node_height),
+                                                                         Image.ANTIALIAS)
         self.green_circle = ImageTk.PhotoImage(green_circle)
 
     def draw_tree(self, node, canvas):
