@@ -2,7 +2,7 @@ import abc
 import tkinter as tk
 
 import mvc_base.model as model
-from core.constants import grey_node, white, hint_frame
+from core.constants import grey_node, white, hint_frame, circle_node_text_modifier
 
 
 class MCTree(model.Tree):
@@ -29,9 +29,10 @@ class MCTree(model.Tree):
             view.explanation.append(f'Tree is not empty. Find insert place for {value}')
             view.canvas_now.create_image(self.root.x - view.node_width // 2,
                                          self.root.y - view.node_height // 2 - view.y_above,
-                                         image=self.grey_square, anchor='nw', tags=grey_node)
+                                         image=view.grey_square, anchor='nw', tags=grey_node)
             view.canvas_now.create_text(self.root.x, self.root.y - view.y_above, fill=white,
-                                        text=value, tags=grey_node)
+                                        text=value, tags=grey_node, font=(
+                'TkDefaultFont', int(view.node_width * circle_node_text_modifier), 'bold'))
             self.root.insert_value(self.value_class(value, None, self.root.x, self.root.y - view.y_above))
         self.root.update_positions(True)
 

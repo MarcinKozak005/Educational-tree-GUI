@@ -2,13 +2,14 @@ import tkinter as tk
 
 import asa_graph.asag_model as asag
 import mvc_base.view_multi_child as vmc
-from core.constants import white, black, blue
+from core.constants import white, black, blue, circle_node_text_modifier
 
 
 class ASAGView(vmc.MCView):
     def __init__(self, node_width, node_height, columns_to_skip, current_max_degree):
         super().__init__(node_width, node_height, columns_to_skip)
         self.current_max_degree = current_max_degree
+        self.calculate_images()
 
     def create_GUI(self, controller, text):
         """Adds max_degree selection"""
@@ -16,10 +17,13 @@ class ASAGView(vmc.MCView):
         self.add_max_degree_change_to_GUI(controller)
         return frame
 
-    def draw_tree(self, node, canvas):
+    def draw_tree(self, node, canvas, reload_images=False):
+        if reload_images:
+            self.calculate_images()
         if type(node) is asag.ASAGNode:
             canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill=black, text=node.id,
-                               tags=node.tag(), font=('TkDefaultFont', 10, 'bold'))
+                               tags=node.tag(),
+                               font=('TkDefaultFont', int(self.node_width * circle_node_text_modifier)))
             for v in node.values:
                 self.draw_object_with_children_lines(v, canvas)
             if not node.is_leaf:
@@ -38,10 +42,10 @@ class ASAGView(vmc.MCView):
     def draw_object(self, node, canvas):
         if type(node) is not None:
             canvas.create_image(node.x - self.node_width // 2, node.y - self.node_height // 2,
-                                image=node.parent.tree.green_square, anchor='nw', tags=node.tag())
+                                image=self.green_square, anchor='nw', tags=node.tag())
             canvas.create_text(node.x, node.y, fill=white, text=node.value, tags=node.tag(),
-                               font=('TkDefaultFont', 10, 'bold'))
+                               font=('TkDefaultFont', int(self.node_width * circle_node_text_modifier), 'bold'))
             canvas.create_text(node.x, node.y + self.node_height, fill=black, text=f'[{node.counter}]',
-                               font=(None, 8), tags=node.tag())
+                               font=(None, int(self.node_width * circle_node_text_modifier)), tags=node.tag())
             if node.next_value is not None:
                 self.draw_line(canvas, node, node.next_value, tk.SE, tk.SW, fill=blue)
