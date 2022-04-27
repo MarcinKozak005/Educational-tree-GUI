@@ -2,11 +2,11 @@ import tkinter as tk
 
 import bpt.bpt_model as bpt
 import mvc_base.model_balanced as mb
-import mvc_base.view as view
+import mvc_base.view_multi_child as vmc
 from core.constants import white, blue, black
 
 
-class BPTView(view.View):
+class BPTView(vmc.MCView):
     def __init__(self, node_width, node_height, columns_to_skip, current_max_degree):
         super().__init__(node_width, node_height, columns_to_skip)
         self.current_max_degree = current_max_degree

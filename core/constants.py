@@ -19,6 +19,8 @@ canvas_height_modifier = 0.37
 explanation_width_modifier = 0.0325
 explanation_height_modifier = 0.052
 
+circle_node_text_modifier = 0.39
+
 # Other
 left = 'left'
 right = 'right'

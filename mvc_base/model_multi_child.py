@@ -1,8 +1,6 @@
 import abc
 import tkinter as tk
 
-from PIL import ImageTk, Image
-
 import mvc_base.model as model
 from core.constants import grey_node, white, hint_frame
 
@@ -20,12 +18,6 @@ class MCTree(model.Tree):
             raise ValueError
         self.max_degree = max_degree
         self.class_node_id = ord('@')
-        grey_square = Image.open('./materials/grey_square.png').resize((self.view.node_width, self.view.node_height),
-                                                                       Image.ANTIALIAS)
-        green_square = Image.open('./materials/green_square.png').resize((self.view.node_width, self.view.node_height),
-                                                                         Image.ANTIALIAS)
-        self.grey_square = ImageTk.PhotoImage(grey_square)
-        self.green_square = ImageTk.PhotoImage(green_square)
 
     def insert_value(self, value):
         if self.root is None:

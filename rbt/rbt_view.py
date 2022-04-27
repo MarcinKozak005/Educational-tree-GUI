@@ -1,14 +1,20 @@
 from PIL import ImageTk, Image
 
 import mvc_base.model_double_child as mdc
-import mvc_base.view as view
+import mvc_base.view_double_child as vdc
 import rbt.rbt_model as rbt
-from core.constants import white, recolor_txt, black
+from core.constants import white, recolor_txt, black, circle_node_text_modifier
 
 
-class RBTView(view.View):
+class RBTView(vdc.DCView):
     def __init__(self, node_width, node_height, columns_to_skip):
         super().__init__(node_width, node_height, columns_to_skip)
+        self.black_circle = None
+        self.red_circle = None
+        self.calculate_images()
+
+    def calculate_images(self):
+        super().calculate_images()
         anti = Image.ANTIALIAS
         black_circle = Image.open('./materials/black_circle.png').resize((self.node_width, self.node_height), anti)
         red_circle = Image.open('./materials/red_circle.png').resize((self.node_width, self.node_height), anti)
@@ -38,7 +44,9 @@ class RBTView(view.View):
             self.explanation.append(f'Change color of ({node.value}) to {to_color}')
             self.canvas_now.tag_lower(txt_bg, txt)
 
-    def draw_tree(self, node, canvas):
+    def draw_tree(self, node, canvas, reload_images=False):
+        if reload_images:
+            self.calculate_images()
         if type(node) is not mdc.DCLeaf and node is not None:
             self.draw_object_with_children_lines(node, canvas)
             self.draw_tree(node.left, canvas)
@@ -57,4 +65,4 @@ class RBTView(view.View):
             canvas.create_image(obj.x - self.node_width // 2, obj.y - self.node_height // 2,
                                 anchor='nw', image=circle, tags=obj.tag())
             canvas.create_text(obj.x, obj.y, fill=white, text=obj.value, tags=obj.tag(),
-                               font=('TkDefaultFont', 10, 'bold'))
+                               font=('TkDefaultFont', int(self.node_width * circle_node_text_modifier), 'bold'))

@@ -51,11 +51,12 @@ class View(abc.ABC):
         self.decrease_size_button = None
 
     @abc.abstractmethod
-    def draw_tree(self, node, canvas):
+    def draw_tree(self, node, canvas, reload_images=False):
         """
         Draws node and it's children and if applicable values
         :param node: node to be drawn
         :param canvas: canvas on which node will be drawn
+        :param reload_images: if True the images of nodes/values will be reloaded
         :return: returns nothing
         """
         pass
@@ -77,6 +78,14 @@ class View(abc.ABC):
         :param obj: object to be drawn
         :param canvas: canvas on which the object will be drawn
         :return: returns nothing
+        """
+        pass
+
+    @abc.abstractmethod
+    def calculate_images(self):
+        """
+        Reloads necessary node images
+        :return:
         """
         pass
 
@@ -302,6 +311,31 @@ class View(abc.ABC):
         mean_button.grid(row=0, column=cts + 7, padx=(5, 0))
         median_button.grid(row=0, column=cts + 8, padx=(5, 0))
 
+        #
+        def decrease():
+            self.node_width -= 6
+            self.node_height -= 6
+            self.y_space -= 12
+            self.y_above -= 7
+            self.erase('all')
+            controller.tree.update_positions(True)
+            self.draw_tree(controller.tree.root, self.canvas_now, True)
+
+        def increase():
+            self.node_width += 6
+            self.node_height += 6
+            self.y_space += 12
+            self.y_above += 7
+            self.erase('all')
+            controller.tree.update_positions(True)
+            self.draw_tree(controller.tree.root, self.canvas_now, True)
+
+        self.increase_size_button = ctk.CTkButton(self.controls_frame, text='-', command=decrease, **button_arguments)
+        self.decrease_size_button = ctk.CTkButton(self.controls_frame, text='+', command=increase, **button_arguments)
+        self.increase_size_button.grid(row=1, column=cts + 7, padx=(5, 0))
+        self.decrease_size_button.grid(row=1, column=cts + 8, padx=(5, 0))
+        #
+
         clear_button.grid(row=0, column=cts + 9, padx=(5, 0))
         self.view_button.grid(row=0, column=cts + 10, columnspan=5, padx=(20, 20))
         back_button.grid(row=0, column=cts + 15, padx=(40, 0))
@@ -343,7 +377,7 @@ class View(abc.ABC):
         self.prev_label.pack(pady=(5, 0))
         self.canvas_prev.pack()
         self.now_label.pack(pady=(5, 0))
-        self.canvas_now.pack()
+        self.canvas_now.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
         canvas_frame.grid(row=0, column=1)
         visualization_frame.pack(pady=(5, 0))
 

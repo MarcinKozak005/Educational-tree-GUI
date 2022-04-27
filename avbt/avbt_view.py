@@ -2,11 +2,11 @@ import tkinter as tk
 
 import avbt.avbt_model as avbt
 import mvc_base.model_aggregated as ma
-import mvc_base.view as view
+import mvc_base.view_multi_child as vmc
 from core.constants import white, black
 
 
-class AVBTView(view.View):
+class AVBTView(vmc.MCView):
     def __init__(self, node_width, node_height, columns_to_skip, current_max_degree):
         super().__init__(node_width, node_height, columns_to_skip)
         self.current_max_degree = current_max_degree
