@@ -42,4 +42,4 @@ class AVLView(vdc.DCView):
                                font=('TkDefaultFont', int(self.node_width * circle_node_text_modifier), 'bold'))
             canvas.create_text(obj.x - self.node_width // 2, obj.y - self.node_height // 2,
                                fill=black, text=obj.height, tags=obj.tag(),
-                               font=('TkDefaultFont', int(self.node_width * circle_node_text_modifier)))
+                               font=('TkDefaultFont', int((self.node_width - 4) * circle_node_text_modifier)))

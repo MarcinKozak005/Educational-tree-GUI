@@ -53,12 +53,15 @@ class Controller:
                      (func == r.Action.delete and self.tree.search_value_no_GUI(val) != (None, None))):
                 add_final_result = True
                 # Draw previous state on canvas_prev
-                view.canvas_prev.delete('all')
-                self.tree.root.update_positions(True, width=int(r.frame.width * canvas_width_modifier))
-                view.draw_tree(self.tree.root, view.canvas_prev)
-                self.tree.root.update_positions(True)
-                self.history.pop()
-                self.history.append(HistoryElement(copy.deepcopy(self), func, arg))
+                tree = self.history.get_elem()
+                if tree is not None and tree.controller.tree.root is not None:
+                    view.canvas_prev.delete('all')
+                    tree = tree.controller.tree
+                    tree.update_positions(True, width=int(r.frame.width * canvas_width_modifier))
+                    view.draw_tree(tree.root, view.canvas_prev)
+                    tree.root.update_positions(True)
+                    self.history.pop()
+                    self.history.append(HistoryElement(copy.deepcopy(self), func, arg))
             elif self.tree.root is None:
                 add_final_result = True
                 self.history.append(HistoryElement(copy.deepcopy(self), func, arg))
@@ -128,6 +131,9 @@ class Controller:
         """Makes step back in browsing history"""
         self.view.erase('all')
         self.history.decrement()
+        root = self.history.get_tree().root
+        if root:
+            root.update_positions(True)
         self.view.draw_tree(self.history.get_tree().root, self.view.canvas_now)
         self.view.check_browsing_buttons(self.history.pointer, len(self.history.history_list))
 
@@ -138,7 +144,9 @@ class Controller:
         cp.history.track = True
         # Draw tree(time-1) and perform action
         self.view.erase('all')
+        self.view.canvas_prev.delete('all')
         self.view.draw_tree(cp.tree.root, self.view.canvas_now)
+        self.view.draw_tree(cp.tree.root, self.view.canvas_prev)
         self.view.set_browsing_buttons(False)
         cp.perform(history_elem.func, history_elem.arg)
         self.view.set_browsing_buttons(True)
@@ -186,7 +194,16 @@ class History:
         return self.history_list[self.pointer].controller.tree
 
     def get_elem(self):
-        return self.history_list[self.pointer]
+        if self.pointer >= 0:
+            return self.history_list[self.pointer]
+        else:
+            return None
+
+    def get_prev(self):
+        if self.pointer > 0:
+            return self.history_list[self.pointer - 1]
+        else:
+            return None
 
     def substitute(self, sub):
         self.history_list[self.pointer].tree = sub

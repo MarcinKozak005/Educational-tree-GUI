@@ -24,7 +24,7 @@ class BPTView(vmc.MCView):
         if type(node) is bpt.BPTNode:
             canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill=black, text=node.id,
                                tags=node.tag(),
-                               font=('TkDefaultFont', int(self.node_width * circle_node_text_modifier)))
+                               font=('TkDefaultFont', int((self.node_width - 4) * circle_node_text_modifier)))
             for v in node.values:
                 self.draw_object_with_children_lines(v, canvas)
             if not node.is_leaf:

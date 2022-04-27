@@ -318,8 +318,14 @@ class View(abc.ABC):
             self.y_space -= 12
             self.y_above -= 7
             self.erase('all')
+            self.canvas_prev.delete('all')
             controller.tree.update_positions(True)
             self.draw_tree(controller.tree.root, self.canvas_now, True)
+            prev = controller.history.get_prev()
+            if prev is not None:
+                prev.controller.tree.root.update_positions(True)
+                prev = prev.controller.tree.root
+            self.draw_tree(prev, self.canvas_prev, False)
 
         def increase():
             self.node_width += 6
@@ -327,8 +333,14 @@ class View(abc.ABC):
             self.y_space += 12
             self.y_above += 7
             self.erase('all')
+            self.canvas_prev.delete('all')
             controller.tree.update_positions(True)
             self.draw_tree(controller.tree.root, self.canvas_now, True)
+            prev = controller.history.get_prev()
+            if prev is not None:
+                prev.controller.tree.root.update_positions(True)
+                prev = prev.controller.tree.root
+            self.draw_tree(prev, self.canvas_prev, False)
 
         self.increase_size_button = ctk.CTkButton(self.controls_frame, text='-', command=decrease, **button_arguments)
         self.decrease_size_button = ctk.CTkButton(self.controls_frame, text='+', command=increase, **button_arguments)
@@ -382,7 +394,8 @@ class View(abc.ABC):
         visualization_frame.pack(pady=(5, 0))
 
         self.buttons = [insert_button, delete_button, find_button, clear_button, self.view_button,
-                        min_button, max_button, mean_button, median_button]
+                        min_button, max_button, mean_button, median_button,
+                        self.increase_size_button, self.decrease_size_button]
 
         return frame
 

@@ -24,7 +24,7 @@ class AVBTView(vmc.MCView):
         if type(node) is avbt.AVBTNode:
             canvas.create_text(node.values[0].x - 0.75 * self.node_width, node.y, fill=black, text=node.id,
                                tags=node.tag(),
-                               font=('TkDefaultFont', int(self.node_width * circle_node_text_modifier)))
+                               font=('TkDefaultFont', int((self.node_width - 4) * circle_node_text_modifier)))
             for v in node.values:
                 self.draw_object_with_children_lines(v, canvas)
             if not node.is_leaf:
@@ -47,4 +47,4 @@ class AVBTView(vmc.MCView):
             canvas.create_text(node.x, node.y, fill=white, text=node.value, tags=node.tag(),
                                font=('TkDefaultFont', int(self.node_width * circle_node_text_modifier), 'bold'))
             canvas.create_text(node.x, node.y + self.node_height, fill=black, text=f'[{node.counter}]',
-                               font=(None, int(self.node_width * circle_node_text_modifier)), tags=node.tag())
+                               font=(None, int((self.node_width - 4) * circle_node_text_modifier)), tags=node.tag())
