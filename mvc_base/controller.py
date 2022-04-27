@@ -31,6 +31,7 @@ class Controller:
         self.view.clear()
         self.history.clear()
         self.view.check_browsing_buttons(self.history.pointer, len(self.history.history_list))
+        self.view.check_size_buttons()
 
     def perform(self, func, arg):
         """
@@ -89,6 +90,7 @@ class Controller:
         view.set_buttons(True)
         view.set_browsing_buttons(True)
         self.view.check_browsing_buttons(self.history.pointer, len(self.history.history_list))
+        view.check_size_buttons()
 
     def change_layout(self):
         """
@@ -158,6 +160,7 @@ class Controller:
         self.view.check_browsing_buttons(self.history.pointer, len(self.history.history_list))
         # Draw most current tree if we are at the current history time moment
         if self.history.pointer == len(self.history.history_list) - 1:
+            self.view.check_size_buttons()
             self.view.erase('all')
             self.view.draw_tree(self.tree.root, self.view.canvas_now)
 
