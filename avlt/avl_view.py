@@ -2,19 +2,26 @@ from PIL import ImageTk, Image
 
 import avlt.avl_model as avlt
 import mvc_base.model_double_child as mdc
-import mvc_base.view as view
-from core.constants import white, black
+import mvc_base.view_double_child as vdc
+from core.constants import white, black, circle_node_text_modifier
 
 
-class AVLView(view.View):
+class AVLView(vdc.DCView):
 
     def __init__(self, node_width, node_height, columns_to_skip):
         super().__init__(node_width, node_height, columns_to_skip)
-        green_circle = Image.open('./materials/green_circle.png').resize((self.node_width, self.node_height),
-                                                                         Image.ANTIALIAS)
+        self.green_circle = None
+        self.calculate_images()
+
+    def calculate_images(self):
+        super().calculate_images()
+        anti = Image.ANTIALIAS
+        green_circle = Image.open('./materials/green_circle.png').resize((self.node_width, self.node_height), anti)
         self.green_circle = ImageTk.PhotoImage(green_circle)
 
-    def draw_tree(self, node, canvas):
+    def draw_tree(self, node, canvas, reload_images=False):
+        if reload_images:
+            self.calculate_images()
         if type(node) is not mdc.DCLeaf and node is not None:
             self.draw_object_with_children_lines(node, canvas)
             self.draw_tree(node.left, canvas)
@@ -32,6 +39,7 @@ class AVLView(view.View):
             canvas.create_image(obj.x - self.node_width // 2, obj.y - self.node_height // 2,
                                 image=self.green_circle, anchor='nw', tags=obj.tag())
             canvas.create_text(obj.x, obj.y, fill=white, text=obj.value, tags=obj.tag(),
-                               font=('TkDefaultFont', 10, 'bold'))
+                               font=('TkDefaultFont', int(self.node_width * circle_node_text_modifier), 'bold'))
             canvas.create_text(obj.x - self.node_width // 2, obj.y - self.node_height // 2,
-                               fill=black, text=obj.height, tags=obj.tag())
+                               fill=black, text=obj.height, tags=obj.tag(),
+                               font=('TkDefaultFont', int((self.node_width - 4) * circle_node_text_modifier)))

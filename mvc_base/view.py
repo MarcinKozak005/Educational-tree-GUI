@@ -49,13 +49,15 @@ class View(abc.ABC):
         self.max_degree_buttons = []
         self.increase_size_button = None
         self.decrease_size_button = None
+        self.size_value = 0
 
     @abc.abstractmethod
-    def draw_tree(self, node, canvas):
+    def draw_tree(self, node, canvas, reload_images=False):
         """
         Draws node and it's children and if applicable values
         :param node: node to be drawn
         :param canvas: canvas on which node will be drawn
+        :param reload_images: if True the images of nodes/values will be reloaded
         :return: returns nothing
         """
         pass
@@ -77,6 +79,14 @@ class View(abc.ABC):
         :param obj: object to be drawn
         :param canvas: canvas on which the object will be drawn
         :return: returns nothing
+        """
+        pass
+
+    @abc.abstractmethod
+    def calculate_images(self):
+        """
+        Reloads necessary node images
+        :return:
         """
         pass
 
@@ -210,6 +220,15 @@ class View(abc.ABC):
             for b in self.max_degree_buttons:
                 b.config(state=tk.DISABLED if int(b.text) == self.current_max_degree else tk.NORMAL)
 
+    def check_size_buttons(self):
+        if self.size_value <= 0:
+            self.decrease_size_button.config(state=tk.DISABLED)
+        elif self.size_value >= 4:
+            self.increase_size_button.config(state=tk.DISABLED)
+        else:
+            self.decrease_size_button.config(state=tk.NORMAL)
+            self.increase_size_button.config(state=tk.NORMAL)
+
     def create_GUI(self, controller, text):
         """
         Creates a GUI with buttons triggering model methods with the use of controller
@@ -302,6 +321,47 @@ class View(abc.ABC):
         mean_button.grid(row=0, column=cts + 7, padx=(5, 0))
         median_button.grid(row=0, column=cts + 8, padx=(5, 0))
 
+        def decrease():
+            self.increase_size_button.config(state=tk.NORMAL)
+            self.size_value -= 1
+            self.node_width -= 6
+            self.node_height -= 6
+            self.y_space -= 12
+            self.y_above -= 7
+            self.erase('all')
+            self.canvas_prev.delete('all')
+            controller.tree.update_positions(True)
+            self.draw_tree(controller.tree.root, self.canvas_now, True)
+            prev = controller.history.get_prev()
+            if prev is not None and prev.controller.tree.root is not None:
+                prev.controller.tree.root.update_positions(True)
+                prev = prev.controller.tree.root
+                self.draw_tree(prev, self.canvas_prev, False)
+            self.check_size_buttons()
+
+        def increase():
+            self.decrease_size_button.config(state=tk.NORMAL)
+            self.size_value += 1
+            self.node_width += 6
+            self.node_height += 6
+            self.y_space += 12
+            self.y_above += 7
+            self.erase('all')
+            self.canvas_prev.delete('all')
+            controller.tree.update_positions(True)
+            self.draw_tree(controller.tree.root, self.canvas_now, True)
+            prev = controller.history.get_prev()
+            if prev is not None and prev.controller.tree.root is not None:
+                prev.controller.tree.root.update_positions(True)
+                prev = prev.controller.tree.root
+                self.draw_tree(prev, self.canvas_prev, False)
+            self.check_size_buttons()
+
+        size_frame = tk.Frame(self.controls_frame)
+        self.decrease_size_button = ctk.CTkButton(size_frame, text='-', command=decrease, **button_arguments)
+        self.increase_size_button = ctk.CTkButton(size_frame, text='+', command=increase, **button_arguments)
+        self.check_size_buttons()
+
         clear_button.grid(row=0, column=cts + 9, padx=(5, 0))
         self.view_button.grid(row=0, column=cts + 10, columnspan=5, padx=(20, 20))
         back_button.grid(row=0, column=cts + 15, padx=(40, 0))
@@ -311,6 +371,12 @@ class View(abc.ABC):
         self.back_button.grid(row=1, column=cts + 5)
         self.forward_button.grid(row=1, column=cts + 6)
         self.check_browsing_buttons(controller.history.pointer, len(controller.history.history_list))
+        # Size frame
+        self.decrease_size_button.grid(row=0, column=0, padx=(5, 0))
+        self.increase_size_button.grid(row=0, column=1, padx=(5, 0))
+        tk.Label(self.controls_frame, text='Size:').grid(row=1, column=cts + 7, sticky=tk.E)
+        size_frame.grid(row=1, column=cts + 8)
+        # Size frame end
         self.pause_continue_button.grid(row=1, column=cts + 9)
         ctk.CTkLabel(self.controls_frame, text='Anim. speed:').grid(row=1, column=cts + 10)
         self.time_scale.grid(row=1, column=cts + 11, columnspan=3)
@@ -343,12 +409,13 @@ class View(abc.ABC):
         self.prev_label.pack(pady=(5, 0))
         self.canvas_prev.pack()
         self.now_label.pack(pady=(5, 0))
-        self.canvas_now.pack()
+        self.canvas_now.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
         canvas_frame.grid(row=0, column=1)
         visualization_frame.pack(pady=(5, 0))
 
         self.buttons = [insert_button, delete_button, find_button, clear_button, self.view_button,
-                        min_button, max_button, mean_button, median_button]
+                        min_button, max_button, mean_button, median_button,
+                        self.increase_size_button, self.decrease_size_button]
 
         return frame
 

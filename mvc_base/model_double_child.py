@@ -2,10 +2,8 @@
 import abc
 import statistics
 
-from PIL import ImageTk, Image
-
 import mvc_base.model as model
-from core.constants import left, right, white, black, grey_node, hint_frame
+from core.constants import left, right, white, black, grey_node, hint_frame, circle_node_text_modifier
 
 
 class DCTree(model.Tree, abc.ABC):
@@ -13,9 +11,6 @@ class DCTree(model.Tree, abc.ABC):
 
     def __init__(self, view):
         super().__init__(view)
-        grey_circle = Image.open('./materials/grey_circle.png').resize((self.view.node_width, self.view.node_height),
-                                                                       Image.ANTIALIAS)
-        self.grey_circle = ImageTk.PhotoImage(grey_circle)
 
     # Tree derived methods override
 
@@ -77,8 +72,9 @@ class DCTree(model.Tree, abc.ABC):
         root = self.root
         view.explanation.append(f'Tree is not empty. Find insert place for {value}')
         view.canvas_now.create_image(root.x - view.node_width // 2, root.y - view.y_above - view.node_height // 2,
-                                     anchor='nw', image=self.grey_circle, tags=grey_node)
-        view.canvas_now.create_text(root.x, root.y - view.y_above, fill=white, text=value, tags=grey_node)
+                                     anchor='nw', image=view.grey_circle, tags=grey_node)
+        view.canvas_now.create_text(root.x, root.y - view.y_above, fill=white, text=value, tags=grey_node,
+                                    font=('TkDefaultFont', int(view.node_width * circle_node_text_modifier)))
         newNode = root.insert_value(value)
         view.explanation.append(f'Start node-fixing process')
         view.draw_object_with_children_lines(newNode, view.canvas_now)
