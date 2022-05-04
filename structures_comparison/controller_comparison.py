@@ -1,7 +1,8 @@
 import copy
+import threading
 
 import core.root as r
-from mvc_base.controller import validate_input
+from mvc_base.controller import validate_input, History
 
 
 class ComparisonController:
@@ -11,6 +12,7 @@ class ComparisonController:
         self.top_tree = None
         self.bottom_tree = None
         self.view = view
+        self.history = History()
 
     def __deepcopy__(self, memo):
         c = ComparisonController(self.view)
@@ -35,39 +37,41 @@ class ComparisonController:
         :return: returns nothing
         """
         view = self.view
-        view.set_buttons(False)
         if validate_input(arg):
             val = int(arg)
             if func == r.Action.insert:
-                self.top_tree.insert_value(val)
+                threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.insert_value(val))).start()
                 self.bottom_tree.insert_value(val)
             elif func == r.Action.delete:
-                self.top_tree.delete_value(val)
+                threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.delete_value(val))).start()
                 self.bottom_tree.delete_value(val)
             elif func == r.Action.search:
-                self.top_tree.search_value(val)
+                threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.search_value(val))).start()
                 self.bottom_tree.search_value(val)
             elif func == r.Action.min:
-                self.top_tree.min()
+                threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.min())).start()
                 self.bottom_tree.min()
             elif func == r.Action.max:
-                self.top_tree.max()
+                threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.max())).start()
                 self.bottom_tree.max()
             elif func == r.Action.mean:
-                self.top_tree.mean()
+                threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.mean())).start()
                 self.bottom_tree.mean()
             elif func == r.Action.median:
-                self.top_tree.median()
+                threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.median())).start()
                 self.bottom_tree.median()
-            view.prepare_view()
-            view.draw_tree(self.top_tree.root, view.canvas_top)
-            view.draw_tree(self.bottom_tree.root, view.canvas_bottom)
+            self.view.canvas_bottom.delete('all')
+            self.bottom_tree.view.draw_tree(self.bottom_tree.root, view.canvas_bottom)
         else:
             view.info_label.config(text='Not a valid input (integer in range 0-999)')
-        view.set_buttons(True)
 
     def back(self):
         pass
 
     def forward(self):
         pass
+
+    def top_canvas_draw(self, func):
+        func()
+        self.view.canvas_top.delete('all')
+        self.top_tree.view.draw_tree(self.top_tree.root, self.view.canvas_top)
