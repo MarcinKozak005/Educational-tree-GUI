@@ -28,22 +28,3 @@ rbt_view.create_GUI(controller, '')
 rbt_view.canvas_now = view.canvas_bottom
 rbt_tree = rbt.RBTree(rbt_view)
 controller.bottom_tree = rbt_tree
-
-# initial_max_degree = 3
-# bt_view = btv.BTView(
-#     node_width=24,
-#     node_height=18,
-#     columns_to_skip=0,
-#     current_max_degree=initial_max_degree
-# )
-# bt_view.create_GUI(controller, '')
-# bt_view.canvas_now = view.canvas_bottom
-# bt_tree = bt.BTree(bt_view, initial_max_degree)
-# controller.bottom_tree = bt_tree
-
-# rbt_view.short_animation_time = 500
-# rbt_view.long_animation_time = 1000
-# avlt_view.short_animation_time = 500
-# avlt_view.long_animation_time = 1000
-# bt_view.short_animation_time = 500
-# bt_view.long_animation_time = 1000

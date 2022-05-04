@@ -10,7 +10,11 @@ class ComparisonController:
 
     def __init__(self, view):
         self.top_tree = None
+        self.top_tree_degree = 3
+        self.top_structure = None
         self.bottom_tree = None
+        self.bottom_structure = None
+        self.bottom_tree_degree = 3
         self.view = view
         self.history = History()
 

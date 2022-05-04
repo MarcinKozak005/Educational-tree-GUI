@@ -1,13 +1,25 @@
-import abc
 import tkinter as tk
 
 import customtkinter as ctk
 
+import asa_graph.asag_model as asa
+import asa_graph.asag_view as asav
+import avbpt.avbpt_model as avbpt
+import avbpt.avbpt_view as avbptv
+import avbt.avbt_model as avbt
+import avbt.avbt_view as avbtv
+import avlt.avl_model as avl
+import avlt.avl_view as avlv
+import bpt.bpt_model as bpt
+import bpt.bpt_view as bptv
+import bt.bt_model as bt
+import bt.bt_view as btv
 import core.menu as m
 import core.root as r
+import rbt.rbt_model as rbt
+import rbt.rbt_view as rbtv
 from core.constants import white, canvas_width_modifier, canvas_height_modifier
 
-ctk.set_default_color_theme('green')
 button_arguments = {'width': 20, 'height': 10, 'text_color_disabled': '#d1d1d1'}
 comparison_buttons_argument = {'width': 75, 'height': 10, 'text_color_disabled': '#d1d1d1'}
 btn_arg = {'width': 7, 'height': 7, 'text_color_disabled': '#d1d1d1'}  # for max_degree buttons
@@ -34,30 +46,6 @@ class ComparisonView:
         self.increase_size_button = None
         self.decrease_size_button = None
         self.size_value = 0
-
-    @abc.abstractmethod
-    def draw_tree(self, node, canvas, reload_images=False):
-        # Draw both trees, call functions from respective views but canvases from this view
-        pass
-
-    def draw_exp_text(self, node, exp_str, above=True):
-        # change draw_exp_text in all views to accept canvas
-        """
-        Draws explanation text above/below a given node
-        :param node: node above/below which a exp_str will be drawn
-        :param exp_str: string to draw
-        :param above: if True -> exp_str will be above node, else below the node
-        :return: returns nothing
-        """
-        pass
-
-    def prepare_view(self):
-        """
-        Clears labels and canvas_bottom
-        :return: returns nothing
-        """
-        self.info_label.config(text='')
-        self.erase('all')
 
     def set_buttons(self, state):
         """
@@ -126,32 +114,41 @@ class ComparisonView:
 
         # Visualization frame
         visualization_frame = ctk.CTkFrame(frame)
-
         comparison_frame = ctk.CTkFrame(visualization_frame)
         top_comparison_frame = tk.Frame(comparison_frame, height=self.height + 35)
         top_comparison_frame.grid_propagate(0)
         bottom_comparison_frame = tk.Frame(comparison_frame)
-        b1t = ctk.CTkButton(top_comparison_frame, text='Red-black', **comparison_buttons_argument)
-        b2t = ctk.CTkButton(top_comparison_frame, text='AVL', **comparison_buttons_argument)
-        b3t = ctk.CTkButton(top_comparison_frame, text='B-', **comparison_buttons_argument)
-        b4t = ctk.CTkButton(top_comparison_frame, text='B+', **comparison_buttons_argument)
-        b5t = ctk.CTkButton(top_comparison_frame, text='AVB-', **comparison_buttons_argument)
-        b6t = ctk.CTkButton(top_comparison_frame, text='AVB+', **comparison_buttons_argument)
-        b7t = ctk.CTkButton(top_comparison_frame, text='ASA', **comparison_buttons_argument)
-        degree_btn_frame1 = tk.Frame(top_comparison_frame)
+
+        # Short versions
+        bcf = bottom_comparison_frame
+        tcf = top_comparison_frame
+        c = controller
+        st = r.Structure
+        up = r.Mode.up
+        down = r.Mode.down
+        cba = comparison_buttons_argument
+
+        b1t = ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.RBT, up), text='Red-black', **cba)
+        b2t = ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.AVL, up), text='AVL', **cba)
+        b3t = ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.BT, up), text='B-', **cba)
+        b4t = ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.BPT, up), text='B+', **cba)
+        b5t = ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.AVBT, up), text='AVB-', **cba)
+        b6t = ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.AVBPT, up), text='AVB+', **cba)
+        b7t = ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.ASA, up), text='ASA', **cba)
+        degree_btn_frame1 = tk.Frame(tcf)
         db3t = ctk.CTkButton(degree_btn_frame1, text='3', **btn_arg)
         db4t = ctk.CTkButton(degree_btn_frame1, text='4', **btn_arg)
         db5t = ctk.CTkButton(degree_btn_frame1, text='5', **btn_arg)
         db6t = ctk.CTkButton(degree_btn_frame1, text='6', **btn_arg)
 
-        b1b = ctk.CTkButton(bottom_comparison_frame, text='Red-black', **comparison_buttons_argument)
-        b2b = ctk.CTkButton(bottom_comparison_frame, text='AVL', **comparison_buttons_argument)
-        b3b = ctk.CTkButton(bottom_comparison_frame, text='B-', **comparison_buttons_argument)
-        b4b = ctk.CTkButton(bottom_comparison_frame, text='B+', **comparison_buttons_argument)
-        b5b = ctk.CTkButton(bottom_comparison_frame, text='AVB-', **comparison_buttons_argument)
-        b6b = ctk.CTkButton(bottom_comparison_frame, text='AVB+', **comparison_buttons_argument)
-        b7b = ctk.CTkButton(bottom_comparison_frame, text='ASA', **comparison_buttons_argument)
-        degree_btn_frame2 = tk.Frame(bottom_comparison_frame)
+        b1b = ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.RBT, down), text='Red-black', **cba)
+        b2b = ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.AVL, down), text='AVL', **cba)
+        b3b = ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.BT, down), text='B-', **cba)
+        b4b = ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.BPT, down), text='B+', **cba)
+        b5b = ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.AVBT, down), text='AVB-', **cba)
+        b6b = ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.AVBPT, down), text='AVB+', **cba)
+        b7b = ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.ASA, down), text='ASA', **cba)
+        degree_btn_frame2 = tk.Frame(bcf)
         db3b = ctk.CTkButton(degree_btn_frame2, text='3', **btn_arg)
         db4b = ctk.CTkButton(degree_btn_frame2, text='4', **btn_arg)
         db5b = ctk.CTkButton(degree_btn_frame2, text='5', **btn_arg)
@@ -234,11 +231,49 @@ class ComparisonView:
         self.max_degree_buttons[0].config(state=tk.DISABLED)
         self.buttons.extend(self.max_degree_buttons)
 
-    def erase(self, tag):
+    def clear(self):
+        self.canvas_top.delete('all')
+        self.canvas_bottom.delete('all')
+
+    def structure_change(self, controller, structure, mode):
         """
-        Erases objects with 'tag" tag on the canvas_bottom
-        :param tag: string representing the tag
+        Changes comparison structures in controller
+        :param controller: controller to change the structure of
+        :param structure: new structure key
+        :param mode: determines whether to change top or bottom structure
         :return: returns nothing
         """
-        self.canvas_top.delete(tag)
-        self.canvas_bottom.delete(tag)
+        tree_dict = {
+            r.Structure.RBT: (rbt.RBTree, rbtv.RBTView),
+            r.Structure.AVL: (avl.AVLTree, avlv.AVLView),
+            r.Structure.BT: (bt.BTree, btv.BTView),
+            r.Structure.BPT: (bpt.BPTree, bptv.BPTView),
+            r.Structure.AVBT: (avbt.AVBTree, avbtv.AVBTView),
+            r.Structure.AVBPT: (avbpt.AVBPTree, avbptv.AVBPTView),
+            r.Structure.ASA: (asa.ASAGraph, asav.ASAGView)
+        }
+        if structure in tree_dict.keys():
+            controller.clear()
+            Tree = tree_dict[structure][0]
+            View = tree_dict[structure][1]
+            position = list(tree_dict.keys()).index(structure)
+            if mode == r.Mode.up:
+                if position >= 2:
+                    view = View(24, 18, 0, controller.top_tree_degree)
+                    controller.top_tree = Tree(view, controller.top_tree_degree)
+                else:
+                    view = View(26, 26, 0)
+                    controller.top_tree = Tree(view)
+                view.create_GUI(controller, '')
+                view.canvas_now = self.canvas_top
+                controller.top_structure = structure
+            elif mode == r.Mode.down:
+                if position >= 2:
+                    view = View(24, 18, 0, controller.bottom_tree_degree)
+                    controller.bottom_tree = Tree(view, controller.bottom_tree_degree)
+                else:
+                    view = View(26, 26, 0)
+                    controller.bottom_tree = Tree(view)
+                view.create_GUI(controller, '')
+                view.canvas_now = self.canvas_bottom
+                controller.bottom_structure = structure

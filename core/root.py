@@ -40,6 +40,16 @@ class Mode(Enum):
     up = 4
 
 
+class Structure(Enum):
+    RBT = 1
+    AVL = 2
+    BT = 3
+    BPT = 4
+    AVBT = 5
+    AVBPT = 6
+    ASA = 7
+
+
 frame = ctk.CTk()
 frame.title('Educational tree GUI')
 frame.state('zoomed')
