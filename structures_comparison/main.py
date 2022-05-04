@@ -9,22 +9,27 @@ view = v.ComparisonView()
 controller = c.ComparisonController(view)
 frame = view.create_GUI(controller, 'Comparison')
 
-avlt_view = avltv.AVLView(
-    node_width=26,
-    node_height=26,
-    columns_to_skip=0
-)
-avlt_view.create_GUI(controller, '')
-avlt_view.canvas_now = view.canvas_top
-avlt_tree = avlt.AVLTree(avlt_view)
-controller.top_tree = avlt_tree
-
 rbt_view = rbtv.RBTView(
     node_width=26,
     node_height=26,
     columns_to_skip=0
 )
 rbt_view.create_GUI(controller, '')
-rbt_view.canvas_now = view.canvas_bottom
+rbt_view.canvas_now = view.canvas_top
 rbt_tree = rbt.RBTree(rbt_view)
-controller.bottom_tree = rbt_tree
+controller.top_tree = rbt_tree
+
+avlt_view = avltv.AVLView(
+    node_width=26,
+    node_height=26,
+    columns_to_skip=0
+)
+avlt_view.create_GUI(controller, '')
+avlt_view.canvas_now = view.canvas_bottom
+avlt_tree = avlt.AVLTree(avlt_view)
+controller.bottom_tree = avlt_tree
+
+rbt_view.short_animation_time = 500
+rbt_view.long_animation_time = 1000
+avlt_view.short_animation_time = 500
+avlt_view.long_animation_time = 1000

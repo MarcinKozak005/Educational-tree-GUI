@@ -41,13 +41,13 @@ class Mode(Enum):
 
 
 class Structure(Enum):
-    RBT = 1
-    AVL = 2
-    BT = 3
-    BPT = 4
-    AVBT = 5
-    AVBPT = 6
-    ASA = 7
+    RBT = 'Red-black tree'
+    AVL = 'AVL Tree'
+    BT = 'B-Tree'
+    BPT = 'B+Tree'
+    AVBT = 'AVB-Tree'
+    AVBPT = 'AVB+Tree'
+    ASA = 'ASA Graph'
 
 
 frame = ctk.CTk()

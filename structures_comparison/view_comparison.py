@@ -30,22 +30,22 @@ class ComparisonView:
     def __init__(self):
         self.width = int(r.frame.width * canvas_width_modifier)
         self.height = int(r.frame.height * canvas_height_modifier)
-        self.canvas_top = None
-        self.canvas_bottom = None
         self.info_label = None
         self.buttons = []
-        self.top_canvas_label = None
-        self.bottom_canvas_label = None
         self.controls_frame = None
         self.time_scale = None
-        self.hold_animation = False
-        self.pause_continue_button = None
         self.buttons_state = {}
-        self.current_max_degree = None
-        self.max_degree_buttons = []
         self.increase_size_button = None
         self.decrease_size_button = None
         self.size_value = 0
+        # Top
+        self.canvas_top = None
+        self.top_canvas_label = None
+        self.top_btns_degree = []
+        # Bottom
+        self.canvas_bottom = None
+        self.bottom_canvas_label = None
+        self.bottom_btns_degree = []
 
     def set_buttons(self, state):
         """
@@ -55,6 +55,20 @@ class ComparisonView:
         """
         for b in self.buttons:
             b.config(state=tk.NORMAL if state else tk.DISABLED)
+
+    def set_buttons_degree(self, mode, state, degree=None):
+        """
+        Enables/Disable max-degree buttons
+        :param mode: Mode.up or Mode.down. Distinguished which buttons should be affected
+        :param state: True -> enable, False -> disable
+        :param degree: int; button with that degree number should be disabled no matter the given state
+        :return:
+        """
+        buttons_tab = self.top_btns_degree if mode == r.Mode.up else self.bottom_btns_degree
+        for b in buttons_tab:
+            b.config(state=tk.NORMAL if state else tk.DISABLED)
+            if int(b.text) == degree:
+                b.config(state=tk.DISABLED)
 
     def create_GUI(self, controller, text):
         """
@@ -105,7 +119,6 @@ class ComparisonView:
         max_button.grid(row=0, column=8, padx=(5, 0))
         mean_button.grid(row=0, column=9, padx=(5, 0))
         median_button.grid(row=0, column=10, padx=(5, 0))
-
         clear_button.grid(row=0, column=11, padx=(5, 0))
         back_button.grid(row=0, column=17, padx=(40, 0))
 
@@ -115,9 +128,9 @@ class ComparisonView:
         # Visualization frame
         visualization_frame = ctk.CTkFrame(frame)
         comparison_frame = ctk.CTkFrame(visualization_frame)
-        top_comparison_frame = tk.Frame(comparison_frame, height=self.height + 35)
+        top_comparison_frame = tk.Frame(comparison_frame, height=self.height + 35, bg='#d1d1d1')
         top_comparison_frame.grid_propagate(0)
-        bottom_comparison_frame = tk.Frame(comparison_frame)
+        bottom_comparison_frame = tk.Frame(comparison_frame, bg='#d1d1d1')
 
         # Short versions
         bcf = bottom_comparison_frame
@@ -128,69 +141,81 @@ class ComparisonView:
         down = r.Mode.down
         cba = comparison_buttons_argument
 
-        b1t = ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.RBT, up), text='Red-black', **cba)
-        b2t = ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.AVL, up), text='AVL', **cba)
-        b3t = ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.BT, up), text='B-', **cba)
-        b4t = ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.BPT, up), text='B+', **cba)
-        b5t = ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.AVBT, up), text='AVB-', **cba)
-        b6t = ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.AVBPT, up), text='AVB+', **cba)
-        b7t = ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.ASA, up), text='ASA', **cba)
-        degree_btn_frame1 = tk.Frame(tcf)
-        db3t = ctk.CTkButton(degree_btn_frame1, text='3', **btn_arg)
-        db4t = ctk.CTkButton(degree_btn_frame1, text='4', **btn_arg)
-        db5t = ctk.CTkButton(degree_btn_frame1, text='5', **btn_arg)
-        db6t = ctk.CTkButton(degree_btn_frame1, text='6', **btn_arg)
+        def selector_change(num, top):
+            if top:
+                if num != controller.top_tree_degree:
+                    controller.top_tree_degree = num
+                    controller.clear()
+                    controller.top_tree = type(controller.top_tree)(controller.top_tree.view, num)
+                    controller.check_buttons()
+                    self.top_canvas_label.config(text=f'{controller.top_structure.value} '
+                                                      f'[degree: {controller.top_tree_degree}]')
+            else:
+                if num != controller.bottom_tree_degree:
+                    controller.bottom_tree_degree = num
+                    controller.clear()
+                    controller.bottom_tree = type(controller.bottom_tree)(controller.bottom_tree.view, num)
+                    controller.check_buttons()
+                    self.bottom_canvas_label.config(
+                        text=f'{controller.bottom_structure.value} [degree: {controller.bottom_tree_degree}]')
 
-        b1b = ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.RBT, down), text='Red-black', **cba)
-        b2b = ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.AVL, down), text='AVL', **cba)
-        b3b = ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.BT, down), text='B-', **cba)
-        b4b = ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.BPT, down), text='B+', **cba)
-        b5b = ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.AVBT, down), text='AVB-', **cba)
-        b6b = ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.AVBPT, down), text='AVB+', **cba)
-        b7b = ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.ASA, down), text='ASA', **cba)
-        degree_btn_frame2 = tk.Frame(bcf)
-        db3b = ctk.CTkButton(degree_btn_frame2, text='3', **btn_arg)
-        db4b = ctk.CTkButton(degree_btn_frame2, text='4', **btn_arg)
-        db5b = ctk.CTkButton(degree_btn_frame2, text='5', **btn_arg)
-        db6b = ctk.CTkButton(degree_btn_frame2, text='6', **btn_arg)
+        top_btns = [
+            ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.RBT, up), text='Red-black', **cba),
+            ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.AVL, up), text='AVL', **cba),
+            ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.BT, up), text='B-', **cba),
+            ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.BPT, up), text='B+', **cba),
+            ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.AVBT, up), text='AVB-', **cba),
+            ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.AVBPT, up), text='AVB+', **cba),
+            ctk.CTkButton(tcf, command=lambda: self.structure_change(c, st.ASA, up), text='ASA', **cba)]
+        degree_btn_frame1 = tk.Frame(tcf, bg='#d1d1d1')
+        self.top_btns_degree = [
+            ctk.CTkButton(degree_btn_frame1, text='3', command=lambda: selector_change(3, True), **btn_arg),
+            ctk.CTkButton(degree_btn_frame1, text='4', command=lambda: selector_change(4, True), **btn_arg),
+            ctk.CTkButton(degree_btn_frame1, text='5', command=lambda: selector_change(5, True), **btn_arg),
+            ctk.CTkButton(degree_btn_frame1, text='6', command=lambda: selector_change(6, True), **btn_arg)
+        ]
 
-        ctk.CTkLabel(top_comparison_frame, text='Top structure').grid(row=0, column=0)
-        b1t.grid(row=1, column=0, pady=(0, 2))
-        b2t.grid(row=2, column=0, pady=(0, 2))
-        b3t.grid(row=3, column=0, pady=(0, 2))
-        b4t.grid(row=4, column=0, pady=(0, 2))
-        b5t.grid(row=5, column=0, pady=(0, 2))
-        b6t.grid(row=6, column=0, pady=(0, 2))
-        b7t.grid(row=7, column=0, pady=(0, 2))
+        bottom_btns = [
+            ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.RBT, down), text='Red-black', **cba),
+            ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.AVL, down), text='AVL', **cba),
+            ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.BT, down), text='B-', **cba),
+            ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.BPT, down), text='B+', **cba),
+            ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.AVBT, down), text='AVB-', **cba),
+            ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.AVBPT, down), text='AVB+', **cba),
+            ctk.CTkButton(bcf, command=lambda: self.structure_change(c, st.ASA, down), text='ASA', **cba)]
+        degree_btn_frame2 = tk.Frame(bcf, bg='#d1d1d1')
+        self.bottom_btns_degree = [
+            ctk.CTkButton(degree_btn_frame2, text='3', command=lambda: selector_change(3, False), **btn_arg),
+            ctk.CTkButton(degree_btn_frame2, text='4', command=lambda: selector_change(4, False), **btn_arg),
+            ctk.CTkButton(degree_btn_frame2, text='5', command=lambda: selector_change(5, False), **btn_arg),
+            ctk.CTkButton(degree_btn_frame2, text='6', command=lambda: selector_change(6, False), **btn_arg)
+        ]
+
+        ctk.CTkLabel(top_comparison_frame, text='Top structure',
+                     text_font=('TkDefaultFont', 10, 'bold')).grid(row=0, column=0)
+        for i in range(0, len(top_btns)):
+            top_btns[i].grid(row=i + 1, column=0, pady=(0, 2))
         degree_btn_frame1.grid(row=8, column=0)
         ctk.CTkLabel(degree_btn_frame1, text='Max graph degree:').grid(row=0, column=0, columnspan=4)
-        db3t.grid(row=1, column=0)
-        db4t.grid(row=1, column=1)
-        db5t.grid(row=1, column=2)
-        db6t.grid(row=1, column=3)
+        for i in range(0, len(self.top_btns_degree)):
+            self.top_btns_degree[i].grid(row=1, column=i)
         top_comparison_frame.grid(row=0, column=0, sticky=tk.NSEW)
 
-        ctk.CTkLabel(bottom_comparison_frame, text='Bottom structure').grid(row=0, column=1)
-        b1b.grid(row=1, column=1, pady=(0, 2))
-        b2b.grid(row=2, column=1, pady=(0, 2))
-        b3b.grid(row=3, column=1, pady=(0, 2))
-        b4b.grid(row=4, column=1, pady=(0, 2))
-        b5b.grid(row=5, column=1, pady=(0, 2))
-        b6b.grid(row=6, column=1, pady=(0, 2))
-        b7b.grid(row=7, column=1, pady=(0, 2))
-        degree_btn_frame2.grid(row=8, column=1)
+        ctk.CTkLabel(bottom_comparison_frame, text='Bottom structure',
+                     text_font=('TkDefaultFont', 10, 'bold')).grid(row=0, column=0)
+        for i in range(0, len(bottom_btns)):
+            bottom_btns[i].grid(row=i + 1, column=0, pady=(0, 2))
+        degree_btn_frame2.grid(row=8, column=0)
         ctk.CTkLabel(degree_btn_frame2, text='Max graph degree:').grid(row=0, column=0, columnspan=4)
-        db3b.grid(row=1, column=0)
-        db4b.grid(row=1, column=1)
-        db5b.grid(row=1, column=2)
-        db6b.grid(row=1, column=3)
+        for i in range(0, len(self.bottom_btns_degree)):
+            self.bottom_btns_degree[i].grid(row=1, column=i)
         bottom_comparison_frame.grid(row=1, column=0)
         comparison_frame.grid(row=0, column=0, sticky=tk.NS)
 
         canvas_frame = ctk.CTkFrame(visualization_frame)
-        self.top_canvas_label = ctk.CTkLabel(canvas_frame, text=f'TOP')
+        self.top_canvas_label = ctk.CTkLabel(canvas_frame, text=f'{controller.top_structure.value}')
         self.canvas_top = ctk.CTkCanvas(canvas_frame, width=self.width, height=self.height, bg=white)
-        self.bottom_canvas_label = ctk.CTkLabel(canvas_frame, text=f'BOTTOM')
+        self.bottom_canvas_label = ctk.CTkLabel(canvas_frame, text=f'{controller.bottom_structure.value}')
         self.canvas_bottom = ctk.CTkCanvas(canvas_frame, width=self.width, height=self.height, bg=white)
         self.top_canvas_label.pack(pady=(5, 0))
         self.canvas_top.pack()
@@ -200,36 +225,15 @@ class ComparisonView:
         visualization_frame.pack(pady=(5, 0))
 
         self.buttons = [insert_button, delete_button, find_button, clear_button,
-                        min_button, max_button, mean_button, median_button,
-                        self.increase_size_button, self.decrease_size_button]
+                        min_button, max_button, mean_button, median_button]
+        # self.increase_size_button, self.decrease_size_button]
+        self.buttons.extend(top_btns)
+        self.buttons.extend(bottom_btns)
+        self.buttons.extend(self.top_btns_degree)
+        self.buttons.extend(self.bottom_btns_degree)
+        controller.check_buttons()
 
         return frame
-
-    def add_max_degree_change_to_GUI(self, controller):
-        def selector_change(new_value):
-            if self.current_max_degree != new_value:
-                self.current_max_degree = new_value
-                controller.clear()
-                controller.tree = type(controller.tree)(self, new_value)
-                for b in self.max_degree_buttons:
-                    b.config(state=tk.DISABLED if int(b.text) == new_value else tk.NORMAL)
-
-        degree_btn_frame = tk.Frame(self.controls_frame)
-        self.max_degree_buttons.append(ctk.CTkButton(degree_btn_frame, text='3',
-                                                     command=lambda: selector_change(3), **btn_arg))
-        self.max_degree_buttons.append(ctk.CTkButton(degree_btn_frame, text='4',
-                                                     command=lambda: selector_change(4), **btn_arg))
-        self.max_degree_buttons.append(ctk.CTkButton(degree_btn_frame, text='5',
-                                                     command=lambda: selector_change(5), **btn_arg))
-        self.max_degree_buttons.append(ctk.CTkButton(degree_btn_frame, text='6',
-                                                     command=lambda: selector_change(6), **btn_arg))
-        tk.Label(self.controls_frame, text='Max graph degree:').grid(row=0, column=0)
-        degree_btn_frame.grid(row=0, column=1)
-        for btn in self.max_degree_buttons:
-            btn.grid(row=0, column=self.max_degree_buttons.index(btn),
-                     padx=(0, 10 if btn is self.max_degree_buttons[-1] else 1))
-        self.max_degree_buttons[0].config(state=tk.DISABLED)
-        self.buttons.extend(self.max_degree_buttons)
 
     def clear(self):
         self.canvas_top.delete('all')
@@ -253,27 +257,33 @@ class ComparisonView:
             r.Structure.ASA: (asa.ASAGraph, asav.ASAGView)
         }
         if structure in tree_dict.keys():
-            controller.clear()
             Tree = tree_dict[structure][0]
             View = tree_dict[structure][1]
             position = list(tree_dict.keys()).index(structure)
-            if mode == r.Mode.up:
+            if controller.top_structure != structure and mode == r.Mode.up:
+                controller.clear()
                 if position >= 2:
                     view = View(24, 18, 0, controller.top_tree_degree)
                     controller.top_tree = Tree(view, controller.top_tree_degree)
+                    self.top_canvas_label.config(text=f'{structure.value} [degree: {controller.top_tree_degree}]')
                 else:
                     view = View(26, 26, 0)
                     controller.top_tree = Tree(view)
+                    self.top_canvas_label.config(text=f'{structure.value}')
                 view.create_GUI(controller, '')
                 view.canvas_now = self.canvas_top
                 controller.top_structure = structure
-            elif mode == r.Mode.down:
+            elif controller.bottom_structure != structure and mode == r.Mode.down:
+                controller.clear()
                 if position >= 2:
                     view = View(24, 18, 0, controller.bottom_tree_degree)
                     controller.bottom_tree = Tree(view, controller.bottom_tree_degree)
+                    self.bottom_canvas_label.config(text=f'{structure.value} [degree: {controller.bottom_tree_degree}]')
                 else:
                     view = View(26, 26, 0)
                     controller.bottom_tree = Tree(view)
+                    self.bottom_canvas_label.config(text=f'{structure.value}')
                 view.create_GUI(controller, '')
                 view.canvas_now = self.canvas_bottom
                 controller.bottom_structure = structure
+            controller.check_buttons()
