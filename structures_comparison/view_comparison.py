@@ -38,14 +38,18 @@ class ComparisonView:
         self.increase_size_button = None
         self.decrease_size_button = None
         self.size_value = 0
+        self.back_button = None
+        self.forward_button = None
         # Top
         self.canvas_top = None
         self.top_canvas_label = None
         self.top_btns_degree = []
+        self.top_max_degree = 3
         # Bottom
         self.canvas_bottom = None
         self.bottom_canvas_label = None
         self.bottom_btns_degree = []
+        self.bottom_max_degree = 3
 
     def set_buttons(self, state):
         """
@@ -69,6 +73,19 @@ class ComparisonView:
             b.config(state=tk.NORMAL if state else tk.DISABLED)
             if int(b.text) == degree:
                 b.config(state=tk.DISABLED)
+
+    def check_browsing_buttons(self, pointer, length):
+        """
+        Disables/Enables history browsing buttons and operation buttons
+        :param pointer: value of history_list in controller
+        :param length: length of history_list in controller
+        :return: returns nothing
+        """
+        self.back_button.config(state=tk.NORMAL if pointer > 0 else tk.DISABLED)
+        if pointer < length - 1:
+            self.forward_button.config(state=tk.NORMAL)
+        else:
+            self.forward_button.config(state=tk.DISABLED)
 
     def create_GUI(self, controller, text):
         """
@@ -107,7 +124,14 @@ class ComparisonView:
                                      **button_arguments)
         back_button = ctk.CTkButton(self.controls_frame, text='Back to menu', command=lambda: r.show_frame(m.frame),
                                     **button_arguments)
+
+        # Second row
         self.info_label = tk.Label(self.controls_frame)
+        self.back_button = ctk.CTkButton(self.controls_frame, text='<<<', command=controller.back, **button_arguments)
+        self.forward_button = ctk.CTkButton(self.controls_frame, text='>>>', command=controller.forward,
+                                            **button_arguments)
+        # self.time_scale = ctk.CTkSlider(self.controls_frame, from_=5000, to=50, width=155, command=selector_change)
+        # self.time_scale.set(self.long_animation_time)
 
         # Putting on window
         input_field.grid(row=0, column=2)
@@ -121,8 +145,10 @@ class ComparisonView:
         median_button.grid(row=0, column=10, padx=(5, 0))
         clear_button.grid(row=0, column=11, padx=(5, 0))
         back_button.grid(row=0, column=17, padx=(40, 0))
-
         self.info_label.grid(row=1, column=0, columnspan=4, sticky='WE')
+        ctk.CTkLabel(self.controls_frame, text='Animation:').grid(row=1, column=6, padx=(5, 0))
+        self.back_button.grid(row=1, column=7)
+        self.forward_button.grid(row=1, column=8)
         self.controls_frame.pack()
 
         # Visualization frame
@@ -145,6 +171,7 @@ class ComparisonView:
             if top:
                 if num != controller.top_tree_degree:
                     controller.top_tree_degree = num
+                    self.top_max_degree = num
                     controller.clear()
                     controller.top_tree = type(controller.top_tree)(controller.top_tree.view, num)
                     controller.check_buttons()
@@ -153,6 +180,7 @@ class ComparisonView:
             else:
                 if num != controller.bottom_tree_degree:
                     controller.bottom_tree_degree = num
+                    self.bottom_max_degree = num
                     controller.clear()
                     controller.bottom_tree = type(controller.bottom_tree)(controller.bottom_tree.view, num)
                     controller.check_buttons()
@@ -225,13 +253,15 @@ class ComparisonView:
         visualization_frame.pack(pady=(5, 0))
 
         self.buttons = [insert_button, delete_button, find_button, clear_button,
-                        min_button, max_button, mean_button, median_button]
+                        min_button, max_button, mean_button, median_button,
+                        self.back_button, self.forward_button]
         # self.increase_size_button, self.decrease_size_button]
         self.buttons.extend(top_btns)
         self.buttons.extend(bottom_btns)
         self.buttons.extend(self.top_btns_degree)
         self.buttons.extend(self.bottom_btns_degree)
         controller.check_buttons()
+        self.check_browsing_buttons(controller.history.pointer, len(controller.history.history_list))
 
         return frame
 
@@ -287,3 +317,16 @@ class ComparisonView:
                 view.canvas_now = self.canvas_bottom
                 controller.bottom_structure = structure
             controller.check_buttons()
+            self.set_browsing_buttons(False)
+
+    def erase(self):
+        self.canvas_top.delete('all')
+        self.canvas_bottom.delete('all')
+
+    def set_browsing_buttons(self, state):
+        st = tk.NORMAL if state else tk.DISABLED
+        self.forward_button.config(state=st)
+        self.back_button.config(state=st)
+
+    def check_size_buttons(self):
+        pass

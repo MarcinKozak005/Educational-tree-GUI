@@ -28,8 +28,3 @@ avlt_view.create_GUI(controller, '')
 avlt_view.canvas_now = view.canvas_bottom
 avlt_tree = avlt.AVLTree(avlt_view)
 controller.bottom_tree = avlt_tree
-
-rbt_view.short_animation_time = 500
-rbt_view.long_animation_time = 1000
-avlt_view.short_animation_time = 500
-avlt_view.long_animation_time = 1000
