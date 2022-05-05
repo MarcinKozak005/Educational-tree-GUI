@@ -2,6 +2,7 @@ import copy
 import tkinter as tk
 
 import core.root as r
+import mvc_base.history as h
 from core.constants import canvas_width_modifier, canvas_height_modifier
 
 
@@ -17,7 +18,7 @@ class Controller:
     def __init__(self, tree, view):
         self.tree = tree
         self.view = view
-        self.history = History()
+        self.history = h.History()
 
     def __deepcopy__(self, memo):
         return Controller(copy.deepcopy(self.tree), self.view)
@@ -62,10 +63,10 @@ class Controller:
                     view.draw_tree(tree.root, view.canvas_prev)
                     tree.root.update_positions(True)
                     self.history.pop()
-                    self.history.append(HistoryElement(copy.deepcopy(self), func, arg))
+                    self.history.append(h.HistoryElement(copy.deepcopy(self), func, arg))
             elif self.tree.root is None:
                 add_final_result = True
-                self.history.append(HistoryElement(copy.deepcopy(self), func, arg))
+                self.history.append(h.HistoryElement(copy.deepcopy(self), func, arg))
                 view.canvas_prev.delete('all')
             if func == r.Action.insert:
                 self.tree.insert_value(val)
@@ -84,7 +85,7 @@ class Controller:
             view.prepare_view()
             view.draw_tree(self.tree.root, view.canvas_now)
             if add_final_result:
-                self.history.append(HistoryElement(copy.deepcopy(self), None, None))
+                self.history.append(h.HistoryElement(copy.deepcopy(self), None, None))
         else:
             view.info_label.config(text='Not a valid input (integer in range 0-999)')
         view.set_buttons(True)
@@ -163,65 +164,3 @@ class Controller:
             self.view.check_size_buttons()
             self.view.erase('all')
             self.view.draw_tree(self.tree.root, self.view.canvas_now)
-
-
-class History:
-    """Class for operation history browsing"""
-
-    def __init__(self):
-        self.history_list = []
-        self.pointer = -1
-        self.track = False
-
-    def append(self, history_element):
-        """Appends history_element to history_list (if History.track is set to True)"""
-        if self.track:
-            return
-        self.history_list.append(history_element)
-        self.pointer += 1
-
-    def pop(self):
-        """Removes last history_element from history_list (if History.track is set to True)"""
-        if self.track:
-            return
-        self.history_list.pop()
-        self.pointer -= 1
-
-    def decrement(self):
-        self.pointer = max(self.pointer - 1, 0)
-
-    def increment(self):
-        self.pointer = min(self.pointer + 1, len(self.history_list) - 1)
-
-    def get_tree(self):
-        return self.history_list[self.pointer].controller.tree
-
-    def get_elem(self):
-        if self.pointer >= 0:
-            return self.history_list[self.pointer]
-        else:
-            return None
-
-    def get_prev(self):
-        if self.pointer > 0:
-            return self.history_list[self.pointer - 1]
-        else:
-            return None
-
-    def substitute(self, sub):
-        self.history_list[self.pointer].tree = sub
-
-    def clear(self):
-        self.history_list = []
-        self.pointer = -1
-        self.track = False
-
-
-class HistoryElement:
-    """Element of history_list"""
-
-    def __init__(self, controller, func, arg):
-        # Storing only tree here (instead of controller) causes problems when browsing history
-        self.controller = controller
-        self.func = func
-        self.arg = arg

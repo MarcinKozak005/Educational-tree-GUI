@@ -40,6 +40,16 @@ class Mode(Enum):
     up = 4
 
 
+class Structure(Enum):
+    RBT = 'Red-black tree'
+    AVL = 'AVL Tree'
+    BT = 'B-Tree'
+    BPT = 'B+Tree'
+    AVBT = 'AVB-Tree'
+    AVBPT = 'AVB+Tree'
+    ASA = 'ASA Graph'
+
+
 frame = ctk.CTk()
 frame.title('Educational tree GUI')
 frame.state('zoomed')
