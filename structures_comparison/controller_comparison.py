@@ -65,6 +65,7 @@ class ComparisonController:
             elif self.top_tree.root is None:
                 add_final_result = True
                 self.history.append(h.HistoryElement(copy.deepcopy(self), func, arg))
+
             if func == r.Action.insert:
                 threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.insert_value(val))).start()
                 r.wait(200)

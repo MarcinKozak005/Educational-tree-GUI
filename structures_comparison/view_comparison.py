@@ -87,6 +87,20 @@ class ComparisonView:
         else:
             self.forward_button.config(state=tk.DISABLED)
 
+    def set_browsing_buttons(self, state):
+        st = tk.NORMAL if state else tk.DISABLED
+        self.forward_button.config(state=st)
+        self.back_button.config(state=st)
+
+    def check_size_buttons(self):
+        if self.size_value <= 0:
+            self.decrease_size_button.config(state=tk.DISABLED)
+        elif self.size_value >= 4:
+            self.increase_size_button.config(state=tk.DISABLED)
+        else:
+            self.decrease_size_button.config(state=tk.NORMAL)
+            self.increase_size_button.config(state=tk.NORMAL)
+
     def create_GUI(self, controller, text):
         """
         Creates a GUI with buttons triggering model methods with the use of controller
@@ -126,25 +140,17 @@ class ComparisonView:
                                     **button_arguments)
 
         # Second row
+        def selector_change(new_value):
+            controller.top_tree.view.long_animation_time = int(new_value)
+            controller.bottom_tree.view.long_animation_time = int(new_value)
+            controller.top_tree.view.short_animation_time = int(new_value) // 2
+            controller.bottom_tree.view.short_animation_time = int(new_value) // 2
+
         self.info_label = tk.Label(self.controls_frame)
         self.back_button = ctk.CTkButton(self.controls_frame, text='<<<', command=controller.back, **button_arguments)
         self.forward_button = ctk.CTkButton(self.controls_frame, text='>>>', command=controller.forward,
                                             **button_arguments)
-        # self.time_scale = ctk.CTkSlider(self.controls_frame, from_=5000, to=50, width=155, command=selector_change)
-        # self.time_scale.set(self.long_animation_time)
 
-        # Putting on window
-        input_field.grid(row=0, column=2)
-        insert_button.grid(row=0, column=3, padx=5)
-        delete_button.grid(row=0, column=4, padx=5)
-        find_button.grid(row=0, column=5, padx=5)
-        ctk.CTkLabel(self.controls_frame, text='Operations:').grid(row=0, column=6, padx=(5, 0))
-        min_button.grid(row=0, column=7, padx=(5, 0))
-        max_button.grid(row=0, column=8, padx=(5, 0))
-        mean_button.grid(row=0, column=9, padx=(5, 0))
-        median_button.grid(row=0, column=10, padx=(5, 0))
-
-        #
         def decrease():
             self.increase_size_button.config(state=tk.NORMAL)
             self.size_value -= 1
@@ -185,7 +191,20 @@ class ComparisonView:
         self.decrease_size_button = ctk.CTkButton(size_frame, text='-', command=decrease, **button_arguments)
         self.increase_size_button = ctk.CTkButton(size_frame, text='+', command=increase, **button_arguments)
         self.check_size_buttons()
-        #
+
+        self.time_scale = ctk.CTkSlider(self.controls_frame, from_=5000, to=50, width=155, command=selector_change)
+        self.time_scale.set(2500)
+
+        # Putting on window
+        input_field.grid(row=0, column=2)
+        insert_button.grid(row=0, column=3, padx=5)
+        delete_button.grid(row=0, column=4, padx=5)
+        find_button.grid(row=0, column=5, padx=5)
+        ctk.CTkLabel(self.controls_frame, text='Operations:').grid(row=0, column=6, padx=(5, 0))
+        min_button.grid(row=0, column=7, padx=(5, 0))
+        max_button.grid(row=0, column=8, padx=(5, 0))
+        mean_button.grid(row=0, column=9, padx=(5, 0))
+        median_button.grid(row=0, column=10, padx=(5, 0))
 
         clear_button.grid(row=0, column=11, padx=(5, 0))
         back_button.grid(row=0, column=17, padx=(40, 0))
@@ -201,6 +220,8 @@ class ComparisonView:
         tk.Label(self.controls_frame, text='Size:').grid(row=1, column=9, sticky=tk.E)
         size_frame.grid(row=1, column=10)
         # Size frame end
+        ctk.CTkLabel(self.controls_frame, text='Anim. speed:').grid(row=1, column=11)
+        self.time_scale.grid(row=1, column=12, columnspan=3)
 
         # Visualization frame
         visualization_frame = ctk.CTkFrame(frame)
@@ -361,6 +382,10 @@ class ComparisonView:
                 controller.top_tree.view.draw_tree(controller.top_tree.root, self.canvas_top, True)
                 self.erase()
                 # End size change
+                # Speed change
+                controller.top_tree.view.long_animation_time = controller.bottom_tree.view.long_animation_time
+                controller.top_tree.view.short_animation_time = controller.bottom_tree.view.short_animation_time
+                # End speed change
                 view.create_GUI(controller, '')
                 view.canvas_now = self.canvas_top
                 controller.top_structure = structure
@@ -384,6 +409,10 @@ class ComparisonView:
                 controller.bottom_tree.view.draw_tree(controller.bottom_tree.root, self.canvas_bottom, True)
                 self.erase()
                 # End size change
+                # Speed change
+                controller.bottom_tree.view.long_animation_time = controller.top_tree.view.long_animation_time
+                controller.bottom_tree.view.short_animation_time = controller.top_tree.view.short_animation_time
+                # End speed change
                 view.create_GUI(controller, '')
                 view.canvas_now = self.canvas_bottom
                 controller.bottom_structure = structure
@@ -393,17 +422,3 @@ class ComparisonView:
     def erase(self):
         self.canvas_top.delete('all')
         self.canvas_bottom.delete('all')
-
-    def set_browsing_buttons(self, state):
-        st = tk.NORMAL if state else tk.DISABLED
-        self.forward_button.config(state=st)
-        self.back_button.config(state=st)
-
-    def check_size_buttons(self):
-        if self.size_value <= 0:
-            self.decrease_size_button.config(state=tk.DISABLED)
-        elif self.size_value >= 4:
-            self.increase_size_button.config(state=tk.DISABLED)
-        else:
-            self.decrease_size_button.config(state=tk.NORMAL)
-            self.increase_size_button.config(state=tk.NORMAL)

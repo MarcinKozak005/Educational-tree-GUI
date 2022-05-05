@@ -7,7 +7,6 @@ import structures_comparison.view_comparison as v
 
 view = v.ComparisonView()
 controller = c.ComparisonController(view)
-frame = view.create_GUI(controller, 'Comparison')
 
 rbt_view = rbtv.RBTView(
     node_width=26,
@@ -28,3 +27,7 @@ avlt_view.create_GUI(controller, '')
 avlt_view.canvas_now = view.canvas_bottom
 avlt_tree = avlt.AVLTree(avlt_view)
 controller.bottom_tree = avlt_tree
+
+frame = view.create_GUI(controller, 'Comparison')
+rbt_view.canvas_now = view.canvas_top
+avlt_view.canvas_now = view.canvas_bottom
