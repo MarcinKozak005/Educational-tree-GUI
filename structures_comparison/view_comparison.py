@@ -143,6 +143,50 @@ class ComparisonView:
         max_button.grid(row=0, column=8, padx=(5, 0))
         mean_button.grid(row=0, column=9, padx=(5, 0))
         median_button.grid(row=0, column=10, padx=(5, 0))
+
+        #
+        def decrease():
+            self.increase_size_button.config(state=tk.NORMAL)
+            self.size_value -= 1
+            controller.top_tree.view.node_width -= 6
+            controller.bottom_tree.view.node_width -= 6
+            controller.top_tree.view.node_height -= 6
+            controller.bottom_tree.view.node_height -= 6
+            controller.top_tree.view.y_space -= 12
+            controller.bottom_tree.view.y_space -= 12
+            controller.top_tree.view.y_above -= 7
+            controller.bottom_tree.view.y_above -= 7
+            self.erase()
+            controller.top_tree.update_positions(True)
+            controller.bottom_tree.update_positions(True)
+            controller.top_tree.view.draw_tree(controller.top_tree.root, self.canvas_top, True)
+            controller.bottom_tree.view.draw_tree(controller.bottom_tree.root, self.canvas_bottom, True)
+            self.check_size_buttons()
+
+        def increase():
+            self.decrease_size_button.config(state=tk.NORMAL)
+            self.size_value += 1
+            controller.top_tree.view.node_width += 6
+            controller.bottom_tree.view.node_width += 6
+            controller.top_tree.view.node_height += 6
+            controller.bottom_tree.view.node_height += 6
+            controller.top_tree.view.y_space += 12
+            controller.bottom_tree.view.y_space += 12
+            controller.top_tree.view.y_above += 7
+            controller.bottom_tree.view.y_above += 7
+            self.erase()
+            controller.top_tree.update_positions(True)
+            controller.bottom_tree.update_positions(True)
+            controller.top_tree.view.draw_tree(controller.top_tree.root, self.canvas_top, True)
+            controller.bottom_tree.view.draw_tree(controller.bottom_tree.root, self.canvas_bottom, True)
+            self.check_size_buttons()
+
+        size_frame = tk.Frame(self.controls_frame)
+        self.decrease_size_button = ctk.CTkButton(size_frame, text='-', command=decrease, **button_arguments)
+        self.increase_size_button = ctk.CTkButton(size_frame, text='+', command=increase, **button_arguments)
+        self.check_size_buttons()
+        #
+
         clear_button.grid(row=0, column=11, padx=(5, 0))
         back_button.grid(row=0, column=17, padx=(40, 0))
         self.info_label.grid(row=1, column=0, columnspan=4, sticky='WE')
@@ -150,6 +194,13 @@ class ComparisonView:
         self.back_button.grid(row=1, column=7)
         self.forward_button.grid(row=1, column=8)
         self.controls_frame.pack()
+
+        # Size frame
+        self.decrease_size_button.grid(row=0, column=0, padx=(5, 0))
+        self.increase_size_button.grid(row=0, column=1, padx=(5, 0))
+        tk.Label(self.controls_frame, text='Size:').grid(row=1, column=9, sticky=tk.E)
+        size_frame.grid(row=1, column=10)
+        # Size frame end
 
         # Visualization frame
         visualization_frame = ctk.CTkFrame(frame)
@@ -254,8 +305,8 @@ class ComparisonView:
 
         self.buttons = [insert_button, delete_button, find_button, clear_button,
                         min_button, max_button, mean_button, median_button,
-                        self.back_button, self.forward_button]
-        # self.increase_size_button, self.decrease_size_button]
+                        self.back_button, self.forward_button,
+                        self.increase_size_button, self.decrease_size_button]
         self.buttons.extend(top_btns)
         self.buttons.extend(bottom_btns)
         self.buttons.extend(self.top_btns_degree)
@@ -300,6 +351,16 @@ class ComparisonView:
                     view = View(26, 26, 0)
                     controller.top_tree = Tree(view)
                     self.top_canvas_label.config(text=f'{structure.value}')
+                # Size change
+                for i in range(self.size_value):
+                    view.node_width += 6
+                    view.node_height += 6
+                    view.y_space += 12
+                    view.y_above += 7
+                controller.top_tree.update_positions(True)
+                controller.top_tree.view.draw_tree(controller.top_tree.root, self.canvas_top, True)
+                self.erase()
+                # End size change
                 view.create_GUI(controller, '')
                 view.canvas_now = self.canvas_top
                 controller.top_structure = structure
@@ -313,6 +374,16 @@ class ComparisonView:
                     view = View(26, 26, 0)
                     controller.bottom_tree = Tree(view)
                     self.bottom_canvas_label.config(text=f'{structure.value}')
+                # Size change
+                for i in range(self.size_value):
+                    view.node_width += 6
+                    view.node_height += 6
+                    view.y_space += 12
+                    view.y_above += 7
+                controller.bottom_tree.update_positions(True)
+                controller.bottom_tree.view.draw_tree(controller.bottom_tree.root, self.canvas_bottom, True)
+                self.erase()
+                # End size change
                 view.create_GUI(controller, '')
                 view.canvas_now = self.canvas_bottom
                 controller.bottom_structure = structure
@@ -329,4 +400,10 @@ class ComparisonView:
         self.back_button.config(state=st)
 
     def check_size_buttons(self):
-        pass
+        if self.size_value <= 0:
+            self.decrease_size_button.config(state=tk.DISABLED)
+        elif self.size_value >= 4:
+            self.increase_size_button.config(state=tk.DISABLED)
+        else:
+            self.decrease_size_button.config(state=tk.NORMAL)
+            self.increase_size_button.config(state=tk.NORMAL)

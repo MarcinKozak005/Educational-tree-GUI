@@ -169,5 +169,6 @@ class ComparisonController:
             else:
                 self.view.set_buttons_degree(r.Mode.down, True, self.bottom_tree_degree)
             self.view.check_browsing_buttons(self.history.pointer, len(self.history.history_list))
+            self.view.check_size_buttons()
         else:
             r.frame.after(10, self.check_buttons)
