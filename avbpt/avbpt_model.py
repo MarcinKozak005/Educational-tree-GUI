@@ -411,7 +411,7 @@ class AVBPTree(ma.AggTree):
             successors = self.root.successors()
             values = []
             for s in successors:
-                if type(s) is ma.AggValue:
+                if type(s) is ma.LinkAggValue:
                     values.append(s)
             self.view.hint_frame.draw(values[0].x, values[0].y)
             val_sum = 0
@@ -420,7 +420,7 @@ class AVBPTree(ma.AggTree):
             for v in values:
                 if v != values[0]:
                     self.view.hint_frame.move(v.x, v.y)
-                self.view.draw_exp_text(v, f'Add {v.value}x{v.counter} to sum {val_sum} '
+                self.view.draw_exp_text(v, f'Add {v.value} ({v.counter} times) to sum {val_sum} '
                                            f'and increase counter {counter} by {v.counter}')
                 val_sum += v.value
                 counter += 1
@@ -435,7 +435,7 @@ class AVBPTree(ma.AggTree):
             successors = self.root.successors()
             values = []
             for s in successors:
-                if type(s) is ma.AggValue:
+                if type(s) is ma.LinkAggValue:
                     values.append(s)
             self.view.hint_frame.draw(values[0].x, values[0].y)
             tab = []
@@ -444,6 +444,6 @@ class AVBPTree(ma.AggTree):
                 if v != values[0]:
                     self.view.hint_frame.move(v.x, v.y)
                 self.view.draw_exp_text(v, f'Append {v.value} ({v.counter} times) to tab {tab}')
-                tab.append([v.value] * v.counter)
+                tab.extend([v.value] * v.counter)
             self.view.draw_exp_text(self.root, f'Whole tree traversed. Values = {tab}. '
                                                f'Median = {statistics.median(tab)}')

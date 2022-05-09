@@ -129,10 +129,12 @@ class View(abc.ABC):
         txt_bb = self.canvas_now.bbox(txt)
         if txt_bb[0] < 0:
             x_change = -txt_bb[0]
+            x_change += 5  # margin
             self.canvas_now.move(txt, x_change, 0)
-            txt_bb = (txt_bb[0] - x_change, txt_bb[1], txt_bb[2] - x_change, txt_bb[3])
+            txt_bb = (txt_bb[0] + x_change, txt_bb[1], txt_bb[2] + x_change, txt_bb[3])
         if txt_bb[2] - self.width > 0:
             x_change = -(txt_bb[2] - self.width)
+            x_change -= 5  # margin
             self.canvas_now.move(txt, x_change, 0)
             txt_bb = (txt_bb[0] + x_change, txt_bb[1], txt_bb[2] + x_change, txt_bb[3])
         txt_background = self.canvas_now.create_rectangle(txt_bb, fill='grey', tags=exp_txt)

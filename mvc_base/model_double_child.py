@@ -367,7 +367,7 @@ class DCNode(model.AnimatedObject, model.Node):
         curr = self.tree.root
         view.hint_frame.draw(curr.x, curr.y)
         while type(curr.left) is not DCLeaf:
-            view.draw_exp_text(curr, f'Node [{curr.value}] has left child. Search from min there')
+            view.draw_exp_text(curr, f'Node [{curr.value}] has left child. Search for min there')
             view.hint_frame.move(curr.left.x, curr.left.y)
             curr = curr.left
         view.draw_exp_text(curr, f'Node [{curr.value}] has no left child. It\'s the min value of the tree')
@@ -378,7 +378,7 @@ class DCNode(model.AnimatedObject, model.Node):
         curr = self.tree.root
         view.hint_frame.draw(curr.x, curr.y)
         while type(curr.right) is not DCLeaf:
-            view.draw_exp_text(curr, f'Node [{curr.value}] has right child. Search from max there')
+            view.draw_exp_text(curr, f'Node [{curr.value}] has right child. Search for max there')
             view.hint_frame.move(curr.right.x, curr.right.y)
             curr = curr.right
         view.draw_exp_text(curr, f'Node [{curr.value}] has no right child. It\'s the max value of the tree')

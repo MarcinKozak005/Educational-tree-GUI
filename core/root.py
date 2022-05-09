@@ -41,7 +41,7 @@ class Mode(Enum):
 
 
 class Structure(Enum):
-    RBT = 'Red-black tree'
+    RBT = 'Red-black Tree'
     AVL = 'AVL Tree'
     BT = 'B-Tree'
     BPT = 'B+Tree'
