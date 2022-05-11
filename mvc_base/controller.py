@@ -84,6 +84,7 @@ class Controller:
             elif func == r.Action.median:
                 self.tree.median()
             view.prepare_view()
+            self.tree.update_positions(True)  # Prevents strange overshooting in the final visualization
             view.draw_tree(self.tree.root, view.canvas_now)
             if add_final_result:
                 self.history.append(h.HistoryElement(copy.deepcopy(self), None, None))

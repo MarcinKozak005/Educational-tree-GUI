@@ -48,6 +48,7 @@ class ComparisonController:
         """
         view = self.view
         add_final_result = False
+        view.animation_controller.reset()
         if validate_input(arg):
             val = int(arg)
             self.top_finished, self.bottom_finished = False, False
@@ -68,31 +69,24 @@ class ComparisonController:
 
             if func == r.Action.insert:
                 threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.insert_value(val))).start()
-                r.wait(200)
                 self.bottom_tree.insert_value(val)
             elif func == r.Action.delete:
                 threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.delete_value(val))).start()
-                r.wait(200)
                 self.bottom_tree.delete_value(val)
             elif func == r.Action.search:
                 threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.search_value(val))).start()
-                r.wait(200)
                 self.bottom_tree.search_value(val)
             elif func == r.Action.min:
                 threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.min())).start()
-                r.wait(200)
                 self.bottom_tree.min()
             elif func == r.Action.max:
                 threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.max())).start()
-                r.wait(200)
                 self.bottom_tree.max()
             elif func == r.Action.mean:
                 threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.mean())).start()
-                r.wait(200)
                 self.bottom_tree.mean()
             elif func == r.Action.median:
                 threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.median())).start()
-                r.wait(200)
                 self.bottom_tree.median()
             self.bottom_finished = True
             self.view.canvas_bottom.delete('all')

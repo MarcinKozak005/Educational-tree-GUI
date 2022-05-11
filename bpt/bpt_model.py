@@ -375,6 +375,7 @@ class BPTree(mb.BalTree):
                 counter += 1
             self.view.draw_exp_text(self.root, f'Whole tree traversed. '
                                                f'Mean = {val_sum}/{counter} = {val_sum / counter}')
+        self.view.animation_controller.finalize(self.view)
 
     def median(self):
         if self.root is None:
@@ -395,3 +396,4 @@ class BPTree(mb.BalTree):
                 tab.append(v.value)
             self.view.draw_exp_text(self.root, f'Whole tree traversed. Values = {tab}. '
                                                f'Median = {statistics.median(tab)}')
+        self.view.animation_controller.finalize(self.view)

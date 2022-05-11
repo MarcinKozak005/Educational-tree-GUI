@@ -35,18 +35,21 @@ class MCTree(model.Tree):
                 'TkDefaultFont', int(view.node_width * circle_node_text_modifier), 'bold'))
             self.root.insert_value(self.value_class(value, None, self.root.x, self.root.y - view.y_above))
         self.root.update_positions(True)
+        self.view.animation_controller.finalize(self.view)
 
     def delete_value(self, value):
         if self.root is None:
             self.view.explanation.append(f'Tree is empty. Impossible to delete from an empty tree')
         else:
             self.root.delete_value(value)
+        self.view.animation_controller.finalize(self.view)
 
     def search_value(self, value):
         if self.root is None:
             self.view.explanation.append(f'Tree is empty. Value cannot be found')
         else:
             self.root.search_value(value)
+        self.view.animation_controller.finalize(self.view)
 
     def search_value_no_GUI(self, value):
         if self.root is not None:
@@ -62,12 +65,14 @@ class MCTree(model.Tree):
             self.view.explanation.append(f'Tree is empty. Impossible to calculate min of an empty tree')
         else:
             self.root.min()
+        self.view.animation_controller.finalize(self.view)
 
     def max(self):
         if self.root is None:
             self.view.explanation.append(f'Tree is empty. Impossible to calculate max of an empty tree')
         else:
             self.root.max()
+        self.view.animation_controller.finalize(self.view)
 
     @abc.abstractmethod
     def mean(self):

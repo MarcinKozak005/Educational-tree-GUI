@@ -109,6 +109,7 @@ class AVLTree(mdc.DCTree):
         else:
             self.insert_value_helper(value)
             self.view.draw_exp_text(self.root, f'Recalculate height for all nodes')
+        self.view.animation_controller.finalize(self.view)
 
     def delete_value(self, value):
         """ Additionally draws explanation text for recalculation"""
@@ -117,3 +118,4 @@ class AVLTree(mdc.DCTree):
         else:
             self.root.delete_value(value)
             self.view.draw_exp_text(self.root, f'Recalculate height for all nodes')
+        self.view.animation_controller.finalize(self.view)

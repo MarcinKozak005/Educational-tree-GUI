@@ -18,7 +18,8 @@ import core.menu as m
 import core.root as r
 import rbt.rbt_model as rbt
 import rbt.rbt_view as rbtv
-from core.constants import white, canvas_width_modifier, canvas_height_modifier
+from core.constants import white, canvas_width_modifier, canvas_height_modifier, double
+from mvc_base.view import AnimationController
 
 button_arguments = {'width': 20, 'height': 10, 'text_color_disabled': '#d1d1d1'}
 comparison_buttons_argument = {'width': 75, 'height': 10, 'text_color_disabled': '#d1d1d1'}
@@ -30,6 +31,7 @@ class ComparisonView:
     def __init__(self):
         self.width = int(r.frame.width * canvas_width_modifier)
         self.height = int(r.frame.height * canvas_height_modifier)
+        self.animation_controller = AnimationController(double, None, None)
         self.info_label = None
         self.buttons = []
         self.controls_frame = None
@@ -246,6 +248,7 @@ class ComparisonView:
                     self.top_max_degree = num
                     controller.clear()
                     controller.top_tree = type(controller.top_tree)(controller.top_tree.view, num)
+                    self.animation_controller.view1 = controller.top_tree.view
                     controller.check_buttons()
                     self.top_canvas_label.config(text=f'{controller.top_structure.value} '
                                                       f'[degree: {controller.top_tree_degree}]')
@@ -255,6 +258,7 @@ class ComparisonView:
                     self.bottom_max_degree = num
                     controller.clear()
                     controller.bottom_tree = type(controller.bottom_tree)(controller.bottom_tree.view, num)
+                    self.animation_controller.view2 = controller.bottom_tree.view
                     controller.check_buttons()
                     self.bottom_canvas_label.config(
                         text=f'{controller.bottom_structure.value} [degree: {controller.bottom_tree_degree}]')
@@ -389,6 +393,7 @@ class ComparisonView:
                 view.create_GUI(controller, '')
                 view.canvas_now = self.canvas_top
                 controller.top_structure = structure
+                self.animation_controller.view1 = view
             elif controller.bottom_structure != structure and mode == r.Mode.down:
                 controller.clear()
                 if position >= 2:
@@ -416,6 +421,7 @@ class ComparisonView:
                 view.create_GUI(controller, '')
                 view.canvas_now = self.canvas_bottom
                 controller.bottom_structure = structure
+                self.animation_controller.view2 = view
             controller.check_buttons()
             self.set_browsing_buttons(False)
 

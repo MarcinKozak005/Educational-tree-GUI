@@ -618,6 +618,8 @@ class AnimationController:
                 print(f'{threading.current_thread().name}')
             with self.lock:
                 if (self.fst_finished or self.fst_final_end) and (self.snd_finished or self.snd_final_end):
+                    self.fst_finished, self.snd_finished = False, False
+                    self.fst_final_end, self.snd_final_end = False, False
                     while self.fst_dict or self.snd_dict:
                         if self.fst_dict:
                             tmp = {}
@@ -650,9 +652,9 @@ class AnimationController:
                                         tmp[k] = self.fst_dict[k]
                             self.snd_dict = tmp
                         r.wait(10)
-                    self.fst_finished, self.snd_finished = False, False
-                    self.fst_final_end, self.snd_final_end = False, False
         elif self.mode == single:
+            self.fst_finished = False
+            self.fst_final_end = False
             while self.fst_dict:
                 tmp = {}
                 for k in self.fst_dict:
@@ -669,6 +671,4 @@ class AnimationController:
                             tmp[k] = self.fst_dict[k]
                 r.wait(10)
                 self.fst_dict = tmp
-            self.fst_finished = False
-            self.fst_final_end = False
             self.fst_dict = {}

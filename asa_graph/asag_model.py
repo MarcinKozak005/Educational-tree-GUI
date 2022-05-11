@@ -375,6 +375,7 @@ class ASAGraph(ma.AggTree):
                     break
             self.view.draw_exp_text(self.root,
                                     f'Whole tree traversed. Mean = {val_sum}/{counter} = {val_sum / counter}')
+        self.view.animation_controller.finalize(self.view)
 
     def median(self):
         view = self.view
@@ -396,3 +397,4 @@ class ASAGraph(ma.AggTree):
                 else:
                     break
             view.draw_exp_text(self.root, f'Whole tree traversed. Values = {tab}. Median = {statistics.median(tab)}')
+        self.view.animation_controller.finalize(self.view)

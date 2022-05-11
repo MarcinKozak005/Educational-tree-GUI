@@ -17,6 +17,7 @@ rbt_view.create_GUI(controller, '')
 rbt_view.canvas_now = view.canvas_top
 rbt_tree = rbt.RBTree(rbt_view)
 controller.top_tree = rbt_tree
+view.animation_controller.view1 = rbt_view
 
 avlt_view = avltv.AVLView(
     node_width=26,
@@ -27,6 +28,7 @@ avlt_view.create_GUI(controller, '')
 avlt_view.canvas_now = view.canvas_bottom
 avlt_tree = avlt.AVLTree(avlt_view)
 controller.bottom_tree = avlt_tree
+view.animation_controller.view2 = avlt_view
 
 frame = view.create_GUI(controller, 'Comparison')
 rbt_view.canvas_now = view.canvas_top
