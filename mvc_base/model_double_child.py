@@ -19,12 +19,14 @@ class DCTree(model.Tree, abc.ABC):
             self.view.explanation.append(f'Tree is empty. Impossible to delete from an empty tree')
         else:
             self.root.delete_value(value)
+        self.view.animation_controller.finalize(self.view)
 
     def search_value(self, value):
         if self.root is None:
             self.view.explanation.append(f'Tree is empty. Value cannot be found')
         else:
             self.root.search_value(value)
+        self.view.animation_controller.finalize(self.view)
 
     def search_value_no_GUI(self, value):
         if self.root is not None:
@@ -38,12 +40,14 @@ class DCTree(model.Tree, abc.ABC):
             self.view.explanation.append(f'Tree is empty. Impossible to calculate min of an empty tree')
         else:
             self.root.min()
+        self.view.animation_controller.finalize(self.view)
 
     def max(self):
         if self.root is None:
             self.view.explanation.append(f'Tree is empty. Impossible to calculate max of an empty tree')
         else:
             self.root.max()
+        self.view.animation_controller.finalize(self.view)
 
     def mean(self):
         if self.root is None:
@@ -54,6 +58,7 @@ class DCTree(model.Tree, abc.ABC):
             val_sum, counter = self.root.mean(0, 0)
             self.view.draw_exp_text(self.root, f'Whole tree traversed. '
                                                f'Mean = {val_sum}/{counter} = {val_sum / counter}')
+        self.view.animation_controller.finalize(self.view)
 
     def median(self):
         if self.root is None:
@@ -64,6 +69,7 @@ class DCTree(model.Tree, abc.ABC):
             tab = self.root.median([])
             self.view.draw_exp_text(self.root,
                                     f'Whole tree traversed. Values = {tab}. Median = {statistics.median(tab)}')
+        self.view.animation_controller.finalize(self.view)
 
     # DCTree specific methods
 

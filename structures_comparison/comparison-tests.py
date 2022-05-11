@@ -3,6 +3,7 @@ import tkinter as tk
 
 
 def wrap1():
+    # Do in view.move / view.animate
     units = {
         'o11': (c1, 1, 2, 10),
         'o12': (c1, 3, 3, 20),
@@ -11,6 +12,7 @@ def wrap1():
     animation_controller.add_movement(units, True)
     animation_controller.fst_finished = True
     animation_controller.move()
+    # Do as a last line of whole operation (insert/delete/...)
     animation_controller.fst_final_end = True
 
 
@@ -36,6 +38,9 @@ def wrap2():
 
 
 class AnimationController:
+    # New class in mvc_base
+    # Each view has it's own AnimationController
+    # In comparison view AnimationControllers has to be changes - similarly to canvases
     def __init__(self):
         self.mode = 'double'
         self.fst_finished = False

@@ -45,6 +45,7 @@ class Controller:
         view.set_buttons(False)
         view.set_browsing_buttons(False)
         add_final_result = False
+        view.animation_controller.reset()
         if validate_input(arg):
             val = int(arg)
             self.view.explanation_text.config(state=tk.NORMAL)

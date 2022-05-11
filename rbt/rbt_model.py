@@ -185,3 +185,4 @@ class RBTree(mdc.DCTree):
             self.view.explanation.append(f'Tree is empty. Insert black node ({value})')
         else:
             self.insert_value_helper(value)
+        self.view.animation_controller.finalize(self.view)

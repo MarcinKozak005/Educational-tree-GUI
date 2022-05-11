@@ -25,5 +25,9 @@ circle_node_text_modifier = 0.39
 left = 'left'
 right = 'right'
 recolor_txt = 'recolor_txt'
+single = 'single'
+double = 'double'
+move = 'move'
+tick = 'tick'
 
 animation_unit = 10

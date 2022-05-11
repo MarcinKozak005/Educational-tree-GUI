@@ -1,4 +1,5 @@
 import abc
+import threading
 import tkinter as tk
 
 import customtkinter as ctk
@@ -6,7 +7,7 @@ import customtkinter as ctk
 import core.menu as m
 import core.root as r
 from core.constants import hint_frame, exp_txt, white, black, animation_unit, canvas_width_modifier, \
-    canvas_height_modifier, explanation_width_modifier, explanation_height_modifier
+    canvas_height_modifier, explanation_width_modifier, explanation_height_modifier, single, double, move, tick
 
 ctk.set_default_color_theme('green')
 button_arguments = {'width': 20, 'height': 10, 'text_color_disabled': '#d1d1d1'}
@@ -19,6 +20,7 @@ class View(abc.ABC):
     def __init__(self, node_width, node_height, columns_to_skip):
         self.explanation = Explanation(self)
         self.hint_frame = HintFrame(self)
+        self.animation_controller = AnimationController(single, self)
         self.width = int(r.frame.width * canvas_width_modifier)
         self.height = int(r.frame.height * canvas_height_modifier)
         self.y_space = 50
@@ -105,16 +107,14 @@ class View(abc.ABC):
             for s in successors:
                 x_unit = (s.x_next - s.x) / counter
                 y_unit = (s.y_next - s.y) / counter
-                units[s] = (x_unit, y_unit)
+                units[s] = (tick, self, x_unit, y_unit, counter)
             # Skip waiting if units are too small
-            if all(abs(x) < 0.00001 and abs(y) < 0.00001 for (x, y) in units.values()):
+            if all(abs(x) < 0.00001 and abs(y) < 0.00001 for (_, _, x, y, _) in units.values()):
                 return
             # Move each successor
-            while counter > 0:
-                for s in successors:
-                    s.tick(self, units[s][0], units[s][1])
-                r.wait(animation_unit)
-                counter -= 1
+            self.animation_controller.add_movement(units, self)
+            self.animation_controller.finish(self)
+            self.animation_controller.move()
 
     def draw_exp_text(self, node, exp_str, above=True):
         """
@@ -162,10 +162,10 @@ class View(abc.ABC):
         y_unit = y_diff / (time / animation_unit)
         counter = time / animation_unit
         # Move object
-        while counter > 0:
-            self.canvas_now.move(obj, x_unit, y_unit)
-            r.wait(animation_unit)
-            counter -= 1
+        units = {obj: (move, self.canvas_now, x_unit, y_unit, counter)}
+        self.animation_controller.add_movement(units, self)
+        self.animation_controller.finish(self)
+        self.animation_controller.move()
 
     def clear(self):
         """
@@ -560,3 +560,115 @@ class Explanation:
         :return: returns nothing
         """
         self.line = 1
+
+
+class AnimationController:
+    """Class to handle multiple animations"""
+
+    def __init__(self, mode, *args):
+        self.mode = mode
+        if len(args) < 1:
+            raise ValueError('Too few views')
+        if mode == single:
+            self.view1 = args[0]
+            self.view2 = None
+        elif mode == double:
+            if len(args) != 2:
+                raise ValueError('Wrong number of views (not equal 2)')
+            self.view1 = args[0]
+            self.view2 = args[1]
+        self.fst_finished = False
+        self.snd_finished = False
+        self.lock = threading.Lock()
+        self.fst_dict = {}
+        self.snd_dict = {}
+        self.fst_final_end = False
+        self.snd_final_end = False
+
+    def add_movement(self, object_dict, view):
+        for k in object_dict.keys():
+            if view == self.view1:
+                self.fst_dict[k] = object_dict[k]
+            elif view == self.view2:
+                self.snd_dict[k] = object_dict[k]
+
+    def finish(self, view):
+        if view == self.view1:
+            self.fst_finished = True
+        elif view == self.view2:
+            self.snd_finished = True
+
+    def finalize(self, view):
+        if view == self.view1:
+            self.fst_final_end = True
+        elif view == self.view2:
+            self.snd_final_end = True
+
+    def reset(self):
+        self.fst_finished = False
+        self.snd_finished = False
+        self.fst_dict = {}
+        self.snd_dict = {}
+        self.fst_final_end = False
+        self.snd_final_end = False
+
+    def move(self):
+        if self.mode == double:
+            while not (self.fst_finished or self.fst_final_end) and (self.snd_finished or self.snd_final_end):
+                print(f'{threading.current_thread().name}')
+            with self.lock:
+                if (self.fst_finished or self.fst_final_end) and (self.snd_finished or self.snd_final_end):
+                    while self.fst_dict or self.snd_dict:
+                        if self.fst_dict:
+                            tmp = {}
+                            for k in self.fst_dict:
+                                data = self.fst_dict[k]
+                                if data[0] == move:
+                                    data[1].move(k, data[2], data[3])
+                                    if data[4] > 0:
+                                        self.fst_dict[k] = (data[0], data[1], data[2], data[3], data[4] - 1)
+                                        tmp[k] = self.fst_dict[k]
+                                elif data[0] == tick:
+                                    k.tick(data[1], data[2], data[3])
+                                    if data[4] > 0:
+                                        self.fst_dict[k] = (data[0], data[1], data[2], data[3], data[4] - 1)
+                                        tmp[k] = self.fst_dict[k]
+                            self.fst_dict = tmp
+                        if self.snd_dict:
+                            tmp = {}
+                            for k in self.snd_dict:
+                                data = self.fst_dict[k]
+                                if data[0] == move:
+                                    data[1].move(k, data[2], data[3])
+                                    if data[4] > 0:
+                                        self.fst_dict[k] = (data[0], data[1], data[2], data[3], data[4] - 1)
+                                        tmp[k] = self.fst_dict[k]
+                                elif data[0] == tick:
+                                    k.tick(data[1], data[2], data[3])
+                                    if data[4] > 0:
+                                        self.fst_dict[k] = (data[0], data[1], data[2], data[3], data[4] - 1)
+                                        tmp[k] = self.fst_dict[k]
+                            self.snd_dict = tmp
+                        r.wait(10)
+                    self.fst_finished, self.snd_finished = False, False
+                    self.fst_final_end, self.snd_final_end = False, False
+        elif self.mode == single:
+            while self.fst_dict:
+                tmp = {}
+                for k in self.fst_dict:
+                    data = self.fst_dict[k]
+                    if data[0] == move:
+                        data[1].move(k, data[2], data[3])
+                        if data[4] > 0:
+                            self.fst_dict[k] = (data[0], data[1], data[2], data[3], data[4] - 1)
+                            tmp[k] = self.fst_dict[k]
+                    elif data[0] == tick:
+                        k.tick(data[1], data[2], data[3])
+                        if data[4] > 0:
+                            self.fst_dict[k] = (data[0], data[1], data[2], data[3], data[4] - 1)
+                            tmp[k] = self.fst_dict[k]
+                r.wait(10)
+                self.fst_dict = tmp
+            self.fst_finished = False
+            self.fst_final_end = False
+            self.fst_dict = {}
