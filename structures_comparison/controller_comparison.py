@@ -12,6 +12,7 @@ class ComparisonController:
     def __init__(self, view):
         self.view = view
         self.history = h.History()
+        self.animation_time_holder = 0
         # Top
         self.top_tree = None
         self.top_tree_degree = 3
@@ -51,6 +52,9 @@ class ComparisonController:
         if validate_input(arg):
             val = int(arg)
             self.top_finished, self.bottom_finished = False, False
+            self.animation_time_holder = self.top_tree.view.long_animation_time
+            self.top_tree.view.set_animation_time(self.top_tree.view.long_animation_time // 2)
+            self.bottom_tree.view.set_animation_time(self.bottom_tree.view.long_animation_time // 2)
             view.set_buttons(False)
             # History management
             if self.top_tree.root is not None and \
@@ -68,33 +72,27 @@ class ComparisonController:
 
             if func == r.Action.insert:
                 threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.insert_value(val))).start()
-                r.wait(200)
                 self.bottom_tree.insert_value(val)
             elif func == r.Action.delete:
                 threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.delete_value(val))).start()
-                r.wait(200)
                 self.bottom_tree.delete_value(val)
             elif func == r.Action.search:
                 threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.search_value(val))).start()
-                r.wait(200)
                 self.bottom_tree.search_value(val)
             elif func == r.Action.min:
                 threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.min())).start()
-                r.wait(200)
                 self.bottom_tree.min()
             elif func == r.Action.max:
                 threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.max())).start()
-                r.wait(200)
                 self.bottom_tree.max()
             elif func == r.Action.mean:
                 threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.mean())).start()
-                r.wait(200)
                 self.bottom_tree.mean()
             elif func == r.Action.median:
                 threading.Thread(target=lambda: self.top_canvas_draw(lambda: self.top_tree.median())).start()
-                r.wait(200)
                 self.bottom_tree.median()
             self.bottom_finished = True
+            self.top_tree.view.set_animation_time(self.animation_time_holder)
             self.view.canvas_bottom.delete('all')
             self.bottom_tree.view.draw_tree(self.bottom_tree.root, view.canvas_bottom)
             if add_final_result:
@@ -156,6 +154,7 @@ class ComparisonController:
         self.view.canvas_top.delete('all')
         self.top_tree.view.draw_tree(self.top_tree.root, self.view.canvas_top)
         self.top_finished = True
+        self.bottom_tree.view.set_animation_time(self.animation_time_holder)
 
     def check_buttons(self):
         if self.top_finished and self.bottom_finished:

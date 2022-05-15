@@ -27,3 +27,4 @@ right = 'right'
 recolor_txt = 'recolor_txt'
 
 animation_unit = 10
+long_animation_time = 2500

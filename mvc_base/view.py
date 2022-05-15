@@ -6,7 +6,7 @@ import customtkinter as ctk
 import core.menu as m
 import core.root as r
 from core.constants import hint_frame, exp_txt, white, black, animation_unit, canvas_width_modifier, \
-    canvas_height_modifier, explanation_width_modifier, explanation_height_modifier
+    canvas_height_modifier, explanation_width_modifier, explanation_height_modifier, long_animation_time
 
 ctk.set_default_color_theme('green')
 button_arguments = {'width': 20, 'height': 10, 'text_color_disabled': '#d1d1d1'}
@@ -25,7 +25,7 @@ class View(abc.ABC):
         self.y_above = 30
         self.node_width = node_width
         self.node_height = node_height
-        self.long_animation_time = 2500
+        self.long_animation_time = long_animation_time
         self.short_animation_time = self.long_animation_time // 2
         self.layout = 'double'
         self.columns_to_skip = columns_to_skip
@@ -506,6 +506,11 @@ class View(abc.ABC):
         :return: returns nothing
         """
         self.canvas_now.delete(tag)
+
+    def set_animation_time(self, time):
+        if time > 0:
+            self.long_animation_time = int(time)
+            self.short_animation_time = int(time // 2)
 
 
 class HintFrame:
