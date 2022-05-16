@@ -28,13 +28,14 @@ class BPTNode(mb.BalNode):
                 node.fix_delete(value)
             # Fixing indexes' (inner nodes) values
             parent = node.parent
-            if parent is not None:
+            while parent is not None:
                 values = [parent.values[i].value for i in range(len(parent.values))]
                 if value in values:
                     i = values.index(value)
                     view.draw_exp_text(parent.values[i], f'Change value ({parent.values[i].value}) '
                                                          f'in node [{parent.id}] to successor of it\'s right child')
                     parent.values[i].value = node.successor(False)
+                parent = parent.parent
 
     def search_value(self, value):
         """
@@ -192,46 +193,52 @@ class BPTNode(mb.BalNode):
                 return
             i = prev.children.index(self)
             # Cases with node
+            calculate_successor = False
             if i - 1 >= 0 and len(prev.children[i - 1].values) > min_val_degree:
-                view.draw_exp_text(self, f'Rewrite index {prev.children[i - 1].values[-1].value} '
-                                         f'from [{prev.children[i - 1].id}] to [{self.id}]')
+                view.draw_exp_text(prev.children[i - 1], f'Rewrite index {prev.children[i - 1].values[-1].value} '
+                                                         f'from [{prev.children[i - 1].id}] to [{self.id}]')
                 self.values.insert(0, prev.children[i - 1].values[-1])
                 prev.children[i - 1].values[-1].parent = self
                 if not prev.children[i - 1].is_leaf:
-                    view.draw_exp_text(f'Rewrite {prev.children[i - 1].children[-1].id} as first child of {self.id}')
+                    view.draw_exp_text(prev.children[i - 1].children[-1],
+                                       f'Rewrite {prev.children[i - 1].children[-1].id} as first child of {self.id}')
                     prev.children[i - 1].children[-1].parent = self
                     self.children.insert(0, prev.children[i - 1].children[-1])
                     prev.children[i - 1].children.pop()
-                    view.draw_exp_text(f'Change value ({self.values[0].value}) '
-                                       f'in node [{self.id}] to successor of it\'s right child')
-                    self.values[0].value = self.children[1].successor(False)
+                    calculate_successor = True
                 prev.children[i - 1].values.pop()
                 self.update_positions()
                 view.animate(self.tree.root)
-                view.draw_exp_text(f'Change value ({prev.values[i - 1].value}) '
-                                   f'in node [{prev.id}] to successor of it\'s right child')
+                if calculate_successor:
+                    view.draw_exp_text(self, f'Change value ({self.values[0].value}) '
+                                             f'in node [{self.id}] to successor of it\'s right child')
+                    self.values[0].value = self.children[1].successor(False)
+                view.draw_exp_text(prev.values[i - 1], f'Update index {prev.values[i - 1].value}')
                 prev.values[i - 1].value = prev.children[i].successor(False)
             elif i + 1 < len(prev.children) and len(prev.children[i + 1].values) > min_val_degree:
-                view.draw_exp_text(self, f'Rewrite index {prev.children[i + 1].values[0].value} '
-                                         f'from [{prev.children[i + 1].id}] to [{self.id}]')
+                view.draw_exp_text(prev.children[i + 1], f'Rewrite index {prev.children[i + 1].values[0].value} '
+                                                         f'from [{prev.children[i + 1].id}] to [{self.id}]')
                 self.values.append(prev.children[i + 1].values[0])
                 prev.children[i + 1].values[0].parent = self
                 if not prev.children[i + 1].is_leaf:
                     prev.children[i + 1].children[0].parent = self
-                    view.draw_exp_text(f'Rewrite {prev.children[i + 1].children[0].id} as last child of {self.id}')
+                    view.draw_exp_text(prev.children[i + 1].children[0],
+                                       f'Rewrite {prev.children[i + 1].children[0].id} as last child of {self.id}')
                     self.children.append(prev.children[i + 1].children[0])
                     prev.children[i + 1].children.pop(0)
-                    view.draw_exp_text(f'Change value ({self.values[0].value}) '
-                                       f'in node [{self.id}] to successor of it\'s right child')
-                    self.values[0].value = self.children[1].successor(False)
+                    calculate_successor = True
                 prev.children[i + 1].values.pop(0)
                 self.update_positions()
                 view.animate(self.tree.root)
-                view.draw_exp_text(f'Change value ({prev.values[i].value}) '
-                                   f'in node [{prev.id}] to successor of it\'s right child')
+                if calculate_successor:
+                    view.draw_exp_text(self, f'Change value ({self.values[-1].value}) '
+                                             f'in node [{self.id}] to successor of it\'s right child')
+                    self.values[-1].value = self.children[-1].successor(False)
+                view.draw_exp_text(prev.values[i], f'Update index {prev.values[i].value}')
                 prev.values[i].value = prev.children[i + 1].successor(False)
             elif i - 1 >= 0 and len(prev.children[i - 1].values) == min_val_degree:
                 if self.is_leaf:
+                    view.draw_exp_text(prev.values[i - 1], f'Remove inner index')
                     view.erase(prev.values[i - 1].tag())
                     view.erase(f'Line{hash(prev.values[i - 1])}')
                     prev.children[i].parent = None
@@ -240,36 +247,34 @@ class BPTNode(mb.BalNode):
                     prev.values.pop(i - 1)
                     view.draw_exp_text(self, f'Rewrite values from [{self.id}] node to [{prev.id}] node')
                     view.draw_exp_text(self, f'Remove node [{self.id}]')
+                    view.erase(self.tag())
                     for v in self.values:
                         prev.children[i - 1].values.append(v)
                         v.parent = prev.children[i - 1]
                 else:
                     prev.children.pop(i)
+                    self.parent = None
                     sibling = prev.children[i - 1]
-                    prev.children.pop(i - 1)
                     # self values and children to prev
-                    view.draw_exp_text(self, f'Rewrite values and children from [{self.id}] node to [{prev.id}] node')
-                    for v in self.values:
-                        prev.values.append(v)
-                        v.parent = prev
-                    for c in self.children:
-                        prev.children.append(c)
-                        c.parent = prev
-                    # sibling values and children to prev
                     view.draw_exp_text(self,
-                                       f'Rewrite values and children from [{sibling.id}] node to [{prev.id}] node')
-                    for v in reversed(sibling.values):
-                        prev.values.insert(0, v)
-                        v.parent = prev
-                    for c in reversed(sibling.children):
-                        prev.children.insert(0, c)
-                        c.parent = prev
+                                       f'Rewrite index {prev.values[i - 1].value} from [{prev.id}], values and children '
+                                       f'from [{self.id}] to [{sibling.id}] node')
+                    sibling.values.append(prev.values[i - 1])
+                    prev.values[i - 1].parent = sibling
+                    prev.values.pop(i - 1)
+                    for v in self.values:
+                        sibling.values.append(v)
+                        v.parent = sibling
+                    for c in self.children:
+                        sibling.children.append(c)
+                        c.parent = sibling
                 prev.update_positions()
                 view.animate(self.tree.root)
             elif i + 1 < len(prev.children) and len(prev.children[i + 1].values) == min_val_degree:
                 view.draw_exp_text(prev, f'Remove node {self.id}')
                 view.draw_exp_text(self, f'Delete [{prev.values[i].value}] node')
                 if self.is_leaf:
+                    view.draw_exp_text(prev.values[i], f'Remove inner index')
                     view.erase(prev.values[i].tag())
                     view.erase(f'Line{hash(prev.values[i])}')
                     prev.children[i].parent = None
@@ -277,31 +282,28 @@ class BPTNode(mb.BalNode):
                     prev.values.pop(i)
                     view.draw_exp_text(self, f'Rewrite values from [{self.id}] node to [{prev.id}] node')
                     view.draw_exp_text(self, f'Remove node [{self.id}]')
+                    view.erase(self.tag())
                     for v in reversed(self.values):
                         prev.children[i + 1].values.insert(0, v)
                         v.parent = prev.children[i + 1]
                     prev.children.pop(i)
                 else:
-                    sibling = prev.children[i + 1]
-                    prev.children.pop(i + 1)
                     prev.children.pop(i)
+                    self.parent = None
+                    sibling = prev.children[i + 1]
                     # self values and children to prev
-                    view.draw_exp_text(self, f'Rewrite values and children from [{self.id}] node to [{prev.id}] node')
-                    for v in reversed(self.values):
-                        prev.values.insert(0, v)
-                        v.parent = prev
-                    for c in reversed(self.children):
-                        prev.children.insert(0, c)
-                        c.parent = prev
-                    # sibling values and children to prev
                     view.draw_exp_text(self,
-                                       f'Rewrite values and children from [{sibling.id}] node to [{prev.id}] node')
-                    for v in sibling.values:
-                        prev.values.append(v)
-                        v.parent = prev
-                    for c in sibling.children:
-                        prev.children.append(c)
-                        c.parent = prev
+                                       f'Rewrite index {prev.values[i].value} from [{prev.id}], values and children '
+                                       f'from [{self.id}] to [{sibling.id}] node')
+                    sibling.values.insert(0, prev.values[i])
+                    prev.values[i].parent = sibling
+                    prev.values.pop(i)
+                    for v in reversed(self.values):
+                        sibling.values.insert(0, v)
+                        v.parent = sibling
+                    for c in reversed(self.children):
+                        sibling.children.insert(0, c)
+                        c.parent = sibling
                 prev.update_positions()
                 view.animate(self.tree.root)
             else:
