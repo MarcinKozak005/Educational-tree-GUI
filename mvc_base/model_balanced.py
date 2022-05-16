@@ -62,10 +62,6 @@ class BalNode(mc.MCNode, abc.ABC):
             view.hint_frame.move(self.values[-1].x + view.node_width // 2, self.values[-1].y, True)
         self.insert_and_fix(value, i)
 
-    def print_node(self, indent=0):
-        print('\t' * indent + f'{self.values}')
-        for c in self.children:
-            c.print_node(indent + 1)
 
     @abc.abstractmethod
     def split_child(self, i, full_node):

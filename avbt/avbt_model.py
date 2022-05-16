@@ -7,18 +7,28 @@ import mvc_base.model_aggregated as ma
 class AVBTNode(ma.AggNode):
 
     def min(self):
-        curr = self
+        view = self.tree.view
+        view.explanation.append(f'Search the minimal value of the tree')
+        curr = self.tree.root
+        view.hint_frame.draw(curr.values[0].x, curr.values[0].y)
         while not curr.is_leaf:
+            view.draw_exp_text(curr, f'Node [{curr.id}] has children. Search for min value in 0. child')
+            view.hint_frame.move(curr.children[0].x, curr.children[0].y)
             curr = curr.children[0]
-        self.tree.view.draw_exp_text(curr, f'Min value is first element of '
-                                           f'double-linked list of leaves: {curr.values[0].value}')
+        view.draw_exp_text(curr, f'Node [{curr.id}] has no children. '
+                                 f'It\'s first value {curr.values[0].value} is the min value of the tree')
 
     def max(self):
-        curr = self
+        view = self.tree.view
+        view.explanation.append(f'Search the maximal value of the tree')
+        curr = self.tree.root
+        view.hint_frame.draw(curr.values[-1].x, curr.values[-1].y)
         while not curr.is_leaf:
+            view.draw_exp_text(curr, f'Node [{curr.id}] has children. Search for max value in last child')
+            view.hint_frame.move(curr.children[-1].x, curr.children[-1].y)
             curr = curr.children[-1]
-        self.tree.view.draw_exp_text(curr, f'Max value is last element of '
-                                           f'double-linked list of leaves: {curr.values[-1].value}')
+        view.draw_exp_text(curr, f'Node [{curr.id}] has no children. '
+                                 f'It\'s last value {curr.values[-1].value} is the max value of the tree')
 
     def mean(self, val_sum, counter):
         view = self.tree.view
@@ -30,7 +40,7 @@ class AVBTNode(ma.AggNode):
                 val_sum, counter = self.children[i].mean(val_sum, counter)
             if i != 0:
                 view.hint_frame.move(self.values[i].x, self.values[i].y)
-            view.draw_exp_text(self, f'Add {self.values[i].value}x{self.values[i].counter} to sum {val_sum} '
+            view.draw_exp_text(self, f'Add {self.values[i].value} ({self.values[i].counter} times) to sum {val_sum} '
                                      f'and increase counter {counter} by {self.values[i].counter}')
             val_sum += self.values[i].value * self.values[i].counter
             counter += self.values[i].counter

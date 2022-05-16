@@ -148,6 +148,7 @@ class AggNode(mc.MCNode, abc.ABC):
         """
         i = 0
         view = self.tree.view
+        view.canvas_now.delete(hint_frame)
         view.hint_frame.draw(self.values[0].x, self.values[0].y)
         # Find first not smaller value in node
         while i < len(self.values) and value > self.values[i].value:
@@ -201,10 +202,6 @@ class AggNode(mc.MCNode, abc.ABC):
             view.erase(hint_frame)
             return self.children[0].successor()
 
-    def print_node(self, indent=0):
-        print('\t' * indent + f'{self.values}')
-        for c in self.children:
-            c.print_node(indent + 1)
 
     # AggNode specific methods below
 

@@ -6,7 +6,7 @@ import customtkinter as ctk
 import core.menu as m
 import core.root as r
 from core.constants import hint_frame, exp_txt, white, black, animation_unit, canvas_width_modifier, \
-    canvas_height_modifier, explanation_width_modifier, explanation_height_modifier
+    canvas_height_modifier, explanation_width_modifier, explanation_height_modifier, long_animation_time
 
 ctk.set_default_color_theme('green')
 button_arguments = {'width': 20, 'height': 10, 'text_color_disabled': '#d1d1d1'}
@@ -25,7 +25,7 @@ class View(abc.ABC):
         self.y_above = 30
         self.node_width = node_width
         self.node_height = node_height
-        self.long_animation_time = 2500
+        self.long_animation_time = long_animation_time
         self.short_animation_time = self.long_animation_time // 2
         self.layout = 'double'
         self.columns_to_skip = columns_to_skip
@@ -129,10 +129,12 @@ class View(abc.ABC):
         txt_bb = self.canvas_now.bbox(txt)
         if txt_bb[0] < 0:
             x_change = -txt_bb[0]
+            x_change += 5  # margin
             self.canvas_now.move(txt, x_change, 0)
-            txt_bb = (txt_bb[0] - x_change, txt_bb[1], txt_bb[2] - x_change, txt_bb[3])
+            txt_bb = (txt_bb[0] + x_change, txt_bb[1], txt_bb[2] + x_change, txt_bb[3])
         if txt_bb[2] - self.width > 0:
             x_change = -(txt_bb[2] - self.width)
+            x_change -= 5  # margin
             self.canvas_now.move(txt, x_change, 0)
             txt_bb = (txt_bb[0] + x_change, txt_bb[1], txt_bb[2] + x_change, txt_bb[3])
         txt_background = self.canvas_now.create_rectangle(txt_bb, fill='grey', tags=exp_txt)
@@ -335,8 +337,8 @@ class View(abc.ABC):
             prev = controller.history.get_prev()
             if prev is not None and prev.controller.tree.root is not None:
                 prev.controller.tree.root.update_positions(True)
-                prev = prev.controller.tree.root
-                self.draw_tree(prev, self.canvas_prev, False)
+                prev = prev.controller.tree
+                self.draw_tree(prev.root, self.canvas_prev, False)
             self.check_size_buttons()
 
         def increase():
@@ -353,8 +355,8 @@ class View(abc.ABC):
             prev = controller.history.get_prev()
             if prev is not None and prev.controller.tree.root is not None:
                 prev.controller.tree.root.update_positions(True)
-                prev = prev.controller.tree.root
-                self.draw_tree(prev, self.canvas_prev, False)
+                prev = prev.controller.tree
+                self.draw_tree(prev.root, self.canvas_prev, False)
             self.check_size_buttons()
 
         size_frame = tk.Frame(self.controls_frame)
@@ -504,6 +506,11 @@ class View(abc.ABC):
         :return: returns nothing
         """
         self.canvas_now.delete(tag)
+
+    def set_animation_time(self, time):
+        if time > 0:
+            self.long_animation_time = int(time)
+            self.short_animation_time = int(time // 2)
 
 
 class HintFrame:

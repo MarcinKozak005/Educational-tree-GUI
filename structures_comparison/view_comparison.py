@@ -141,10 +141,12 @@ class ComparisonView:
 
         # Second row
         def selector_change(new_value):
+            new_value = 50 * (new_value // 50)
             controller.top_tree.view.long_animation_time = int(new_value)
             controller.bottom_tree.view.long_animation_time = int(new_value)
             controller.top_tree.view.short_animation_time = int(new_value) // 2
             controller.bottom_tree.view.short_animation_time = int(new_value) // 2
+            controller.animation_time_holder = int(new_value)
 
         self.info_label = tk.Label(self.controls_frame)
         self.back_button = ctk.CTkButton(self.controls_frame, text='<<<', command=controller.back, **button_arguments)

@@ -362,9 +362,9 @@ class ASAGraph(ma.AggTree):
                 curr_node = curr_node.children[0]
             curr_val = curr_node.values[0]
             counter, val_sum = 0, 0
+            self.view.hint_frame.draw(curr_val.x, curr_val.y)
             while True:
-                self.view.hint_frame.draw(curr_val.x, curr_val.y)
-                self.view.draw_exp_text(curr_val, f'Add {curr_val.value}x{curr_val.counter} to sum {val_sum} '
+                self.view.draw_exp_text(curr_val, f'Add {curr_val.value} ({curr_val.counter} times) to sum {val_sum} '
                                                   f'and increase counter {counter} by {curr_val.counter}')
                 val_sum += curr_val.value * curr_val.counter
                 counter += curr_val.counter
@@ -373,7 +373,8 @@ class ASAGraph(ma.AggTree):
                     curr_val = curr_val.next_value
                 else:
                     break
-            self.view.draw_exp_text(curr_val, f'Whole tree traversed. Mean = {val_sum}/{counter} = {val_sum / counter}')
+            self.view.draw_exp_text(self.root,
+                                    f'Whole tree traversed. Mean = {val_sum}/{counter} = {val_sum / counter}')
 
     def median(self):
         view = self.view
@@ -385,13 +386,13 @@ class ASAGraph(ma.AggTree):
                 curr_node = curr_node.children[0]
             curr_val = curr_node.values[0]
             tab = []
+            view.hint_frame.draw(curr_val.x, curr_val.y)
             while True:
-                view.hint_frame.draw(curr_val.x, curr_val.y)
                 view.draw_exp_text(curr_val, f'Append {curr_val.value} ({curr_val.counter} times) to tab {tab}')
-                tab.append([curr_val.value] * curr_val.counter)
+                tab.extend([curr_val.value] * curr_val.counter)
                 if curr_val.next_value is not None:
                     view.hint_frame.move(curr_val.next_value.x, curr_val.next_value.y)
                     curr_val = curr_val.next_value
                 else:
                     break
-            view.draw_exp_text(curr_val, f'Whole tree traversed. Values = {tab}. Median = {statistics.median(tab)}')
+            view.draw_exp_text(self.root, f'Whole tree traversed. Values = {tab}. Median = {statistics.median(tab)}')

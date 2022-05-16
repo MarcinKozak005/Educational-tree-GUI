@@ -44,6 +44,7 @@ class BPTNode(mb.BalNode):
         """
         i = 0
         view = self.tree.view
+        view.canvas_now.delete(hint_frame)
         view.hint_frame.draw(self.values[0].x, self.values[0].y)
         # Find first not smaller value in node
         while i < len(self.values) and value > self.values[i].value:
@@ -361,7 +362,7 @@ class BPTree(mb.BalTree):
             successors = self.root.successors()
             values = []
             for s in successors:
-                if type(s) is mb.BalValue and s.parent.is_leaf:
+                if type(s) is mb.LinkBalValue and s.parent.is_leaf:
                     values.append(s)
             self.view.hint_frame.draw(values[0].x, values[0].y)
             val_sum = 0
@@ -384,7 +385,7 @@ class BPTree(mb.BalTree):
             successors = self.root.successors()
             values = []
             for s in successors:
-                if type(s) is mb.BalValue and s.parent.is_leaf:
+                if type(s) is mb.LinkBalValue and s.parent.is_leaf:
                     values.append(s)
             self.view.hint_frame.draw(values[0].x, values[0].y)
             tab = []
