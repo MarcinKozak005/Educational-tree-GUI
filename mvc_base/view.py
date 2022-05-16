@@ -299,6 +299,7 @@ class View(abc.ABC):
                     r.wait(10)
 
         def selector_change(new_value):
+            new_value = 50 * (new_value // 50)
             self.long_animation_time = int(new_value)
             self.short_animation_time = int(new_value) // 2
 

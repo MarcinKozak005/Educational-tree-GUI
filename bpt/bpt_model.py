@@ -288,9 +288,9 @@ class BPTNode(mb.BalNode):
                         v.parent = prev.children[i + 1]
                     prev.children.pop(i)
                 else:
+                    sibling = prev.children[i + 1]
                     prev.children.pop(i)
                     self.parent = None
-                    sibling = prev.children[i + 1]
                     # self values and children to prev
                     view.draw_exp_text(self,
                                        f'Rewrite index {prev.values[i].value} from [{prev.id}], values and children '
