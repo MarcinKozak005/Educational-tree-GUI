@@ -102,9 +102,6 @@ class DCLeaf:
     def successors():
         return []
 
-    def print_node(self, i):
-        pass
-
     @staticmethod
     def get_balance():
         return 0
@@ -354,12 +351,6 @@ class DCNode(model.AnimatedObject, model.Node):
                 view.explanation.append(f'{parent.value}')
             return parent
 
-    def print_node(self, indent=0):
-        print(' ' * indent + f'{self.value}')
-        indent += 1
-        self.left.print_node(indent)
-        self.right.print_node(indent)
-        indent -= 1
 
     def min(self):
         view = self.tree.view

@@ -337,8 +337,8 @@ class View(abc.ABC):
             prev = controller.history.get_prev()
             if prev is not None and prev.controller.tree.root is not None:
                 prev.controller.tree.root.update_positions(True)
-                prev = prev.controller.tree.root
-                self.draw_tree(prev, self.canvas_prev, False)
+                prev = prev.controller.tree
+                self.draw_tree(prev.root, self.canvas_prev, False)
             self.check_size_buttons()
 
         def increase():
@@ -355,8 +355,8 @@ class View(abc.ABC):
             prev = controller.history.get_prev()
             if prev is not None and prev.controller.tree.root is not None:
                 prev.controller.tree.root.update_positions(True)
-                prev = prev.controller.tree.root
-                self.draw_tree(prev, self.canvas_prev, False)
+                prev = prev.controller.tree
+                self.draw_tree(prev.root, self.canvas_prev, False)
             self.check_size_buttons()
 
         size_frame = tk.Frame(self.controls_frame)

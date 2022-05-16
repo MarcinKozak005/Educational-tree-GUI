@@ -201,10 +201,6 @@ class AggNode(mc.MCNode, abc.ABC):
             view.erase(hint_frame)
             return self.children[0].successor()
 
-    def print_node(self, indent=0):
-        print('\t' * indent + f'{self.values}')
-        for c in self.children:
-            c.print_node(indent + 1)
 
     # AggNode specific methods below
 

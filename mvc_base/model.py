@@ -82,15 +82,6 @@ class Tree(abc.ABC):
         if self.root is not None:
             self.root.update_positions(static, width)
 
-    def print_tree(self):
-        """
-        Prints tree to the terminal
-        :return: returns nothing
-        """
-        if self.root is not None:
-            self.root.print_node()
-        else:
-            print('Tree is empty')
 
 
 class AnimatedObject(abc.ABC):
@@ -164,14 +155,6 @@ class Node(abc.ABC):
     def successor(self):
         pass
 
-    @abc.abstractmethod
-    def print_node(self, indent):
-        """
-        Prints the node to the terminal
-        :param indent: equivalent to the height on which the node lies in the tree
-        :return: returns nothing
-        """
-        pass
 
     @abc.abstractmethod
     def min(self):

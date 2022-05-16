@@ -128,6 +128,12 @@ class Controller:
             if self.tree.root is not None:
                 self.tree.root.update_positions(True, view.width)
             view.draw_tree(self.tree.root, view.canvas_now)
+            prev = self.history.get_prev()
+            view.canvas_prev.delete('all')
+            if prev is not None and prev.controller.tree.root is not None:
+                prev.controller.tree.root.update_positions(True)
+                prev = prev.controller.tree
+                view.draw_tree(prev.root, view.canvas_prev, False)
             view.layout = 'double'
 
     def back(self):
