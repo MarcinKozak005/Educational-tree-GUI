@@ -232,7 +232,7 @@ class DCNode(model.AnimatedObject, model.Node):
             view.move_object('txt2', y.x, y.y, node.x, node.y)
             node.value = y.value
             view.erase('swap1')
-            view.draw_object(node, view.canvas_now)
+            view.draw_object(node)
         view.move_object(y.tag(), y.x, y.y, y.x, - view.node_height)
         view.explanation.append(f'Remove {value} from tree')
         return x, y
@@ -350,7 +350,6 @@ class DCNode(model.AnimatedObject, model.Node):
             if type(parent) is klass:
                 view.explanation.append(f'{parent.value}')
             return parent
-
 
     def min(self):
         view = self.tree.view

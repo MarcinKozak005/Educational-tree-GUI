@@ -34,7 +34,9 @@ class AVLView(vdc.DCView):
             self.draw_line(canvas, obj, obj.left)
         self.draw_object(obj, canvas)
 
-    def draw_object(self, obj, canvas):
+    def draw_object(self, obj, canvas=None):
+        if canvas is None:
+            canvas = self.canvas_now
         if type(obj) is avlt.AVLTNode:
             canvas.create_image(obj.x - self.node_width // 2, obj.y - self.node_height // 2,
                                 image=self.green_circle, anchor='nw', tags=obj.tag())
@@ -43,3 +45,9 @@ class AVLView(vdc.DCView):
             canvas.create_text(obj.x - self.node_width // 2, obj.y - self.node_height // 2,
                                fill=black, text=obj.height, tags=obj.tag(),
                                font=('TkDefaultFont', int((self.node_width - 4) * circle_node_text_modifier)))
+
+    def draw_height_change(self, node):
+        # Drawing node with new height
+        self.erase(node.tag())
+        self.draw_object(node)
+        self.draw_exp_text(node, f'New height of node ({node.value}) is: {node.height}')

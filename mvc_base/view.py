@@ -38,8 +38,6 @@ class View(abc.ABC):
         self.now_label = None
         self.view_button = None
         self.explanation_frame = None
-        self.controls_frame = None
-        self.time_scale = None
         self.hold_animation = False
         self.pause_continue_button = None
         self.back_button = None
@@ -73,7 +71,7 @@ class View(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def draw_object(self, obj, canvas):
+    def draw_object(self, obj, canvas=None):
         """
         Draws the object (node or value)
         :param obj: object to be drawn
@@ -309,8 +307,8 @@ class View(abc.ABC):
                                             **button_arguments)
         self.pause_continue_button = ctk.CTkButton(self.controls_frame, text='Pause', command=pause_continue_animation,
                                                    **button_arguments)
-        self.time_scale = ctk.CTkSlider(self.controls_frame, from_=5000, to=50, width=155, command=selector_change)
-        self.time_scale.set(self.long_animation_time)
+        time_scale = ctk.CTkSlider(self.controls_frame, from_=5000, to=50, width=155, command=selector_change)
+        time_scale.set(self.long_animation_time)
 
         # Putting on window
         cts = self.columns_to_skip
@@ -382,7 +380,7 @@ class View(abc.ABC):
         # Size frame end
         self.pause_continue_button.grid(row=1, column=cts + 9)
         ctk.CTkLabel(self.controls_frame, text='Anim. speed:').grid(row=1, column=cts + 10)
-        self.time_scale.grid(row=1, column=cts + 11, columnspan=3)
+        time_scale.grid(row=1, column=cts + 11, columnspan=3)
 
         self.controls_frame.pack()
 
@@ -419,7 +417,6 @@ class View(abc.ABC):
         self.buttons = [insert_button, delete_button, find_button, clear_button, self.view_button,
                         min_button, max_button, mean_button, median_button,
                         self.increase_size_button, self.decrease_size_button]
-
         return frame
 
     def add_max_degree_change_to_GUI(self, controller):

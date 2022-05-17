@@ -32,8 +32,6 @@ class ComparisonView:
         self.height = int(r.frame.height * canvas_height_modifier)
         self.info_label = None
         self.buttons = []
-        self.controls_frame = None
-        self.time_scale = None
         self.buttons_state = {}
         self.increase_size_button = None
         self.decrease_size_button = None
@@ -194,8 +192,8 @@ class ComparisonView:
         self.increase_size_button = ctk.CTkButton(size_frame, text='+', command=increase, **button_arguments)
         self.check_size_buttons()
 
-        self.time_scale = ctk.CTkSlider(self.controls_frame, from_=5000, to=50, width=155, command=selector_change)
-        self.time_scale.set(2500)
+        time_scale = ctk.CTkSlider(self.controls_frame, from_=5000, to=50, width=155, command=selector_change)
+        time_scale.set(2500)
 
         # Putting on window
         input_field.grid(row=0, column=2)
@@ -223,7 +221,7 @@ class ComparisonView:
         size_frame.grid(row=1, column=10)
         # Size frame end
         ctk.CTkLabel(self.controls_frame, text='Anim. speed:').grid(row=1, column=11)
-        self.time_scale.grid(row=1, column=12, columnspan=3)
+        time_scale.grid(row=1, column=12, columnspan=3)
 
         # Visualization frame
         visualization_frame = ctk.CTkFrame(frame)

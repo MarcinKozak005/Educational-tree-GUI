@@ -147,7 +147,7 @@ class BPTNode(mb.BalNode):
             tmp = mb.LinkBalValue(full_node.values[len(full_node.values) - 1].value, new_node,
                                   full_node.values[len(full_node.values) - 1].x,
                                   full_node.values[len(full_node.values) - 1].y)
-            view.draw_object(tmp, view.canvas_now)
+            view.draw_object(tmp)
             new_node.values.insert(0, tmp)
         # b+tree end
         full_node.values.pop(len(full_node.values) - 1)

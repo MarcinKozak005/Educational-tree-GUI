@@ -59,7 +59,9 @@ class RBTView(vdc.DCView):
             self.draw_line(canvas, obj, obj.left)
         self.draw_object(obj, canvas)
 
-    def draw_object(self, obj, canvas):
+    def draw_object(self, obj, canvas=None):
+        if canvas is None:
+            canvas = self.canvas_now
         if type(obj) is rbt.RBTNode:
             circle = self.black_circle if obj.color == black else self.red_circle
             canvas.create_image(obj.x - self.node_width // 2, obj.y - self.node_height // 2,
