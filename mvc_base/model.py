@@ -83,9 +83,9 @@ class Tree(abc.ABC):
             self.root.update_positions(static, width)
 
 
-
 class AnimatedObject(abc.ABC):
     """Base class for all animated objects"""
+
     def __init__(self, x, y, parent):
         self.parent = parent
         self.x = x
@@ -111,6 +111,7 @@ class AnimatedObject(abc.ABC):
 
 class Node(abc.ABC):
     """Base class for node like structures"""
+
     def __init__(self, tree, l_edge, r_edge):
         self.tree = tree
         # For visualization: space between l_edge and r_edge is where all node's children will be placed
@@ -154,7 +155,6 @@ class Node(abc.ABC):
     @abc.abstractmethod
     def successor(self):
         pass
-
 
     @abc.abstractmethod
     def min(self):

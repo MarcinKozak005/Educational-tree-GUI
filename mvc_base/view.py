@@ -38,6 +38,7 @@ class View(abc.ABC):
         self.now_label = None
         self.view_button = None
         self.explanation_frame = None
+        self.controls_frame = None
         self.hold_animation = False
         self.pause_continue_button = None
         self.back_button = None

@@ -62,7 +62,6 @@ class BalNode(mc.MCNode, abc.ABC):
             view.hint_frame.move(self.values[-1].x + view.node_width // 2, self.values[-1].y, True)
         self.insert_and_fix(value, i)
 
-
     @abc.abstractmethod
     def split_child(self, i, full_node):
         pass

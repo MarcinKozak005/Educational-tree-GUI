@@ -202,7 +202,6 @@ class AggNode(mc.MCNode, abc.ABC):
             view.erase(hint_frame)
             return self.children[0].successor()
 
-
     # AggNode specific methods below
 
     def split_child(self, i, full_node):
