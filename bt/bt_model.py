@@ -60,6 +60,7 @@ class BTNode(mb.BalNode):
                         c.parent = node.children[i]
                     view.erase(f'Line{hash(node.values[i])}')
                     node.values.pop(i)
+                    view.erase(node.children[i + 1].tag())
                     node.children.pop(i + 1)
                     node.tree.update_positions()
                     view.animate(node.tree.root)

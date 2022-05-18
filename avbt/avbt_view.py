@@ -40,7 +40,9 @@ class AVBTView(vmc.MCView):
                 self.draw_line(canvas, obj, parent.children[index + 1], tk.SE, tk.N)
         self.draw_object(obj, canvas)
 
-    def draw_object(self, node, canvas):
+    def draw_object(self, node, canvas=None):
+        if canvas is None:
+            canvas = self.canvas_now
         if type(node) is ma.AggValue:
             canvas.create_image(node.x - self.node_width // 2, node.y - self.node_height // 2,
                                 image=self.green_square, anchor='nw', tags=node.tag())

@@ -39,17 +39,21 @@ class AVLTNode(mdc.DCNode):
         """
         self.height = 1 + max(self.left.height, self.right.height)
         balance = self.get_balance()
-        if balance > 1 and type(self.left) is AVLTNode and value < self.left.value:
+        self.tree.view.draw_height_change(self)
+        cond1, cond2 = False, False
+        if balance > 1 and type(self.left) is AVLTNode and value <= self.left.value:
             self.tree.view.draw_exp_text(self, f'Balance of ({self.value}) = {balance}')
             self.rotate(right)
-        if balance < -1 and type(self.right) is AVLTNode and value > self.right.value:
+            cond1 = True
+        if balance < -1 and type(self.right) is AVLTNode and value >= self.right.value:
             self.tree.view.draw_exp_text(self, f'Balance of ({self.value}) = {balance}')
             self.rotate(left)
-        if balance > 1 and type(self.left) is AVLTNode and value > self.left.value:
+            cond2 = True
+        if balance > 1 and type(self.left) is AVLTNode and value >= self.left.value and not cond1:
             self.tree.view.draw_exp_text(self, f'Balance of ({self.value}) = {balance}')
             self.left.rotate(left)
             self.rotate(right)
-        if balance < -1 and type(self.right) is AVLTNode and value < self.right.value:
+        if balance < -1 and type(self.right) is AVLTNode and value <= self.right.value and not cond2:
             self.tree.view.draw_exp_text(self, f'Balance of ({self.value}) = {balance}')
             self.right.rotate(right)
             self.rotate(left)
@@ -63,6 +67,7 @@ class AVLTNode(mdc.DCNode):
         :return: returns nothing
         """
         self.height = 1 + max(self.left.height, self.right.height)
+        self.tree.view.draw_height_change(self)
         balance = self.get_balance()
         if balance > 1 and type(self.left) is AVLTNode and self.left.get_balance() >= 0:
             self.rotate(right)
@@ -84,6 +89,7 @@ class AVLTNode(mdc.DCNode):
         y.height = 1 + max(y.left.height, y.right.height)
         self.tree.root.update_positions()
         self.tree.view.animate(y)
+        self.tree.view.draw_height_change(self)
         return y
 
     # AVLTNode specific methods
@@ -108,7 +114,6 @@ class AVLTree(mdc.DCTree):
             self.view.explanation.append(f'Tree is empty. Insert node ({value})')
         else:
             self.insert_value_helper(value)
-            self.view.draw_exp_text(self.root, f'Recalculate height for all nodes')
 
     def delete_value(self, value):
         """ Additionally draws explanation text for recalculation"""
@@ -116,4 +121,3 @@ class AVLTree(mdc.DCTree):
             self.view.explanation.append(f'Tree is empty. Impossible to delete from an empty tree')
         else:
             self.root.delete_value(value)
-            self.view.draw_exp_text(self.root, f'Recalculate height for all nodes')

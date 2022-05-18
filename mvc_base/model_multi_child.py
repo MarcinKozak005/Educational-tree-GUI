@@ -31,8 +31,9 @@ class MCTree(model.Tree):
                                          self.root.y - view.node_height // 2 - view.y_above,
                                          image=view.grey_square, anchor='nw', tags=grey_node)
             view.canvas_now.create_text(self.root.x, self.root.y - view.y_above, fill=white,
-                                        text=value, tags=grey_node, font=(
-                'TkDefaultFont', int(view.node_width * circle_node_text_modifier), 'bold'))
+                                        text=value, tags=grey_node,
+                                        font=('TkDefaultFont', int(view.node_width * circle_node_text_modifier),
+                                              'bold'))
             self.root.insert_value(self.value_class(value, None, self.root.x, self.root.y - view.y_above))
         self.root.update_positions(True)
 

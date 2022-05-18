@@ -52,9 +52,9 @@ class RBTNode(mdc.DCNode):
                 view.draw_recolor_text(uncle, black)
                 view.draw_recolor_text(n.parent.parent, red)
                 r.wait(view.long_animation_time)
-                view.draw_object(n.parent, view.canvas_now)
-                view.draw_object(uncle, view.canvas_now)
-                view.draw_object(n.parent.parent, view.canvas_now)
+                view.draw_object(n.parent)
+                view.draw_object(uncle)
+                view.draw_object(n.parent.parent)
                 view.erase(recolor_txt)
                 return n.parent.parent
             elif n == n.parent[right if side == left else left]:
@@ -68,8 +68,8 @@ class RBTNode(mdc.DCNode):
                 view.draw_recolor_text(tmp_node1, black)
                 view.draw_recolor_text(tmp_node2, red)
                 r.wait(view.long_animation_time)
-                view.draw_object(tmp_node1, view.canvas_now)
-                view.draw_object(tmp_node2, view.canvas_now)
+                view.draw_object(tmp_node1)
+                view.draw_object(tmp_node2)
                 view.erase(recolor_txt)
             return n
 
@@ -100,7 +100,8 @@ class RBTNode(mdc.DCNode):
             """
             snd_side = left if side == right else right
             sibling = n.parent[side]
-            non_exception_case = True  # Turned out to be needed. I haven't tested all cases
+            non_exception_case1 = True  # Turned out to be needed. I haven't tested all cases
+            non_exception_case2 = False  # Consequence of the above
             if type(sibling) is not mdc.DCLeaf and sibling.color == red:
                 sibling.color = black
                 n.parent.color = red
@@ -109,18 +110,18 @@ class RBTNode(mdc.DCNode):
                 view.draw_recolor_text(tmp_node1, black)
                 view.draw_recolor_text(tmp_node2, red)
                 r.wait(view.long_animation_time)
-                view.draw_object(tmp_node1, view.canvas_now)
-                view.draw_object(tmp_node2, view.canvas_now)
+                view.draw_object(tmp_node1)
+                view.draw_object(tmp_node2)
                 view.erase(recolor_txt)
                 sibling = n.parent[side]
             if type(sibling) is not mdc.DCLeaf and sibling[snd_side].color == black and sibling[side].color == black:
                 sibling.color = red
                 view.draw_recolor_text(sibling, red)
                 r.wait(view.long_animation_time)
-                view.draw_object(sibling, view.canvas_now)
+                view.draw_object(sibling)
                 view.erase(recolor_txt)
                 n = n.parent
-                non_exception_case = False
+                non_exception_case1 = False
             elif type(sibling) is not mdc.DCLeaf and sibling[side].color == black:
                 sibling[snd_side].color = black
                 sibling.color = red
@@ -129,24 +130,26 @@ class RBTNode(mdc.DCNode):
                 view.draw_recolor_text(tmp_node1, black)
                 view.draw_recolor_text(tmp_node2, red)
                 r.wait(view.long_animation_time)
-                view.draw_object(tmp_node1, view.canvas_now)
-                view.draw_object(tmp_node2, view.canvas_now)
+                view.draw_object(tmp_node1)
+                view.draw_object(tmp_node2)
                 view.erase(recolor_txt)
                 sibling = n.parent[side]
-            if n is not self.tree.root and non_exception_case:
+                non_exception_case2 = True
+            if n is not self.tree.root and non_exception_case1:
                 sibling.color = n.parent.color
                 n.parent.color = black
                 sibling[side].color = black
                 tmp_node1, tmp_node2, tmp_node3 = sibling, n.parent, sibling[side]
-                if n.parent is not self.tree.root or n.parent is self.tree.root and type(n) is mdc.DCLeaf:
+                if n.parent is not self.tree.root or (n.parent is self.tree.root and type(n) is mdc.DCLeaf) \
+                        or non_exception_case2:
                     n.parent.rotate(snd_side)
                 view.draw_recolor_text(tmp_node1, n.parent.color)
                 view.draw_recolor_text(tmp_node2, black)
                 view.draw_recolor_text(tmp_node3, black)
                 r.wait(view.long_animation_time)
-                view.draw_object(tmp_node1, view.canvas_now)
-                view.draw_object(tmp_node2, view.canvas_now)
-                view.draw_object(tmp_node3, view.canvas_now)
+                view.draw_object(tmp_node1)
+                view.draw_object(tmp_node2)
+                view.draw_object(tmp_node3)
                 view.erase(recolor_txt)
                 n = self.tree.root
             return n
