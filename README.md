@@ -1,5 +1,8 @@
 # Educational-tree-GUI
 
+The master thesis (in English) with detailed description of the theory and the implementation nuances can be
+found [here](https://drive.google.com/file/d/15Wfne6ng9l77Lf0h-j7O_O7oFMmrfEi4/view?usp=sharing).
+
 ## Quickstart
 
 ```bash
@@ -60,5 +63,3 @@ ASA-Graph insertion (YouTube video link):
 Comparison of two structures:
 ![comparison_example](.readme_files/comparison_example.png)
 
-The master thesis (in English) with detailed description of the theory and the implementation nuances can be
-found [here](https://drive.google.com/file/d/15Wfne6ng9l77Lf0h-j7O_O7oFMmrfEi4/view?usp=sharing).
